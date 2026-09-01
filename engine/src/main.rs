@@ -457,6 +457,24 @@ mod tests {
     }
 
     #[test]
+    fn svg_render_and_metadata_preserve_geometry_and_accessible_text() {
+        let score = parse_musicxml(FIXTURE).expect("fixture parses");
+        let svg = render_svg(&score, &SvgRenderOptions { width: 900.0, ..Default::default() })
+            .expect("SVG renders");
+        assert!(svg.starts_with("<svg"));
+        assert!(svg.contains("width=\"900"));
+        assert!(svg.contains("viewBox=\""));
+        assert!(svg.contains("data-acorde-kind=\"note\""));
+
+        let layout = compute_layout(&score, &LayoutConfig::default());
+        let metadata = render_svg_metadata(&score, &layout, &SvgRenderOptions { width: 900.0, ..Default::default() })
+            .expect("SVG metadata renders");
+        assert_eq!(metadata.note_count, 2);
+        assert_eq!(metadata.measure_count, 1);
+        assert!(!metadata.accessible_text.is_empty());
+    }
+
+    #[test]
     fn notation_commands_cross_json_ipc_boundary() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
         let mut engine = None;
