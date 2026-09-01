@@ -88,6 +88,8 @@ npm start
 
 `npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.1リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
 
+`npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
+
 ## 次の実装単位
 
 1. PDFの実page geometry検証とfont / glyph diagnosticsを強化する（設定・印刷プレビュー経路は接続済み）
