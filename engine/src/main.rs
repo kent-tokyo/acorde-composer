@@ -380,6 +380,23 @@ mod tests {
     }
 
     #[test]
+    fn playback_fixture_preserves_address_timing_and_measure_position() {
+        let score = parse_musicxml(FIXTURE).expect("fixture parses");
+        let events = to_playback_events(&score, &PlaybackOptions { bpm_override: Some(120), ..Default::default() });
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].address.as_deref(), Some("0:0:0:0:0"));
+        assert_eq!(events[0].time_beats, 0.0);
+        assert_eq!(events[0].time_secs, 0.0);
+        assert!((events[0].duration_beats - 1.0).abs() < f64::EPSILON);
+        assert!((events[0].duration_secs - 0.5).abs() < f64::EPSILON);
+
+        let position = compute_playback_position(&score, &PlaybackOptions { bpm_override: Some(120), ..Default::default() }, 0.75)
+            .expect("position exists inside the fixture");
+        assert_eq!(position.measure_index, 0);
+        assert!(position.beat > 1.0);
+    }
+
+    #[test]
     fn notation_commands_cross_json_ipc_boundary() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
         let mut engine = None;
