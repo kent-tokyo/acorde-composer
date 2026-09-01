@@ -312,6 +312,15 @@ mod tests {
   </measure></part>
 </score-partwise>"#;
 
+    const TWO_MEASURE_FIXTURE: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="4.0">
+  <part-list><score-part id="P1"><part-name>Piano</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1"><attributes><divisions>480</divisions><key><fifths>0</fifths><mode>major</mode></key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes><note><pitch><step>C</step><octave>4</octave></pitch><duration>1920</duration><voice>1</voice><type>whole</type></note></measure>
+    <measure number="2"><note><pitch><step>G</step><octave>4</octave></pitch><duration>1920</duration><voice>1</voice><type>whole</type></note></measure>
+  </part>
+</score-partwise>"#;
+
     const MULTI_VOICE_FIXTURE: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 <score-partwise version="4.0">
   <work><work-title>Two voice fixture</work-title></work>
@@ -394,6 +403,23 @@ mod tests {
             .expect("position exists inside the fixture");
         assert_eq!(position.measure_index, 0);
         assert!(position.beat > 1.0);
+    }
+
+    #[test]
+    fn playback_fixture_preserves_measure_boundary_timing_and_order() {
+        let score = parse_musicxml(TWO_MEASURE_FIXTURE).expect("two measure fixture parses");
+        let events = to_playback_events(&score, &PlaybackOptions { bpm_override: Some(120), ..Default::default() });
+        assert_eq!(events.len(), 2);
+        assert_eq!(events[0].address.as_deref(), Some("0:0:0:0:0"));
+        assert_eq!(events[1].address.as_deref(), Some("0:0:1:0:0"));
+        assert_eq!(events[0].time_beats, 0.0);
+        assert_eq!(events[1].time_beats, 4.0);
+        assert_eq!(events[0].time_secs, 0.0);
+        assert_eq!(events[1].time_secs, 2.0);
+        let position = compute_playback_position(&score, &PlaybackOptions { bpm_override: Some(120), ..Default::default() }, 2.01)
+            .expect("position exists just after the second measure boundary");
+        assert_eq!(position.measure_index, 1);
+        assert!(position.beat > 0.0);
     }
 
     #[test]
