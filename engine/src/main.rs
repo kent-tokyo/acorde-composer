@@ -437,6 +437,26 @@ mod tests {
     }
 
     #[test]
+    fn interchange_reports_cross_json_ipc_boundaries() {
+        let mut engine = None;
+        let musicxml = handle(Request::ParseMusicxmlReport { xml: FIXTURE.into() }, &mut engine)
+            .expect("MusicXML report request succeeds");
+        assert_eq!(musicxml["format"], "musicxml");
+        assert!(musicxml["score"]["parts"].as_array().is_some_and(|parts| !parts.is_empty()));
+
+        let abc = handle(Request::ParseAbcReport { text: "X:1\nT:IPC ABC\nM:4/4\nL:1/4\nK:C\nC D E F |\n".into() }, &mut engine)
+            .expect("ABC report request succeeds");
+        assert_eq!(abc["format"], "abc");
+        assert_eq!(abc["score"]["metadata"]["title"], "IPC ABC");
+
+        let score = parse_musicxml(FIXTURE).expect("fixture parses");
+        let midi = handle(Request::SerializeMidiReport { score }, &mut engine)
+            .expect("MIDI report request succeeds");
+        assert_eq!(midi["format"], "midi");
+        assert!(midi["output"].as_array().is_some_and(|bytes| !bytes.is_empty()));
+    }
+
+    #[test]
     fn notation_commands_cross_json_ipc_boundary() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
         let mut engine = None;
