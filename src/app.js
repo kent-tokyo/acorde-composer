@@ -39,6 +39,7 @@ const aiProposal = { type: 'batch', label: 'AI proposal', commands: [
   { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 6, pitch: { step: 'C', octave: 4, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
 ] };
 const $ = (id) => document.getElementById(id);
+function syncSelectionPlaybackControl() { const button = $('selection-play-button'); if (!button) return; button.disabled = !selectedRange; button.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first'; }
 let storedMixer = null;
 try { storedMixer = JSON.parse(localStorage.getItem(MIXER_KEY) || 'null'); } catch { localStorage.removeItem(MIXER_KEY); }
 const mixerState = storedMixer || { master: { volume: 1, pan: 0, mute: false }, soloPiano: false, metronome: false, soundfont: window.AcordeAudioProfile.fallback() };
@@ -164,6 +165,7 @@ function updateRenderedScore(svg) {
     const command = { type: 'add_note', part_index: part, staff_index: staff, measure_index: measureIndex, voice: voiceIndex, position, pitch: isRest ? null : { step: 'C', octave: 4, alter: 0 }, duration: $('duration-select').value, dot_count: $('dot-toggle').checked ? 1 : 0, is_rest: isRest, tuplet: tuple ? { actual_notes: tuple[0], normal_notes: tuple[1] } : null };
     try { await applyCommand(command, isRest ? 'AddRest' : 'AddNote'); } catch (error) { alert(`入力できませんでした: ${error.message}`); }
   }));
+  syncSelectionPlaybackControl();
   window.dispatchEvent(new Event('score-changed'));
 }
 function showDiagnostics(report) { lastDiagnosticsReport = report || null; const diagnostics = report?.diagnostics || []; const losses = diagnostics.filter((item) => item.loss_reason).length; $('diagnostics').classList.toggle('hidden', diagnostics.length === 0); $('diagnostics').setAttribute('role', diagnostics.length ? 'status' : 'none'); const exportButton = $('diagnostics-export'); $('diagnostics').innerHTML = diagnostics.length ? `<strong>${report.format || 'score'} · ${diagnostics.length} diagnostic${diagnostics.length > 1 ? 's' : ''}${losses ? ` · ${losses} loss` : ''}</strong><span>${diagnostics.map((item) => `[${item.severity}] ${item.code}: ${item.loss_reason || `preserved ${item.preserved_value || 'value'}`}${item.source_location ? ` (${item.source_location})` : ''}`).join(' · ')}</span>` : ''; if (exportButton) { exportButton.classList.toggle('hidden', diagnostics.length === 0); $('diagnostics').append(exportButton); } }
