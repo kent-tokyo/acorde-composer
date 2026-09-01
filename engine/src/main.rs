@@ -423,6 +423,20 @@ mod tests {
     }
 
     #[test]
+    fn playback_events_cross_json_ipc_boundary() {
+        let score = parse_musicxml(TWO_MEASURE_FIXTURE).expect("two measure fixture parses");
+        let mut engine = None;
+        let value = handle(Request::PlaybackEvents { score, bpm: Some(120), loop_region: None }, &mut engine)
+            .expect("PlaybackEvents request succeeds");
+        let events = value.as_array().expect("PlaybackEvents response is an array");
+        assert_eq!(events.len(), 2);
+        assert_eq!(events[0]["address"], "0:0:0:0:0");
+        assert_eq!(events[1]["address"], "0:0:1:0:0");
+        assert_eq!(events[1]["time_beats"], 4.0);
+        assert_eq!(events[1]["time_secs"], 2.0);
+    }
+
+    #[test]
     fn notation_commands_cross_json_ipc_boundary() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
         let mut engine = None;
