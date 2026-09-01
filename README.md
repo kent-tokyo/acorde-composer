@@ -73,6 +73,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Stemによる選択音符のstem方向（Auto / Up / Down）設定
 - Web MIDI APIによるMIDIキーボードの四分音符入力（AddNote経由）
 - ABC notation（テキスト楽譜）のOpenとExport（`acorde-io`のABC parser / serializer経由）
+- Shift選択した小節だけを先頭から一回再生するSelection playback
 - 複数staff / voice、ABC非対応notation、未対応metadataを含むABC exportでは、失われる可能性をdiagnosticsで警告
 
 AIやOMRの出力をScoreへ直接反映しないことが設計上の重要な契約です。現在のAIデモ提案も `ScoreCommand` としてRust adapterへ渡し、acorde-coreの `ScoreEngine` で検証・適用します。
