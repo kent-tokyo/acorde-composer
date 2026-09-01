@@ -2,6 +2,8 @@
 
 Windows / macOS向けのAI支援楽譜編集アプリです。製品名は **Acorde Composer**、楽譜モデルと決定論的な編集エンジンは既存の [`acorde`](https://github.com/kent-tokyo/acorde) に委譲します。
 
+変更履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+
 ## 音楽基盤の依存方針
 
 Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML / MIDI / ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは、それぞれ `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは導入しません。Electron側はUI、ファイルダイアログ、IPC、OS固有処理だけを担当します。
