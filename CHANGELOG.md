@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.1 — 2026-09-02
+
+`v0.1.0`の公開候補を、再生・IPC・配布検証の回帰テストとパッケージ契約で補強した保守リリースです。
+
+### Added
+
+- 選択小節の一回再生、`Space`再生／停止ショートカット、Keyboard helpの同期
+- PlaybackEventの小節境界・sidecar JSON IPC・SVG render metadata回帰テスト
+- MusicXML / ABC parse reportとMIDI export reportのIPC回帰テスト
+- Electronパッケージ契約テストとnpm依存lock
+
 ## 0.1.0 — 2026-09-02
 
 初回公開候補。Acorde Composerは、既存の`acorde` v1.0.1を唯一の音楽処理基盤として利用します。

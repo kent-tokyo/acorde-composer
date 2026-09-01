@@ -12,7 +12,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.0 + acorde v1.0.1）
+## 現在の縦切り（v0.1.1 + acorde v1.0.1）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
