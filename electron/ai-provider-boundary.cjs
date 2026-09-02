@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const { assertCommand } = require('./command-schema.cjs');
 
 const MAX_AI_PROMPT_BYTES = 32 * 1024;
@@ -29,20 +30,25 @@ function sanitizeScoreContext(value) {
   return Object.fromEntries(Object.entries(source).filter(([key]) => SCORE_CONTEXT_KEYS.has(key)));
 }
 
+function fingerprintScoreContext(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(sanitizeScoreContext(value))).digest('hex');
+}
+
 function buildAiRequest({ provider, prompt, scoreContext } = {}) {
   const normalizedProvider = normalizeAiProvider(provider);
   const safePrompt = typeof prompt === 'string' ? prompt.slice(0, MAX_AI_PROMPT_BYTES) : '';
   const safeContext = sanitizeScoreContext(scoreContext);
-  const request = { provider: normalizedProvider, prompt: safePrompt, scoreContext: safeContext };
+  const request = { provider: normalizedProvider, prompt: safePrompt, scoreContext: safeContext, contextFingerprint: fingerprintScoreContext(safeContext) };
   const bytes = Buffer.byteLength(JSON.stringify(request), 'utf8');
   return { request, usable: normalizedProvider.id !== null && normalizedProvider.licenseStatus === 'accepted' && normalizedProvider.networkPolicy === 'user-approved' && safePrompt.length > 0 && bytes <= MAX_SCORE_CONTEXT_BYTES, diagnostics: normalizedProvider.id === null ? ['provider-incomplete'] : normalizedProvider.licenseStatus !== 'accepted' ? [`provider-license-${normalizedProvider.licenseStatus}`] : normalizedProvider.networkPolicy !== 'user-approved' ? ['network-not-approved'] : safePrompt.length === 0 ? ['prompt-missing'] : bytes > MAX_SCORE_CONTEXT_BYTES ? ['request-too-large'] : [] };
 }
 
-function normalizeAiResponse(value) {
+function normalizeAiResponse(value, { expectedContextFingerprint = null } = {}) {
   const source = value && typeof value === 'object' ? value : {};
   const body = typeof source.body === 'string' ? source.body : JSON.stringify(source.body || '');
   if (source.status !== 'success') return { usable: false, proposal: null, diagnostics: [source.status === 'timeout' ? 'provider-timeout' : 'provider-failed'] };
   if (Buffer.byteLength(body, 'utf8') > MAX_AI_RESPONSE_BYTES) return { usable: false, proposal: null, diagnostics: ['response-too-large'] };
+  if (expectedContextFingerprint && source.contextFingerprint !== expectedContextFingerprint) return { usable: false, proposal: null, diagnostics: ['context-stale'] };
   let proposal;
   try { proposal = typeof source.body === 'string' ? JSON.parse(source.body) : source.body; assertCommand(proposal); } catch { return { usable: false, proposal: null, diagnostics: ['proposal-invalid'] }; }
   return { usable: true, proposal, diagnostics: [] };
@@ -80,4 +86,4 @@ function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () =
   };
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, sanitizeScoreContext };
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, fingerprintScoreContext, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, sanitizeScoreContext };

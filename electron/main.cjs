@@ -153,7 +153,7 @@ ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrPropos
 ipcMain.handle('omr:normalizeRunResult', async (_event, result) => normalizeOmrRunResult(result));
 ipcMain.handle('omr:findItemAtPoint', async (_event, { proposal, x, y }) => findOmrItemAtPoint(proposal, x, y));
 ipcMain.handle('ai:buildRequest', async (_event, payload) => buildAiRequest(payload));
-ipcMain.handle('ai:normalizeResponse', async (_event, response) => normalizeAiResponse(response));
+ipcMain.handle('ai:normalizeResponse', async (_event, { response, expectedContextFingerprint } = {}) => normalizeAiResponse(response, { expectedContextFingerprint }));
 
 app.whenReady().then(() => {
   createWindow();

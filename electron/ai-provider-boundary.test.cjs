@@ -10,6 +10,7 @@ test('AI request applies provider license, network, size, and redaction gates', 
   assert.equal(result.usable, true);
   assert.equal(result.request.scoreContext.token, undefined);
   assert.equal(result.request.scoreContext.title, 'Draft');
+  assert.equal(result.request.contextFingerprint.length, 64);
 });
 
 test('AI request rejects unapproved or unlicensed providers', () => {
@@ -21,6 +22,7 @@ test('AI response becomes a validated command proposal and never a Score', () =>
   assert.deepEqual(normalizeAiResponse({ status: 'success', body: COMMAND }), { usable: true, proposal: COMMAND, diagnostics: [] });
   assert.deepEqual(normalizeAiResponse({ status: 'success', body: { type: 'load_score' } }).diagnostics, ['proposal-invalid']);
   assert.deepEqual(normalizeAiResponse({ status: 'timeout' }).diagnostics, ['provider-timeout']);
+  assert.deepEqual(normalizeAiResponse({ status: 'success', body: COMMAND, contextFingerprint: 'stale' }, { expectedContextFingerprint: 'current' }).diagnostics, ['context-stale']);
 });
 
 test('AI provider execution is bounded and normalizes failure without throwing', async () => {
