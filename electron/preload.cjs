@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld('acorde', {
   normalizeDecodedSample: (sample) => ipcRenderer.invoke('soundfont:normalizeDecodedSample', sample),
   assessOmrProposal: (proposal) => ipcRenderer.invoke('omr:assessProposal', proposal),
   normalizeOmrRunResult: (result) => ipcRenderer.invoke('omr:normalizeRunResult', result),
+  runExternalOmrProvider: (payload) => ipcRenderer.invoke('omr:runExternalProvider', payload),
   listOmrReviewItems: (proposal, status = null) => ipcRenderer.invoke('omr:listReviewItems', { proposal, status }),
   transitionOmrItem: (item, action, correction = null) => ipcRenderer.invoke('omr:transitionItem', { item, action, correction }),
   findOmrItemAtPoint: (proposal, x, y) => ipcRenderer.invoke('omr:findItemAtPoint', { proposal, x, y }),

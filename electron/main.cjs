@@ -8,7 +8,7 @@ const { inspectSoundfontAsset } = require('./soundfont-asset.cjs');
 const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
-const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, transitionOmrItem } = require('./omr-boundary.cjs');
+const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
 const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
@@ -167,6 +167,7 @@ ipcMain.handle('engine:decodeSoundfontSample', async (_event, { format, data, st
 ipcMain.handle('soundfont:normalizeDecodedSample', async (_event, sample) => normalizeDecodedSample(sample));
 ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrProposal(proposal));
 ipcMain.handle('omr:normalizeRunResult', async (_event, result) => normalizeOmrRunResult(result));
+ipcMain.handle('omr:runExternalProvider', async (_event, { executable, args, request, timeoutMs } = {}) => runExternalOmrProvider({ executable, args, request, timeoutMs }));
 ipcMain.handle('omr:listReviewItems', async (_event, { proposal, status = null } = {}) => { const queue = createOmrReviewQueue(proposal); return { usable: queue.usable, diagnostics: queue.diagnostics, items: queue.list(status) }; });
 ipcMain.handle('omr:transitionItem', async (_event, { item, action, correction } = {}) => transitionOmrItem(item, action, correction));
 ipcMain.handle('omr:findItemAtPoint', async (_event, { proposal, x, y }) => findOmrItemAtPoint(proposal, x, y));

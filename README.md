@@ -56,6 +56,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - OMR review queueの一覧・status filter・accept/reject/correct遷移をmain / preload IPCから利用可能
 - OMR画像 / PDF入力は拡張子・サイズに加えてPNG/JPEG/PDFシグネチャもpreflightで検証
 - 外部OMR/AI executableを接続するJSON stdin/stdout runtime（shellなし、timeout、出力上限、異常終了復旧）
+- 外部OMR providerのbounded実行を`omr:runExternalProvider` main / preload IPCへ接続（結果はproposal/review境界へ戻し、Scoreへ直結しない）
 - `acorde-io` を使ったMusicXML / MXL / MIDIのOpen / Export IPC境界とdiagnostics表示
 - `acorde-io` を使ったABCのOpen / Export IPC境界とdiagnostics表示
 - メインプロセス管理の最大8件recent files履歴と番号指定再オープン
