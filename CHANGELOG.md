@@ -38,10 +38,11 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 
 ### Post-release maintenance
 
-- 隣接acorde v1.0.6へ依存pinとengine表示を同期（Composer versionは0.1.4のまま）
+- 隣接acorde v1.0.7へ依存pinとengine表示を同期（Composer versionは0.1.4のまま）
 - Rust未使用importを整理し、`npm run check`をwarningなしで通過
-- acorde v1.0.6でComposerの複数voice PlaybackEvent address fixtureを有効化し、Rust 14件成功を確認
-- acorde Issue #13へ、許諾済みSF2 PCM / SF3 Vorbis decoder・synthesizer実装を要求
+- acorde v1.0.7でComposerの複数voice PlaybackEvent address fixtureを有効化し、Rust 15件成功を確認
+- acorde v1.0.7のSF2 PCM decode / sample renderをComposer engine fixtureで確認（SF3 Vorbisはfeature経由）
+- acorde v1.0.7でIssue #13のSF2 PCM decoder / synthesizer基盤が解決され、Composer側の実API fixture接続へ移行
 - 外部OMR provider gateをspawn前に強化し、identity不備・license未承認時の起動を防止
 
 ## 0.1.3 — 2026-09-02

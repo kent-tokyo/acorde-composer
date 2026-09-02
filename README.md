@@ -8,11 +8,11 @@ Windows / macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML / MIDI / ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは、それぞれ `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは導入しません。Electron側はUI、ファイルダイアログ、IPC、OS固有処理だけを担当します。
 
-現在のComposer engineは、隣接する `acorde` v1.0.6 の5 crateをpath依存かつversion pinして利用します。
+現在のComposer engineは、隣接する `acorde` v1.0.7 の5 crateをpath依存かつversion pinして利用します。
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.4 + acorde v1.0.6）
+## 現在の縦切り（v0.1.4 + acorde v1.0.7）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
@@ -102,17 +102,17 @@ npm run check
 npm start
 ```
 
-`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.6リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
+`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.7リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 90件、Rust 14件、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 90件、Rust 15件、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
 1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
-2. 複数voiceのUI編集シナリオと実SoundFont decoder接続を進める
-3. optional SoundFont実providerをlicense・配布条件とともに評価する（acorde Issue #13。codec未実装）
+2. 複数voiceのUI編集シナリオとSoundFontのpreset-zone実接続を進める
+3. optional SoundFont実providerをlicense・配布条件とともに評価する（SF3 Vorbisはfeature経由、実音源assetは未同梱）
 4. OMR/AI providerの実 executable、認証情報、利用許諾を選定してruntime adapterへ接続する
 5. 署名証明書とclean macOS/Windows環境を用意してpackaging QAを実施する
 
