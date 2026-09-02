@@ -16,3 +16,11 @@ test('OMR review UI is wired to the provider-neutral queue without Score applica
   assert.match(app, /omr-proposal-ready/);
   assert.doesNotMatch(app, /applyCommand\([^)]*omrReview/);
 });
+
+test('diagnostics export uses the support bundle path and reports save errors', () => {
+  const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
+  assert.match(app, /saveSupportBundle\(/);
+  assert.match(app, /acorde-support-bundle\.json/);
+  assert.match(app, /support bundleを書き出せませんでした/);
+  assert.match(preload, /saveSupportBundle: \(payload\) => ipcRenderer\.invoke\('file:saveSupportBundle'/);
+});
