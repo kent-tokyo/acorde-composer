@@ -45,6 +45,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Newで空の1小節譜面を作成し、`acorde-io`経由でロード
 - AI Studio: 編曲提案を `ScoreCommand` として適用するUI
 - Import / OMR: OMRプロバイダーを接続するための確認UI
+- OMR provider manifest、license gate、draft MusicXML、confidence、source bbox、review状態の安全な境界（Scoreへ直接適用しない）
 - `acorde-io` を使ったMusicXML / MXL / MIDIのOpen / Export IPC境界とdiagnostics表示
 - `acorde-io` を使ったABCのOpen / Export IPC境界とdiagnostics表示
 - メインプロセス管理の最大8件recent files履歴と番号指定再オープン
