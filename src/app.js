@@ -30,6 +30,8 @@ let lastDiagnosticsReport = null;
 let midiInput = null;
 let audioDeviceChangeBound = false;
 let scoreZoom = 1;
+let omrReviewProposal = null;
+let omrReviewItems = [];
 const AUTOSAVE_KEY = 'acorde-composer.autosave.v1';
 const MIXER_KEY = 'acorde-composer.mixer.v1';
 const ACCESSIBILITY_KEY = 'acorde-composer.accessibility.v1';
@@ -72,6 +74,54 @@ window.addEventListener('beforeunload', (event) => { if (!dirty) return; event.p
 window.addEventListener('beforeunload', () => { if (midiInput) midiInput.onmidimessage = null; audioBackend.dispose(); });
 function updateScoreHeader() { if (!currentScore) return; const title = currentScore.metadata?.title || 'Untitled score'; const tempo = currentScore.settings?.tempo_bpm || 120; const measures = currentScore.parts?.[0]?.staves?.[0]?.measures?.length || 0; const time = currentScore.settings?.time_signature || { numerator: 4, denominator: 4 }; const partName = currentScore.parts?.[activePartIndex]?.name || 'Piano'; $('project-title').textContent = title; $('project-summary').textContent = `${measures} measures`; $('tempo-display').textContent = `♩ = ${tempo}`; $('time-select').value = `${time.numerator}/${time.denominator}`; $('key-select').value = String(currentScore.settings?.key_signature?.fifths ?? 0); const paperTitle = document.querySelector('.score-header h1'); if (paperTitle) paperTitle.textContent = title; const paperTempo = document.querySelector('.score-header .tempo strong'); if (paperTempo) paperTempo.textContent = `♩ = ${tempo}`; const staffLabel = document.querySelector('.score-paper .staff-label'); if (staffLabel) staffLabel.textContent = partName; const projectCard = document.querySelector('.project-card strong'); if (projectCard) projectCard.textContent = title; }
 function updateZoom() { $('score').style.setProperty('zoom', scoreZoom); $('zoom-value').textContent = `${Math.round(scoreZoom * 100)}%`; $('zoom-out-button').disabled = scoreZoom <= 0.75; $('zoom-in-button').disabled = scoreZoom >= 1.5; }
+function renderOmrReviewQueue() {
+  const panel = $('omr-panel');
+  if (!panel) return;
+  let review = $('omr-review');
+  if (!review) {
+    review = document.createElement('div');
+    review.id = 'omr-review'; review.className = 'omr-review';
+    review.innerHTML = '<div class="omr-review-header"><strong>Review queue</strong><select id="omr-review-filter" aria-label="OMR review status"><option value="review">Needs review</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option><option value="corrected">Corrected</option><option value="all">All statuses</option></select></div><p id="omr-review-summary" class="muted">No provider proposal loaded</p><ol id="omr-review-list" class="omr-review-list" aria-label="OMR review items"></ol>';
+    panel.append(review);
+    $('omr-review-filter').addEventListener('change', renderOmrReviewQueue);
+  }
+  const list = $('omr-review-list');
+  const summary = $('omr-review-summary');
+  const status = $('omr-review-filter')?.value || 'review';
+  const items = omrReviewItems.filter((item) => status === 'all' || item.status === status);
+  summary.textContent = omrReviewProposal ? `${items.length} ${status === 'all' ? 'items' : `${status} items`} · proposal remains unapplied` : 'No provider proposal loaded';
+  list.replaceChildren(...items.map((item) => {
+    const row = document.createElement('li');
+    row.className = 'omr-review-item';
+    row.dataset.itemId = item.id;
+    const confidence = item.confidence == null ? '—' : `${Math.round(item.confidence * 100)}%`;
+    const box = item.sourceBox || {};
+    row.innerHTML = `<strong>${item.kind}</strong><span>${confidence} · ${item.status}</span><small>bbox ${box.x},${box.y} ${box.width}×${box.height}</small>`;
+    const actions = document.createElement('div');
+    actions.className = 'omr-review-actions';
+    for (const action of ['accept', 'reject']) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'quiet'; button.textContent = action[0].toUpperCase() + action.slice(1);
+      button.addEventListener('click', async () => {
+        const next = await window.acorde.transitionOmrItem(item, action);
+        if (!next) return;
+        omrReviewItems = omrReviewItems.map((candidate) => candidate.id === next.id ? next : candidate);
+        renderOmrReviewQueue();
+      });
+      actions.append(button);
+    }
+    row.append(actions);
+    row.addEventListener('click', (event) => { if (event.target.closest('button')) return; document.querySelectorAll('.omr-review-item').forEach((candidate) => candidate.classList.remove('selected')); row.classList.add('selected'); row.setAttribute('aria-label', `Selected OMR ${item.kind} at ${box.x},${box.y}`); });
+    return row;
+  }));
+}
+async function loadOmrReviewProposal(proposal) {
+  const result = await window.acorde.listOmrReviewItems(proposal, null);
+  omrReviewProposal = result.usable ? proposal : null;
+  omrReviewItems = result.usable ? result.items : [];
+  renderOmrReviewQueue();
+  return result;
+}
 function voiceCount() { const measures = currentScore?.parts?.[activePartIndex]?.staves?.flatMap((staff) => staff.measures || []) || []; return Math.max(1, ...measures.map((measure) => measure.voices?.length || 1)); }
 function setActiveVoice(index) { const count = voiceCount(); activeVoiceIndex = Math.max(0, Math.min(Number(index) || 0, count - 1)); const selector = $('voice-select'); if (selector) selector.value = String(activeVoiceIndex); const hint = document.querySelector('.score-hint'); if (hint) hint.dataset.activeVoice = String(activeVoiceIndex + 1); }
 function refreshVoiceSelector() { const selector = $('voice-select'); if (!selector) return; const count = voiceCount(); selector.replaceChildren(...Array.from({ length: count }, (_, index) => { const option = document.createElement('option'); option.value = index; option.textContent = `Voice ${index + 1}`; return option; })); setActiveVoice(activeVoiceIndex); }
@@ -321,7 +371,9 @@ $('save-button').addEventListener('click', async () => { try { const report = cu
 $('midi-save-button').addEventListener('click', async () => { if (!currentScore) return alert('先に楽譜を開いてください。'); try { const report = await window.acorde.serializeMidiReport(currentScore); showDiagnostics(report); const saved = await window.acorde.saveMidi({ suggestedName: 'morning-sketch.mid', data: report.output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { alert(`MIDIを書き出せませんでした: ${error.message}`); } });
 $('recover-button').addEventListener('click', async () => { try { const draft = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)); currentScore = await window.acorde.loadScore(draft.score); selectedAddress = null; selectedRange = null; updateScoreHeader(); updateRenderedScore(await window.acorde.renderCurrent(900)); $('file-name').textContent = 'Recovered draft'; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); $('recovery').classList.add('hidden'); markDirty(); } catch (error) { alert(`下書きを復旧できませんでした: ${error.message}`); } });
 $('discard-recovery').addEventListener('click', () => { localStorage.removeItem(AUTOSAVE_KEY); $('recovery').classList.add('hidden'); });
-$('omr-button').addEventListener('click', async () => { try { const input = await window.acorde.chooseOmrInput(); if (!input) return; $('drop-zone').classList.add('processing'); $('drop-zone').querySelector('strong').textContent = input.usable ? `${input.inputFormat.toUpperCase()} ready for review` : `OMR input unavailable (${input.reason})`; $('drop-zone').querySelector('span').textContent = input.usable ? `${input.path} · connect an approved OMR provider to create a draft` : 'Choose a bounded PNG, JPG, or PDF file'; } catch (error) { $('drop-zone').querySelector('strong').textContent = `OMR input unavailable (${error.message})`; } });
+$('omr-button').addEventListener('click', async () => { try { const input = await window.acorde.chooseOmrInput(); if (!input) return; $('drop-zone').classList.add('processing'); $('drop-zone').querySelector('strong').textContent = input.usable ? `${input.inputFormat.toUpperCase()} ready for review` : `OMR input unavailable (${input.reason})`; $('drop-zone').querySelector('span').textContent = input.usable ? `${input.path} · connect an approved OMR provider to create a draft` : 'Choose a bounded PNG, JPG, or PDF file'; renderOmrReviewQueue(); } catch (error) { $('drop-zone').querySelector('strong').textContent = `OMR input unavailable (${error.message})`; } });
+$('omr-review-filter')?.addEventListener('change', renderOmrReviewQueue);
+window.addEventListener('omr-proposal-ready', async (event) => { if (!event.detail) return; try { const result = await loadOmrReviewProposal(event.detail); if (!result.usable) $('omr-review-summary').textContent = `Proposal unavailable: ${result.diagnostics.join(', ')}`; } catch (error) { $('omr-review-summary').textContent = `Review queue unavailable: ${error.message}`; } });
 $('new-button').addEventListener('click', async () => { if (dirty && !window.confirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore(); currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); updateRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; clearDirty(); } catch (error) { alert(`新規譜面を作成できませんでした: ${error.message}`); } });
 $('zoom-out-button').addEventListener('click', () => { scoreZoom = Math.max(0.75, scoreZoom - 0.1); updateZoom(); });
 $('zoom-in-button').addEventListener('click', () => { scoreZoom = Math.min(1.5, scoreZoom + 0.1); updateZoom(); });
