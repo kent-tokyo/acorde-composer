@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.3 — 2026-09-02
+
+acorde v1.0.3へ更新し、optional pluginを安全に扱うためのruntime・GUI・lifecycle境界を追加した候補リリースです。
+
+### Added
+
+- 外部plugin host processのbounded JSON IPC、timeout、停止、クラッシュ時の限定restartとdisable
+- plugin manifestのAPI version / capability検証と、core・filesystem・network・AudioContextから分離したGUI descriptor
+- plugin installation registryのinstall / enable / disable / update / uninstall状態遷移
+
+### Changed
+
+- `acorde` core / io / layout / render-svg / soundfontをv1.0.3へ更新
+- Composerのリリースバージョンをv0.1.3へ更新
+
+### Verification
+
+- Composer Rust: 10 passed / 1 ignored（acorde Issue #2の複数voice fixture）
+- Composer Node: 49 passed
+- `acorde` v1.0.3 workspace tests: 全テスト成功
+
 ## 0.1.2 — 2026-09-02
 
 Mixerと外部入力の運用性を高め、保存状態と再生中の変更反映を安定化したリリースです。音楽処理基盤は`acorde` v1.0.1を継続利用します。
