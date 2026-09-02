@@ -12,7 +12,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.3 + acorde v1.0.5）
+## 現在の縦切り（v0.1.4 + acorde v1.0.5）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
@@ -101,13 +101,13 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.3](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.3)。現在の作業ツリーでは`npm test` 53件、Rust側テスト、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 68件、Rust側テスト、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
 1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
-2. `acorde` Issue #2解決後に、複数voiceのparse → 編集 → 保存fixtureを再開する
-3. optional SoundFont実providerをlicense・配布条件とともに評価する
+2. `acorde` Issue #11解決後に、複数voiceのPlaybackEvent address fixtureを再開する
+3. optional SoundFont実providerをlicense・配布条件とともに評価する（Issue #9）
 
 アクセシビリティ設定（reduced motion / high contrast）は Score settings から変更でき、ローカルに保存されます。譜面上の音符はキーボードフォーカスとARIA labelを持ちます。
 

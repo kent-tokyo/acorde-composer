@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createReleaseMetadata, isReleaseMetadataValid, verifyReleaseMetadata } = require('./release-metadata.cjs');
 
-const RELEASE = { version: '0.1.3', commit: 'abc123', target: 'darwin-arm64', engineVersion: '1.0.4', buildType: 'release', signed: true, checksums: { app: 'a'.repeat(64) } };
+const RELEASE = { version: '0.1.4', commit: 'abc123', target: 'darwin-arm64', engineVersion: '1.0.5', buildType: 'release', signed: true, checksums: { app: 'a'.repeat(64) } };
 
 test('release metadata is deterministic for the same release inputs', () => {
   const first = createReleaseMetadata(RELEASE);

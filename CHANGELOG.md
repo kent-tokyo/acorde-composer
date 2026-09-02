@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.4 — 2026-09-02
+
+acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可能なrelease metadataを強化したリリースです。
+
+### Added
+
+- OMR proposal assessment、review queue、bbox navigation、provider failure recovery
+- AI providerのlicense / network / privacy / rate limit / timeout / stale proposal検証
+- 外部sample library registryとrelease metadata integrity検証
+- acorde v1.0.5のSampleDecoder / SampleRenderer境界fixture
+
+### Changed
+
+- `acorde` core / io / layout / render-svg / soundfontをv1.0.5へ更新
+- Composerのリリースバージョンをv0.1.4へ更新
+
+### Verification
+
+- Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
+- Composer Node: 68 passed
+
 ## 0.1.3 — 2026-09-02
 
 acorde v1.0.3へ更新し、optional pluginを安全に扱うためのruntime・GUI・lifecycle境界を追加した候補リリースです。
