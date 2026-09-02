@@ -4,6 +4,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const readline = require('node:readline');
 const { assertScoreSize, assertEngineRequestSize } = require('./limits.cjs');
+const { inspectSoundfontAsset } = require('./soundfont-asset.cjs');
 const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
@@ -136,9 +137,7 @@ ipcMain.handle('file:chooseSoundfont', async () => {
   return result.filePaths[0];
 });
 ipcMain.handle('file:validateSoundfont', async (_event, { filePath }) => {
-  const extension = path.extname(filePath || '').toLowerCase();
-  if (!['.sf2', '.sf3'].includes(extension)) return { exists: false, path: filePath || '', reason: 'unsupported-extension' };
-  try { await fs.stat(filePath); return { exists: true, path: filePath, reason: null }; } catch { return { exists: false, path: filePath, reason: 'missing' }; }
+  try { return inspectSoundfontAsset(filePath, await fs.stat(filePath)); } catch { return inspectSoundfontAsset(filePath, null); }
 });
 ipcMain.handle('engine:playbackEvents', async (_event, { score, bpm, loopRegion }) => callEngine({ op: 'playback_events', score, bpm, loop_region: loopRegion }));
 ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) => callEngine({ op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
