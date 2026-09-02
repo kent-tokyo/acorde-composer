@@ -277,6 +277,7 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 "checksum": asset.checksum,
                 "provider_version": asset.provider_version,
                 "preset_count": asset.presets.len(),
+                "presets": asset.presets.iter().take(256).map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })).collect::<Vec<_>>(),
                 "preset": selected.map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })),
             }))
         }

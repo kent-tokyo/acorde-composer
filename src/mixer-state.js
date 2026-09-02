@@ -6,6 +6,10 @@
   const normalizeSoundfont = (value) => {
     const source = value && typeof value === 'object' ? value : {};
     const provider = source.provider === 'soundfont' ? 'soundfont' : 'oscillator';
+    const preset = source.preset && typeof source.preset === 'object' && Number.isInteger(source.preset.bank) && Number.isInteger(source.preset.program)
+      ? { bank: source.preset.bank, program: source.preset.program, name: typeof source.preset.name === 'string' ? source.preset.name : null }
+      : null;
+    const presets = Array.isArray(source.presets) ? source.presets.filter((item) => item && Number.isInteger(item.bank) && Number.isInteger(item.program)).slice(0, 256).map((item) => ({ bank: item.bank, program: item.program, name: typeof item.name === 'string' ? item.name : null })) : [];
     return {
       provider,
       path: typeof source.path === 'string' && source.path.length > 0 ? source.path : null,
@@ -13,6 +17,8 @@
       license: typeof source.license === 'string' ? source.license : null,
       checksum: typeof source.checksum === 'string' ? source.checksum : null,
       presetCount: Number.isSafeInteger(source.presetCount) && source.presetCount >= 0 ? source.presetCount : null,
+      preset,
+      presets,
       offline: source.offline === undefined ? true : Boolean(source.offline),
     };
   };
