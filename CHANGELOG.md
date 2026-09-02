@@ -10,6 +10,13 @@
 - PlaybackEventの小節境界・sidecar JSON IPC・SVG render metadata回帰テスト
 - MusicXML / ABC parse reportとMIDI export reportのIPC回帰テスト
 - Electronパッケージ契約テストとnpm依存lock
+- Mixerのmaster / part channel bus、channel reset、part solo、再生中のvolume / pan / mute / solo反映
+- 保存済みMixer stateの正規化、score変更時の不要channel清掃、正規化回帰テスト
+- Web MIDI入力の選択位置挿入とdisconnect切替
+
+### Current maintenance after the public tag
+
+公開タグ`v0.1.1`以後も、バージョン番号を変更せずに上記のComposer実装を継続しています。これらの追加実装を含む次回公開時期は、対応するrelease commitとtagで別途確定します。
 
 ## 0.1.0 — 2026-09-02
 

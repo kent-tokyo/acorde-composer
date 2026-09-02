@@ -25,7 +25,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Dynamic selectorによる強弱記号（pppp〜ffff、sfz等）の`SetDynamic` command適用
 - Grace selectorによるappoggiatura / acciaccaturaの`SetGrace` command適用
 - Lyric / Chordボタンによる歌詞音節と基本コード記号の`SetLyric` / `SetChordSymbol` command適用
-- `OscillatorAudioBackend`境界とMixerのmaster volume / pan / mute / solo / metronome state（localStorage保存）
+- `OscillatorAudioBackend`境界とMixerのmaster / part volume / pan / mute / solo / metronome state（localStorage保存、再生中の変更反映）
 - `acorde`のmetronome PlaybackEventを任意でclick音へルーティング
 - SoundFontの選択・保存・missing asset確認とoscillator fallback表示
 - offline前提のSoundFont asset profile（provider / license / version / portability）
@@ -74,9 +74,11 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Part groupによる複数partのBracket / Brace / Lineグルーピング
 - Stemによる選択音符のstem方向（Auto / Up / Down）設定
 - Web MIDI APIによるMIDIキーボードの四分音符入力（AddNote経由）
+- Web MIDI入力の選択位置挿入、接続状態表示、同一ボタンからのdisconnect
 - ABC notation（テキスト楽譜）のOpenとExport（`acorde-io`のABC parser / serializer経由）
 - Shift選択した小節だけを先頭から一回再生するSelection playback
 - 複数staff / voice、ABC非対応notation、未対応metadataを含むABC exportでは、失われる可能性をdiagnosticsで警告
+- 保存済みMixer stateの値域正規化と、score変更時の不要part channel清掃
 
 AIやOMRの出力をScoreへ直接反映しないことが設計上の重要な契約です。現在のAIデモ提案も `ScoreCommand` としてRust adapterへ渡し、acorde-coreの `ScoreEngine` で検証・適用します。
 
@@ -92,7 +94,7 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開済みリリース：[Acorde Composer v0.1.1](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.1)。検証済み範囲は`npm test` 17件、Rust test 9件成功・1件既知ignore、`npm run check`です。
+公開済みリリース：[Acorde Composer v0.1.1](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.1)。現在の作業ツリーでは`npm test` 21件、Rust側`npm run check`、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
@@ -111,7 +113,7 @@ Dynamic selectorから選択音符へ強弱記号を設定・解除できます�
 選択音符にLyricまたはChordを設定すると、`acorde`の構造化notationとして保存・再出力されます。空入力で解除できます。
 Score settingsで変更したタイトル・テンポ・パート名は、編集画面の譜面ヘッダーにも反映されます。
 再生音源は検証用oscillator fallbackで、停止時とウィンドウ終了時にAudioContextを解放します。
-Mixerではpartごとのvolume / pan / muteを保存し、`acorde`のPlaybackEventのpart indexに従ってルーティングします。
+Mixerではpartごとのvolume / pan / mute / soloを保存し、`acorde`のPlaybackEventのpart indexに従ってルーティングします。再生中のmaster / part channel変更も即時反映します。
 Active partはMusicXMLとMIDIの両方へ個別に書き出せます。
 Score settingsではactive partのMIDI channelとGeneral MIDI programも編集できます。
 同じ画面から選択中staffの移調（半音単位）も設定できます。
