@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, normalizePluginManifest, isPluginPath, normalizePluginState, pluginFailure, pluginRecord, scanPluginPaths } = require('./plugin-host.cjs');
+const { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, authorizePluginCapability, normalizePluginManifest, isPluginPath, normalizePluginState, pluginFailure, pluginRecord, scanPluginPaths } = require('./plugin-host.cjs');
 
 test('plugin manifest accepts only versioned, capability-scoped contracts', () => {
   assert.deepEqual(normalizePluginManifest({
@@ -16,6 +16,13 @@ test('plugin manifest rejects direct host capabilities and API mismatches', () =
   assert.equal(normalizePluginManifest({ id: 'unsafe', name: 'Unsafe', version: '1', apiVersion: 1, capabilities: ['filesystem', 'network'] }).reason, 'unsupported-capability');
   assert.equal(normalizePluginManifest({ id: 'old', name: 'Old', version: '1', apiVersion: 0 }).reason, 'api-version-mismatch');
   assert.equal(normalizePluginManifest({ id: 'Bad ID', name: 'Bad', version: '1', apiVersion: 1 }).reason, 'invalid-id');
+});
+
+test('plugin capability authorization enforces manifest grants', () => {
+  const manifest = normalizePluginManifest({ id: 'helper', name: 'Helper', version: '1', apiVersion: 1, capabilities: ['score.read'] });
+  assert.deepEqual(authorizePluginCapability(manifest, 'score.read'), { allowed: true, reason: null });
+  assert.deepEqual(authorizePluginCapability(manifest, 'command.propose'), { allowed: false, reason: 'capability-not-granted' });
+  assert.deepEqual(authorizePluginCapability(manifest, 'filesystem'), { allowed: false, reason: 'unsupported-capability' });
 });
 
 test('plugin scan recognizes platform plugin bundle and binary extensions', () => {

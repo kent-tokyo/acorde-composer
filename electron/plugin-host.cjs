@@ -34,6 +34,15 @@ function normalizePluginManifest(value) {
     reason,
   };
 }
+function authorizePluginCapability(manifest, capability) {
+  const normalized = manifest?.valid && Array.isArray(manifest.capabilities)
+    ? manifest
+    : normalizePluginManifest(manifest);
+  if (!normalized.valid) return { allowed: false, reason: normalized.reason };
+  if (typeof capability !== 'string' || !PLUGIN_CAPABILITIES.has(capability)) return { allowed: false, reason: 'unsupported-capability' };
+  if (!normalized.capabilities.includes(capability)) return { allowed: false, reason: 'capability-not-granted' };
+  return { allowed: true, reason: null };
+}
 function normalizePluginState(value) {
   const source = value && typeof value === 'object' ? value : {};
   const state = source.state && typeof source.state === 'object' ? source.state : null;
@@ -81,4 +90,4 @@ function pluginFailure(record, reason) {
   return { ...record, loadStatus: 'disabled', state: { ...normalizePluginState(record?.state), enabled: false, reason: typeof reason === 'string' ? reason : 'plugin-failed' } };
 }
 
-module.exports = { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, PLUGIN_CAPABILITIES, PLUGIN_EXTENSIONS, isPluginPath, normalizePluginManifest, normalizePluginState, pluginRecord, scanPluginPaths, pluginFailure };
+module.exports = { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, PLUGIN_CAPABILITIES, PLUGIN_EXTENSIONS, authorizePluginCapability, isPluginPath, normalizePluginManifest, normalizePluginState, pluginRecord, scanPluginPaths, pluginFailure };
