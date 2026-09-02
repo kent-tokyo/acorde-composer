@@ -1,0 +1,4 @@
+[
+  {"platform":"mac","arch":"arm64","scenarios":[{"id":"install-launch"},{"id":"new-open-edit"},{"id":"multiple-voice-roundtrip"},{"id":"playback-mixer"},{"id":"musicxml-midi-export"},{"id":"soundfont-absent-fallback"},{"id":"providers-disabled"},{"id":"read-only-directory"},{"id":"missing-sidecar-recovery"},{"id":"uninstall-upgrade"}]},
+  {"platform":"win","arch":"x64","scenarios":[{"id":"install-launch"},{"id":"new-open-edit"},{"id":"multiple-voice-roundtrip"},{"id":"playback-mixer"},{"id":"musicxml-midi-export"},{"id":"soundfont-absent-fallback"},{"id":"providers-disabled"},{"id":"read-only-directory"},{"id":"missing-sidecar-recovery"},{"id":"uninstall-upgrade"}]}
+]

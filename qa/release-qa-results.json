@@ -1,0 +1,22 @@
+[
+  {"platform":"mac","arch":"arm64","scenario":"install-launch","status":"not-run","diagnostics":["clean-machine-unavailable","unsigned-artifact"]},
+  {"platform":"mac","arch":"arm64","scenario":"new-open-edit","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"multiple-voice-roundtrip","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"playback-mixer","status":"not-run","diagnostics":["clean-machine-unavailable","audio-device-qa-pending"]},
+  {"platform":"mac","arch":"arm64","scenario":"musicxml-midi-export","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"soundfont-absent-fallback","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"providers-disabled","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"read-only-directory","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"missing-sidecar-recovery","status":"not-run","diagnostics":["clean-machine-unavailable"]},
+  {"platform":"mac","arch":"arm64","scenario":"uninstall-upgrade","status":"not-run","diagnostics":["clean-machine-unavailable","signed-installer-pending"]},
+  {"platform":"win","arch":"x64","scenario":"install-launch","status":"not-run","diagnostics":["windows-machine-unavailable","unsigned-artifact"]},
+  {"platform":"win","arch":"x64","scenario":"new-open-edit","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"multiple-voice-roundtrip","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"playback-mixer","status":"not-run","diagnostics":["windows-machine-unavailable","audio-device-qa-pending"]},
+  {"platform":"win","arch":"x64","scenario":"musicxml-midi-export","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"soundfont-absent-fallback","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"providers-disabled","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"read-only-directory","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"missing-sidecar-recovery","status":"not-run","diagnostics":["windows-machine-unavailable"]},
+  {"platform":"win","arch":"x64","scenario":"uninstall-upgrade","status":"not-run","diagnostics":["windows-machine-unavailable","signed-installer-pending"]}
+]
