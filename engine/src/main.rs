@@ -8,11 +8,11 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
-use acorde_soundfont::load as load_soundfont;
+use acorde_soundfont::{decode_sf2_pcm16, decode_sf3_vorbis, load as load_soundfont};
 #[cfg(test)]
 use acorde_core::PlaybackEvent;
 #[cfg(test)]
-use acorde_soundfont::{DecodedSample, SampleAction, SampleDecoder, SampleRegion, SampleRenderer, decode_sf2_pcm16, render_sample_action, schedule_sample_note_on};
+use acorde_soundfont::{DecodedSample, SampleAction, SampleDecoder, SampleRegion, SampleRenderer, render_sample_action, schedule_sample_note_on};
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
 
@@ -101,6 +101,14 @@ enum Request {
         provider_version: String,
         bank: Option<u16>,
         program: Option<u16>,
+    },
+    DecodeSoundfontSample {
+        format: String,
+        data: Vec<u8>,
+        start_frame: Option<usize>,
+        end_frame: Option<usize>,
+        sample_rate: u32,
+        channels: u8,
     },
 }
 
@@ -289,6 +297,14 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 "preset": selected.map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })),
                 "diagnostics": diagnostics,
             }))
+        }
+        Request::DecodeSoundfontSample { format, data, start_frame, end_frame, sample_rate, channels } => {
+            let sample = match format.as_str() {
+                "sf2" => decode_sf2_pcm16(&data, start_frame.unwrap_or(0), end_frame.unwrap_or(usize::MAX), sample_rate, channels),
+                "sf3" => decode_sf3_vorbis(&data, sample_rate, channels),
+                _ => return Err("unsupported SoundFont format".into()),
+            }.map_err(|error| error.to_string())?;
+            Ok(serde_json::json!({ "sample_rate": sample.sample_rate, "channels": sample.channels, "pcm_i16": sample.pcm_i16 }))
         }
     }
 }
@@ -588,6 +604,22 @@ mod tests {
         let action = schedule_sample_note_on(4, event, &region, 1.0).expect("acorde schedules sample action");
         let rendered = render_sample_action(&sample, &action, 2).expect("acorde renders sample action");
         assert_eq!(rendered, vec![1000, -1000]);
+    }
+
+    #[test]
+    fn soundfont_decode_request_crosses_engine_json_boundary() {
+        let mut sf2 = b"RIFFxxxxsfbk".to_vec();
+        sf2.extend(b"LIST".as_slice());
+        sf2.extend(16u32.to_le_bytes());
+        sf2.extend(b"sdta".as_slice());
+        sf2.extend(b"smpl".as_slice());
+        sf2.extend(4u32.to_le_bytes());
+        for value in [123i16, -456] { sf2.extend(value.to_le_bytes()); }
+        let mut engine = None;
+        let value = handle(Request::DecodeSoundfontSample { format: "sf2".into(), data: sf2, start_frame: Some(0), end_frame: Some(2), sample_rate: 2, channels: 1 }, &mut engine).expect("decode request succeeds");
+        assert_eq!(value["sample_rate"], 2);
+        assert_eq!(value["channels"], 1);
+        assert_eq!(value["pcm_i16"], serde_json::json!([123, -456]));
     }
 
     #[test]

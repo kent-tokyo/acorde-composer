@@ -31,6 +31,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - offline前提のSoundFont asset profile（provider / license / version / portability）
 - decoderが返すPCMのWeb Audio実sample再生（cache、root note pitch変換、loop、velocity envelope、sustain、release、polyphony制限）とoscillator fallbackの共存
 - decoder → renderer間のPCM format、loop、root note、digest、サイズ上限を検証するsample contract
+- acorde v1.0.7のSF2 PCM / SF3 Vorbis decode結果をengine JSON IPCから受け取るbounded sample API
 - sample contractをElectron main/preload IPCへ接続し、decoder出力をrenderer前に検証
 - `acorde`の`AddPart` / `DeletePart` commandによるpart追加・削除とpart数表示
 - `AddStaff` / `DeleteStaff` / `SetPartName` commandによるstaff操作・part名編集

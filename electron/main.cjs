@@ -163,6 +163,7 @@ ipcMain.handle('file:readSoundfont', async (_event, { filePath }) => {
 ipcMain.handle('engine:playbackEvents', async (_event, { score, bpm, loopRegion }) => callEngine({ op: 'playback_events', score, bpm, loop_region: loopRegion }));
 ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) => callEngine({ op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
 ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_version: providerVersion, bank, program }) => callEngine({ op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
+ipcMain.handle('engine:decodeSoundfontSample', async (_event, { format, data, startFrame, endFrame, sampleRate, channels }) => callEngine({ op: 'decode_soundfont_sample', format, data, start_frame: startFrame, end_frame: endFrame, sample_rate: sampleRate, channels }));
 ipcMain.handle('soundfont:normalizeDecodedSample', async (_event, sample) => normalizeDecodedSample(sample));
 ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrProposal(proposal));
 ipcMain.handle('omr:normalizeRunResult', async (_event, result) => normalizeOmrRunResult(result));
