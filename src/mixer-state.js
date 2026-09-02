@@ -11,6 +11,8 @@
       path: typeof source.path === 'string' && source.path.length > 0 ? source.path : null,
       version: typeof source.version === 'string' ? source.version : null,
       license: typeof source.license === 'string' ? source.license : null,
+      checksum: typeof source.checksum === 'string' ? source.checksum : null,
+      presetCount: Number.isSafeInteger(source.presetCount) && source.presetCount >= 0 ? source.presetCount : null,
       offline: source.offline === undefined ? true : Boolean(source.offline),
     };
   };

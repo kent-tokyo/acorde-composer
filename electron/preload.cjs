@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('acorde', {
   saveMidi: (payload) => ipcRenderer.invoke('file:saveMidi', payload),
   chooseSoundfont: () => ipcRenderer.invoke('file:chooseSoundfont'),
   validateSoundfont: (filePath) => ipcRenderer.invoke('file:validateSoundfont', { filePath }),
+  readSoundfont: (filePath) => ipcRenderer.invoke('file:readSoundfont', { filePath }),
   playbackEvents: (score, options) => ipcRenderer.invoke('engine:playbackEvents', { score, ...options }),
   playbackPosition: (elapsedSecs, bpm) => ipcRenderer.invoke('engine:playbackPosition', { elapsedSecs, bpm }),
   inspectSoundfont: (data, providerVersion, bank = null, program = null) => ipcRenderer.invoke('engine:inspectSoundfont', { data, provider_version: providerVersion, bank, program }),

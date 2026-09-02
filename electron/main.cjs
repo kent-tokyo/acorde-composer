@@ -139,6 +139,11 @@ ipcMain.handle('file:chooseSoundfont', async () => {
 ipcMain.handle('file:validateSoundfont', async (_event, { filePath }) => {
   try { return inspectSoundfontAsset(filePath, await fs.stat(filePath)); } catch { return inspectSoundfontAsset(filePath, null); }
 });
+ipcMain.handle('file:readSoundfont', async (_event, { filePath }) => {
+  const asset = inspectSoundfontAsset(filePath, await fs.stat(filePath));
+  if (!asset.exists) throw new Error(`SoundFont asset is not loadable: ${asset.reason}`);
+  return fs.readFile(filePath);
+});
 ipcMain.handle('engine:playbackEvents', async (_event, { score, bpm, loopRegion }) => callEngine({ op: 'playback_events', score, bpm, loop_region: loopRegion }));
 ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) => callEngine({ op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
 ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_version: providerVersion, bank, program }) => callEngine({ op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
