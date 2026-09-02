@@ -612,6 +612,9 @@ mod tests {
         assert!(measure.voices.iter().skip(1).any(|voice| !voice.is_empty()));
 
         let exported = serialize_musicxml_with_report(&parsed.score).expect("multi voice fixture serializes");
+        assert!(exported.output.contains("<backup>"));
+        assert!(exported.output.contains("<voice>1</voice>"));
+        assert!(exported.output.contains("<voice>2</voice>"));
         let reparsed = parse_musicxml_with_report(&exported.output).expect("serialized multi voice XML reparses");
         let round_tripped = &reparsed.score.parts[0].staves[0].measures[0];
         assert_eq!(round_tripped.voices.len(), measure.voices.len());
