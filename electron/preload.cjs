@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('acorde', {
   openRecentScore: (index) => ipcRenderer.invoke('file:openPath', { filePath: index }),
   recentFiles: () => ipcRenderer.invoke('file:recent'),
   saveScore: (payload) => ipcRenderer.invoke('file:save', payload),
+  saveSupportBundle: (payload) => ipcRenderer.invoke('file:saveSupportBundle', payload),
   savePdf: (payload) => ipcRenderer.invoke('file:savePdf', payload),
   serializeMusicxml: (score) => ipcRenderer.invoke('engine:serializeMusicxml', { score }),
   renderSvg: (score, width, options = {}) => ipcRenderer.invoke('engine:renderSvg', { score, width, ...options }),

@@ -71,6 +71,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - 外部AI providerのvalidated JSON実行をmain / preload IPCへ接続し、共有rate limiterを適用
 - 配布artifactのchecksum / SBOM / NOTICE / provenanceを束ねる決定的manifestと改変検出
 - release QA / engine診断をredactして出力する512 KiB上限付きsupport bundle
+- diagnosticsパネルのExport JSONからredacted support bundleを保存
 - release metadataによるversion / commit / target / acorde engine version / build type / signature / checksumの検証
 - IPC境界でのcommand schema検証（対応operation、非負index、空batch、64操作上限）
 - notation commandのJSON IPCから`acorde::Command`適用までのRust回帰テスト
