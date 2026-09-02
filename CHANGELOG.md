@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.2 — 2026-09-02
+
+Mixerと外部入力の運用性を高め、保存状態と再生中の変更反映を安定化したリリースです。音楽処理基盤は`acorde` v1.0.1を継続利用します。
+
+### Added
+
+- Mixerのmaster / part channel bus、channel reset、part solo、再生中のvolume / pan / mute / solo反映
+- 保存済みMixer stateの正規化、score変更時の不要channel清掃、score読込前のchannel保持
+- Web MIDI入力の選択位置挿入、接続状態表示、disconnect切替
+
+### Verification
+
+- `npm test` 21件成功、JavaScript構文検証、差分検証
+- `npm run check`成功、Electron package contractと`acorde` v1.0.1 path依存を確認
+
 ## 0.1.1 — 2026-09-02
 
 `v0.1.0`の基盤を、再生・IPC・配布検証の回帰テストとパッケージ契約で補強した保守リリースです。
@@ -13,10 +28,6 @@
 - Mixerのmaster / part channel bus、channel reset、part solo、再生中のvolume / pan / mute / solo反映
 - 保存済みMixer stateの正規化、score変更時の不要channel清掃、正規化回帰テスト
 - Web MIDI入力の選択位置挿入とdisconnect切替
-
-### Current maintenance after the public tag
-
-公開タグ`v0.1.1`以後も、バージョン番号を変更せずに上記のComposer実装を継続しています。これらの追加実装を含む次回公開時期は、対応するrelease commitとtagで別途確定します。
 
 ## 0.1.0 — 2026-09-02
 

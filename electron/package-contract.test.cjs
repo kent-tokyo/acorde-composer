@@ -7,9 +7,9 @@ const root = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/\r?\n/);
 
-test('release metadata identifies the Acorde Composer v0.1.1 candidate', () => {
+test('release metadata identifies the Acorde Composer v0.1.2 candidate', () => {
   assert.equal(packageJson.name, 'acorde-composer');
-  assert.equal(packageJson.version, '0.1.1');
+  assert.equal(packageJson.version, '0.1.2');
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
   assert.ok(packageJson.build.files.includes('src/**/*'));
