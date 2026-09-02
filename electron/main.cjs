@@ -8,6 +8,7 @@ const { inspectSoundfontAsset } = require('./soundfont-asset.cjs');
 const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
+const { assessOmrProposal } = require('./omr-boundary.cjs');
 
 let engine;
 const RECENT_FILES_LIMIT = 8;
@@ -147,6 +148,7 @@ ipcMain.handle('file:readSoundfont', async (_event, { filePath }) => {
 ipcMain.handle('engine:playbackEvents', async (_event, { score, bpm, loopRegion }) => callEngine({ op: 'playback_events', score, bpm, loop_region: loopRegion }));
 ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) => callEngine({ op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
 ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_version: providerVersion, bank, program }) => callEngine({ op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
+ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrProposal(proposal));
 
 app.whenReady().then(() => {
   createWindow();

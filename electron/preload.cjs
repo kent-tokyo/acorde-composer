@@ -30,4 +30,5 @@ contextBridge.exposeInMainWorld('acorde', {
   playbackEvents: (score, options) => ipcRenderer.invoke('engine:playbackEvents', { score, ...options }),
   playbackPosition: (elapsedSecs, bpm) => ipcRenderer.invoke('engine:playbackPosition', { elapsedSecs, bpm }),
   inspectSoundfont: (data, providerVersion, bank = null, program = null) => ipcRenderer.invoke('engine:inspectSoundfont', { data, provider_version: providerVersion, bank, program }),
+  assessOmrProposal: (proposal) => ipcRenderer.invoke('omr:assessProposal', proposal),
 });
