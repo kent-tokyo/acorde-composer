@@ -38,6 +38,17 @@ test('audio backend schedules and stops oscillator nodes', async () => {
   assert.equal(backend.channels.size, 0);
 });
 
+test('audio backend applies master volume, pan, and mute at the master bus', async () => {
+  const backend = createBackend();
+  await backend.resume();
+  backend.setMasterControls({ volume: 0.35, pan: -0.4, mute: false });
+  assert.equal(backend.master.gain.value, 0.35);
+  assert.equal(backend.masterPanner.pan.value, -0.4);
+  backend.setMasterControls({ volume: 0.8, pan: 0.7, mute: true });
+  assert.equal(backend.master.gain.value, 0);
+  assert.equal(backend.masterPanner.pan.value, 0.7);
+});
+
 test('audio backend dispose closes the AudioContext and is idempotent', async () => {
   const backend = createBackend();
   await backend.resume();
