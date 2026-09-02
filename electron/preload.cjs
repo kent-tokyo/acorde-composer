@@ -33,4 +33,6 @@ contextBridge.exposeInMainWorld('acorde', {
   assessOmrProposal: (proposal) => ipcRenderer.invoke('omr:assessProposal', proposal),
   normalizeOmrRunResult: (result) => ipcRenderer.invoke('omr:normalizeRunResult', result),
   findOmrItemAtPoint: (proposal, x, y) => ipcRenderer.invoke('omr:findItemAtPoint', { proposal, x, y }),
+  buildAiRequest: (payload) => ipcRenderer.invoke('ai:buildRequest', payload),
+  normalizeAiResponse: (response) => ipcRenderer.invoke('ai:normalizeResponse', response),
 });

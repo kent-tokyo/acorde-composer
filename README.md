@@ -56,6 +56,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Rust `ScoreEngine` によるcommand適用、undo / redo、音価・音高・拍子・調号編集
 - `acorde` のPlaybackEvent / playback positionを使ったWeb Audio再生と小節・拍表示
 - AI提案を複数操作のbatch `ScoreCommand`として表示し、操作単位のdiff preview後にatomic適用またはReject
+- 外部AI providerのlicense / network / サイズ検証、機密フィールドredaction、timeout復旧、validated command proposal境界
 - IPC境界でのcommand schema検証（対応operation、非負index、空batch、64操作上限）
 - notation commandのJSON IPCから`acorde::Command`適用までのRust回帰テスト
 - Historyダイアログによる適用済みScoreCommandとUndo/Redo件数の確認

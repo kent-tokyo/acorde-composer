@@ -1,0 +1,43 @@
+const { assertCommand } = require('./command-schema.cjs');
+
+const MAX_AI_PROMPT_BYTES = 32 * 1024;
+const MAX_SCORE_CONTEXT_BYTES = 128 * 1024;
+const MAX_AI_RESPONSE_BYTES = 256 * 1024;
+const SENSITIVE_KEYS = new Set(['apiKey', 'authorization', 'password', 'secret', 'token']);
+
+function normalizeAiProvider(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  return {
+    id: typeof source.id === 'string' && source.id.length <= 128 ? source.id : null,
+    version: typeof source.version === 'string' && source.version.length <= 64 ? source.version : null,
+    licenseStatus: ['unreviewed', 'accepted', 'rejected'].includes(source.licenseStatus) ? source.licenseStatus : 'unreviewed',
+    networkPolicy: source.networkPolicy === 'user-approved' ? 'user-approved' : 'disabled',
+  };
+}
+
+function redactSensitiveFields(value, depth = 0) {
+  if (depth > 8 || value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.slice(0, 4096).map((item) => redactSensitiveFields(item, depth + 1));
+  return Object.fromEntries(Object.entries(value).slice(0, 4096).map(([key, item]) => [key, SENSITIVE_KEYS.has(key) ? '[REDACTED]' : redactSensitiveFields(item, depth + 1)]));
+}
+
+function buildAiRequest({ provider, prompt, scoreContext } = {}) {
+  const normalizedProvider = normalizeAiProvider(provider);
+  const safePrompt = typeof prompt === 'string' ? prompt.slice(0, MAX_AI_PROMPT_BYTES) : '';
+  const safeContext = redactSensitiveFields(scoreContext && typeof scoreContext === 'object' ? scoreContext : {});
+  const request = { provider: normalizedProvider, prompt: safePrompt, scoreContext: safeContext };
+  const bytes = Buffer.byteLength(JSON.stringify(request), 'utf8');
+  return { request, usable: normalizedProvider.id !== null && normalizedProvider.licenseStatus === 'accepted' && normalizedProvider.networkPolicy === 'user-approved' && safePrompt.length > 0 && bytes <= MAX_SCORE_CONTEXT_BYTES, diagnostics: normalizedProvider.id === null ? ['provider-incomplete'] : normalizedProvider.licenseStatus !== 'accepted' ? [`provider-license-${normalizedProvider.licenseStatus}`] : normalizedProvider.networkPolicy !== 'user-approved' ? ['network-not-approved'] : safePrompt.length === 0 ? ['prompt-missing'] : bytes > MAX_SCORE_CONTEXT_BYTES ? ['request-too-large'] : [] };
+}
+
+function normalizeAiResponse(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const body = typeof source.body === 'string' ? source.body : JSON.stringify(source.body || '');
+  if (source.status !== 'success') return { usable: false, proposal: null, diagnostics: [source.status === 'timeout' ? 'provider-timeout' : 'provider-failed'] };
+  if (Buffer.byteLength(body, 'utf8') > MAX_AI_RESPONSE_BYTES) return { usable: false, proposal: null, diagnostics: ['response-too-large'] };
+  let proposal;
+  try { proposal = typeof source.body === 'string' ? JSON.parse(source.body) : source.body; assertCommand(proposal); } catch { return { usable: false, proposal: null, diagnostics: ['proposal-invalid'] }; }
+  return { usable: true, proposal, diagnostics: [] };
+}
+
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, buildAiRequest, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };

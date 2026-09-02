@@ -9,6 +9,7 @@ const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, findOmrItemAtPoint, normalizeOmrRunResult } = require('./omr-boundary.cjs');
+const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 
 let engine;
 const RECENT_FILES_LIMIT = 8;
@@ -151,6 +152,8 @@ ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_versio
 ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrProposal(proposal));
 ipcMain.handle('omr:normalizeRunResult', async (_event, result) => normalizeOmrRunResult(result));
 ipcMain.handle('omr:findItemAtPoint', async (_event, { proposal, x, y }) => findOmrItemAtPoint(proposal, x, y));
+ipcMain.handle('ai:buildRequest', async (_event, payload) => buildAiRequest(payload));
+ipcMain.handle('ai:normalizeResponse', async (_event, response) => normalizeAiResponse(response));
 
 app.whenReady().then(() => {
   createWindow();
