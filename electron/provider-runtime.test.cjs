@@ -23,3 +23,10 @@ test('JSON provider runtime normalizes invalid JSON, nonzero exit, and timeout',
   const hanging = { stdout: { on() {} }, stdin: { end() {} }, on() {}, kill() {} };
   assert.deepEqual(await runJsonProvider({ executable: '/provider', request: {}, timeoutMs: 1, spawnImpl: () => hanging }), { status: 'timeout', error: 'provider-timeout' });
 });
+
+test('JSON provider runtime rejects oversized input before spawning a provider', async () => {
+  let spawned = false;
+  const result = await runJsonProvider({ executable: '/provider', request: { payload: 'x'.repeat(600 * 1024) }, spawnImpl: () => { spawned = true; return fakeChild(); } });
+  assert.deepEqual(result, { status: 'failed', error: 'provider-input-too-large' });
+  assert.equal(spawned, false);
+});

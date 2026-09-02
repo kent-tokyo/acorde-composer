@@ -1,10 +1,14 @@
 const { spawn } = require('node:child_process');
 
 const MAX_PROVIDER_OUTPUT_BYTES = 4 * 1024 * 1024;
+const MAX_PROVIDER_INPUT_BYTES = 512 * 1024;
 const MAX_PROVIDER_TIMEOUT_MS = 60 * 1000;
 
 function runJsonProvider({ executable, args = [], request, timeoutMs = 10 * 1000, maxOutputBytes = MAX_PROVIDER_OUTPUT_BYTES, spawnImpl = spawn } = {}) {
   if (typeof executable !== 'string' || executable.length === 0) return Promise.resolve({ status: 'failed', error: 'provider-missing' });
+  let serializedRequest;
+  try { serializedRequest = JSON.stringify(request ?? {}); } catch { return Promise.resolve({ status: 'failed', error: 'provider-input-invalid' }); }
+  if (Buffer.byteLength(serializedRequest, 'utf8') > MAX_PROVIDER_INPUT_BYTES) return Promise.resolve({ status: 'failed', error: 'provider-input-too-large' });
   const safeTimeout = Number.isFinite(timeoutMs) ? Math.max(1, Math.min(MAX_PROVIDER_TIMEOUT_MS, Math.round(timeoutMs))) : 10 * 1000;
   const safeLimit = Number.isSafeInteger(maxOutputBytes) ? Math.max(1024, Math.min(MAX_PROVIDER_OUTPUT_BYTES, maxOutputBytes)) : MAX_PROVIDER_OUTPUT_BYTES;
   return new Promise((resolve) => {
@@ -24,8 +28,8 @@ function runJsonProvider({ executable, args = [], request, timeoutMs = 10 * 1000
       try { finish({ status: 'success', body: JSON.parse(output) }); } catch { finish({ status: 'failed', error: 'provider-invalid-json' }); }
     });
     timer = setTimeout(() => finish({ status: 'timeout', error: 'provider-timeout' }), safeTimeout);
-    try { child.stdin.end(JSON.stringify(request ?? {})); } catch { finish({ status: 'failed', error: 'provider-input-failed' }); }
+    try { child.stdin.end(serializedRequest); } catch { finish({ status: 'failed', error: 'provider-input-failed' }); }
   });
 }
 
-module.exports = { MAX_PROVIDER_OUTPUT_BYTES, MAX_PROVIDER_TIMEOUT_MS, runJsonProvider };
+module.exports = { MAX_PROVIDER_INPUT_BYTES, MAX_PROVIDER_OUTPUT_BYTES, MAX_PROVIDER_TIMEOUT_MS, runJsonProvider };
