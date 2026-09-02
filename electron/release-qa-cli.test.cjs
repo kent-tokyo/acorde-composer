@@ -16,6 +16,7 @@ test('release QA CLI binds pack manifest and reports incomplete executable QA', 
     const result = runReleaseQa({ manifestPath, outputPath, matrixPath: null, resultsPath: null });
     assert.equal(result.verification.valid, false);
     assert.equal(result.report.artifactQa.ready, true);
+    assert.equal(result.report.artifactCommitMatches, false);
     assert.equal(result.report.qa.ready, false);
     assert.deepEqual(result.report.qa.missing.length, createDistributionQaMatrix().flatMap((target) => target.scenarios).length);
     assert.ok(fs.existsSync(outputPath));

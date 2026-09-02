@@ -1,14 +1,16 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { createDistributionQaMatrix } = require('../electron/distribution-readiness.cjs');
 const { createReleaseQaReport, verifyReleaseQaReport } = require('../electron/release-qa.cjs');
 
 function option(args, name, fallback) { const index = args.indexOf(name); return index >= 0 && args[index + 1] ? args[index + 1] : fallback; }
-function runReleaseQa({ manifestPath = path.resolve('dist/release-artifact-manifest.json'), resultsPath = null, matrixPath = null, outputPath = path.resolve('dist/release-qa-report.json') } = {}) {
+function runReleaseQa({ manifestPath = path.resolve('dist/release-artifact-manifest.json'), resultsPath = null, matrixPath = null, outputPath = path.resolve('dist/release-qa-report.json'), currentCommit = null } = {}) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const results = resultsPath ? JSON.parse(fs.readFileSync(resultsPath, 'utf8')) : [];
   const matrix = matrixPath ? JSON.parse(fs.readFileSync(matrixPath, 'utf8')) : createDistributionQaMatrix();
-  const report = createReleaseQaReport({ version: manifest.version, commit: manifest.commit, matrix, results, artifactManifest: manifest });
+  const resolvedCommit = currentCommit || execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const report = createReleaseQaReport({ version: manifest.version, commit: manifest.commit, matrix, results, artifactManifest: manifest, artifactCommitMatches: manifest.commit === resolvedCommit });
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');
   return { outputPath, report, verification: verifyReleaseQaReport(report) };
