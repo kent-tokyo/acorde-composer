@@ -16,6 +16,12 @@ test('distribution readiness passes a target with signing and artifact evidence'
   assert.deepEqual(result.targets, ['nsis']);
 });
 
+test('distribution readiness requires both Windows certificate and password references', () => {
+  const result = assessDistribution({ packageJson, platform: 'win', arch: 'x64', env: { WIN_CSC_LINK: 'secret-ref' }, artifacts: ['Acorde Composer Setup.exe'] });
+  assert.equal(result.ready, false);
+  assert.deepEqual(result.diagnostics, ['windows-signing-credentials-missing']);
+});
+
 test('distribution QA matrix is deterministic and reports missing or failed evidence', () => {
   const matrix = createDistributionQaMatrix({ platforms: ['mac', 'win'], architectures: { mac: ['arm64'], win: ['x64'] } });
   assert.equal(matrix.length, 2);
