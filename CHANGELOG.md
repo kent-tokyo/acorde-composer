@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.6 — 2026-09-03
+
+acorde v1.0.8同期、SoundFont decode IPC、OMR review queue、複数voice keyboard navigationを含むリリースです。
+
+### Added
+
+- acorde v1.0.8のSF2 PCM / SF3 Vorbis decode boundary
+- OMR review queueのstateless IPC
+- 複数voiceの`[` / `]` keyboard navigation
+
+### Verification
+
+- Composer Node: 90 passed
+- Composer Rust: 17 passed
+- `npm run check`: passed without warnings
+
 ## 0.1.5 — 2026-09-03
 
 acorde v1.0.7のSoundFont実装をComposer engineへ接続し、OMR入力preflightを強化したリリースです。

@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { assessDistribution, assessDistributionQa, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 
-const packageJson = { version: '0.1.5', build: { productName: 'Acorde Composer', mac: { target: ['dmg', 'zip'] }, win: { target: ['nsis'] } } };
+const packageJson = { version: '0.1.6', build: { productName: 'Acorde Composer', mac: { target: ['dmg', 'zip'] }, win: { target: ['nsis'] } } };
 
 test('distribution readiness reports missing signing and artifact evidence', () => {
   const result = assessDistribution({ packageJson, platform: 'mac', arch: 'arm64' });
