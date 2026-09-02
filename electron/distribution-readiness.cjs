@@ -24,6 +24,21 @@ function assessArtifactEvidence(artifacts = []) {
   return { ready: diagnostics.length === 0, total: artifacts.length, valid: artifacts.length - new Set(diagnostics.map((item) => item.split(':')[0])).size, diagnostics };
 }
 
+function createArtifactManifest({ version, commit, artifacts = [] } = {}) {
+  const entries = (Array.isArray(artifacts) ? artifacts : []).slice().sort((left, right) => String(left?.name || '').localeCompare(String(right?.name || '')));
+  const manifest = { product: 'Acorde Composer', version: typeof version === 'string' ? version : null, commit: typeof commit === 'string' ? commit : null, artifacts: entries };
+  return { ...manifest, digest: crypto.createHash('sha256').update(JSON.stringify(manifest)).digest('hex') };
+}
+
+function verifyArtifactManifest(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const { digest, ...manifest } = source;
+  const expected = crypto.createHash('sha256').update(JSON.stringify(manifest)).digest('hex');
+  const evidence = assessArtifactEvidence(manifest.artifacts);
+  const valid = manifest.product === 'Acorde Composer' && typeof manifest.version === 'string' && typeof manifest.commit === 'string' && evidence.ready && digest === expected;
+  return { valid, diagnostics: valid ? [] : [...(evidence.ready ? [] : evidence.diagnostics), ...(digest === expected ? [] : ['manifest-digest-invalid'])] };
+}
+
 const QA_SCENARIOS = Object.freeze([
   'install-launch', 'new-open-edit', 'multiple-voice-roundtrip', 'playback-mixer', 'musicxml-midi-export',
   'soundfont-absent-fallback', 'providers-disabled', 'read-only-directory', 'missing-sidecar-recovery', 'uninstall-upgrade',
@@ -47,4 +62,5 @@ function assessDistributionQa(matrix, results = []) {
   return { ready: missing.length === 0 && failed.length === 0 && invalid.length === 0 && duplicates.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed, invalid, duplicates };
 }
 
-module.exports = { QA_SCENARIOS, assessArtifactEvidence, assessDistribution, assessDistributionQa, createDistributionQaMatrix };
+module.exports = { QA_SCENARIOS, assessArtifactEvidence, assessDistribution, assessDistributionQa, createArtifactManifest, createDistributionQaMatrix, verifyArtifactManifest };
+const crypto = require('node:crypto');

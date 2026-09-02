@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessArtifactEvidence, assessDistribution, assessDistributionQa, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
+const { assessArtifactEvidence, assessDistribution, assessDistributionQa, createArtifactManifest, createDistributionQaMatrix, verifyArtifactManifest } = require('./distribution-readiness.cjs');
 
 const packageJson = { version: '0.1.6', build: { productName: 'Acorde Composer', mac: { target: ['dmg', 'zip'] }, win: { target: ['nsis'] } } };
 
@@ -36,6 +36,13 @@ test('artifact evidence requires checksum, SBOM, NOTICE, and provenance per arti
   const invalid = assessArtifactEvidence([{ name: 'Acorde Composer.dmg', sha256: 'bad', sbom: true }]);
   assert.equal(invalid.ready, false);
   assert.deepEqual(invalid.diagnostics, ['Acorde Composer.dmg:sha256-invalid', 'Acorde Composer.dmg:notice-missing', 'Acorde Composer.dmg:provenance-missing']);
+});
+
+test('artifact manifest is deterministic and detects tampering', () => {
+  const artifact = { name: 'Acorde Composer.dmg', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true };
+  const manifest = createArtifactManifest({ version: '0.1.6', commit: 'abc123', artifacts: [artifact] });
+  assert.equal(verifyArtifactManifest(manifest).valid, true);
+  assert.deepEqual(verifyArtifactManifest({ ...manifest, artifacts: [{ ...artifact, sha256: 'b'.repeat(64) }] }).diagnostics, ['manifest-digest-invalid']);
 });
 
 test('distribution QA matrix is deterministic and reports missing or failed evidence', () => {
