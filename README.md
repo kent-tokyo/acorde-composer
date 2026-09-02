@@ -8,7 +8,7 @@ Windows / macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML / MIDI / ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは、それぞれ `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは導入しません。Electron側はUI、ファイルダイアログ、IPC、OS固有処理だけを担当します。
 
-現在のComposer engineは、隣接する `acorde` v1.0.8 の5 crateをpath依存かつversion pinして利用します。
+現在のComposer engineは、隣接する `acorde` v1.0.8 の5 crateをpath依存かつversion pinして利用します。実 SoundFont のpreset-zone mappingはacorde Issue #15待ちです。
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
