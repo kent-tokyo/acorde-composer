@@ -8,11 +8,11 @@ Windows / macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML / MIDI / ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは、それぞれ `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは導入しません。Electron側はUI、ファイルダイアログ、IPC、OS固有処理だけを担当します。
 
-現在のComposer engineは、隣接する `acorde` v1.0.2 の5 crateをpath依存かつversion pinして利用します。
+現在のComposer engineは、隣接する `acorde` v1.0.3 の5 crateをpath依存かつversion pinして利用します。
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.2 + acorde v1.0.2）
+## 現在の縦切り（v0.1.2 + acorde v1.0.3）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
@@ -92,7 +92,7 @@ npm run check
 npm start
 ```
 
-`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.2リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
+`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.3リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
