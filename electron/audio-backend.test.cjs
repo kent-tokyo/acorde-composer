@@ -62,6 +62,18 @@ test('audio backend renders decoded PCM samples with loop, velocity, and release
   assert.equal(backend.nodes.size, 0);
 });
 
+test('audio backend holds sustained sample voices until pedal release', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  const source = backend.scheduleDecodedSample({ sampleRate: 8000, channels: 1, pcm: [0.25, -0.5], cacheKey: 'sustain' }, { time_secs: 0, duration_secs: 0.05, velocity: 100, sustain: 1 }, audioContext.currentTime, backend.master, 3);
+  assert.ok(source);
+  assert.equal(source.stopped, 0);
+  assert.equal(backend.releaseSustain(3), 1);
+  assert.equal(source.stopped, 1);
+  assert.equal(backend.releaseSustain(3), 0);
+  await backend.dispose();
+});
+
 test('audio backend applies master volume, pan, and mute at the master bus', async () => {
   const backend = createBackend();
   await backend.resume();

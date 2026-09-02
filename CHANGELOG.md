@@ -11,6 +11,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - 外部sample library registryとrelease metadata integrity検証
 - acorde v1.0.5のSampleDecoder / SampleRenderer境界fixture
 - decoded PCM sample cacheと外部OMR / AI JSON provider adapter
+- sample voiceのsustain保持とpedal release lifecycle
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
