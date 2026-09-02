@@ -1,5 +1,5 @@
 use acorde_core::{
-    Command, PlaybackOptions, Score, ScoreEngine, compute_playback_position, to_playback_events,
+    Command, PlaybackEvent, PlaybackOptions, Score, ScoreEngine, compute_playback_position, to_playback_events,
 };
 use acorde_io::{
     parse_midi, parse_midi_with_report, parse_mxl_with_report, parse_musicxml,
@@ -8,7 +8,7 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
-use acorde_soundfont::load as load_soundfont;
+use acorde_soundfont::{DecodedSample, SampleAction, SampleDecoder, SampleRegion, SampleRenderer, load as load_soundfont, schedule_sample_note_on};
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
 
@@ -538,6 +538,34 @@ mod tests {
         .expect("missing preset remains a valid metadata response");
         assert!(value["preset"].is_null());
         assert_eq!(value["diagnostics"][0], "missing-preset:0:99");
+    }
+
+    #[test]
+    fn soundfont_decoder_action_renderer_boundary_preserves_fixture_event() {
+        #[derive(Debug)]
+        struct FixtureError;
+        impl std::fmt::Display for FixtureError { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { f.write_str("fixture error") } }
+        impl std::error::Error for FixtureError {}
+        struct FixtureDecoder;
+        impl SampleDecoder for FixtureDecoder {
+            type Error = FixtureError;
+            fn decode(&self, _region: &SampleRegion) -> Result<DecodedSample, Self::Error> { DecodedSample::new(44_100, 1, vec![0, 8_192, -8_192, 0]).map_err(|_| FixtureError) }
+        }
+        struct FixtureRenderer { rendered: Vec<(u64, Option<String>, usize)> }
+        impl SampleRenderer for FixtureRenderer {
+            type Error = FixtureError;
+            fn render(&mut self, sample: &DecodedSample, action: &SampleAction) -> Result<(), Self::Error> {
+                if let SampleAction::Start { voice_id, event, .. } = action { self.rendered.push((*voice_id, event.address.clone(), sample.pcm_i16.len())); }
+                Ok(())
+            }
+        }
+        let region = SampleRegion { sample_id: 7, key_min: 60, key_max: 60, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 44_100, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.1 };
+        let event = PlaybackEvent { address: Some("0:0:0:0:0".into()), time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, velocity: 100, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let action = schedule_sample_note_on(3, event, &region, 1.0).expect("fixture region schedules");
+        let sample = FixtureDecoder.decode(&region).expect("fixture decoder returns bounded PCM");
+        let mut renderer = FixtureRenderer { rendered: Vec::new() };
+        renderer.render(&sample, &action).expect("fixture renderer accepts provider action");
+        assert_eq!(renderer.rendered, vec![(3, Some("0:0:0:0:0".into()), 4)]);
     }
 
     #[test]
