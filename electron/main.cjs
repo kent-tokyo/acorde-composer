@@ -11,6 +11,7 @@ const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, findOmrItemAtPoint, normalizeOmrRunResult } = require('./omr-boundary.cjs');
 const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
+const { inspectOmrInput } = require('./omr-input.cjs');
 
 let engine;
 const RECENT_FILES_LIMIT = 8;
@@ -138,6 +139,14 @@ ipcMain.handle('file:chooseSoundfont', async () => {
   const result = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'SoundFont', extensions: ['sf2', 'sf3'] }] });
   if (result.canceled || !result.filePaths.length) return null;
   return result.filePaths[0];
+});
+ipcMain.handle('file:chooseOmrInput', async () => {
+  const result = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'OMR input', extensions: ['png', 'jpg', 'jpeg', 'pdf'] }] });
+  if (result.canceled || !result.filePaths.length) return null;
+  const filePath = result.filePaths[0];
+  let stat = null;
+  try { stat = await fs.stat(filePath); } catch {}
+  return inspectOmrInput(filePath, stat);
 });
 ipcMain.handle('file:validateSoundfont', async (_event, { filePath }) => {
   try { return inspectSoundfontAsset(filePath, await fs.stat(filePath)); } catch { return inspectSoundfontAsset(filePath, null); }
