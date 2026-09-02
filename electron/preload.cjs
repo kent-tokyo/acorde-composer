@@ -41,4 +41,5 @@ contextBridge.exposeInMainWorld('acorde', {
   findOmrItemAtPoint: (proposal, x, y) => ipcRenderer.invoke('omr:findItemAtPoint', { proposal, x, y }),
   buildAiRequest: (payload) => ipcRenderer.invoke('ai:buildRequest', payload),
   normalizeAiResponse: (response, expectedContextFingerprint = null) => ipcRenderer.invoke('ai:normalizeResponse', { response, expectedContextFingerprint }),
+  runExternalAiProvider: (payload) => ipcRenderer.invoke('ai:runExternalProvider', payload),
 });

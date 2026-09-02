@@ -9,11 +9,12 @@ const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
-const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
+const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiProvider } = require('./ai-provider-boundary.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 
 let engine;
+const aiRateLimiter = createAiRateLimiter();
 const RECENT_FILES_LIMIT = 8;
 function recentFilesPath() { return path.join(app.getPath('userData'), 'recent-files.json'); }
 async function readRecentFiles() { try { const value = JSON.parse(await fs.readFile(recentFilesPath(), 'utf8')); return Array.isArray(value) ? value.filter((item) => item?.path).slice(0, RECENT_FILES_LIMIT) : []; } catch { return []; } }
@@ -173,6 +174,7 @@ ipcMain.handle('omr:transitionItem', async (_event, { item, action, correction }
 ipcMain.handle('omr:findItemAtPoint', async (_event, { proposal, x, y }) => findOmrItemAtPoint(proposal, x, y));
 ipcMain.handle('ai:buildRequest', async (_event, payload) => buildAiRequest(payload));
 ipcMain.handle('ai:normalizeResponse', async (_event, { response, expectedContextFingerprint } = {}) => normalizeAiResponse(response, { expectedContextFingerprint }));
+ipcMain.handle('ai:runExternalProvider', async (_event, payload = {}) => runExternalAiProvider({ ...payload, limiter: aiRateLimiter }));
 
 app.whenReady().then(() => {
   createWindow();
