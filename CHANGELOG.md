@@ -13,6 +13,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - decoded PCM sample cacheと外部OMR / AI JSON provider adapter
 - sample voiceのsustain保持とpedal release lifecycle
 - 最大polyphony制限とFIFO voice stealing
+- sample root noteからPlaybackEvent pitchへの安全なpitch ratio変換
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 

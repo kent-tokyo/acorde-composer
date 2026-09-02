@@ -49,15 +49,17 @@ test('audio backend schedules and stops oscillator nodes', async () => {
 test('audio backend renders decoded PCM samples with loop, velocity, and release', async () => {
   const backend = createBackend();
   const audioContext = await backend.resume();
-  const sample = { cacheKey: 'fixture-piano-c4', sampleRate: 8000, channels: 1, pcm: [0.25, -0.5, 0.75, -1], loopStart: 1, loopEnd: 3 };
-  const source = backend.scheduleDecodedSample(sample, { time_secs: 0, duration_secs: 0.2, velocity: 96 }, audioContext.currentTime);
-  const second = backend.scheduleDecodedSample(sample, { time_secs: 0.3, duration_secs: 0.2, velocity: 64 }, audioContext.currentTime);
+  const sample = { cacheKey: 'fixture-piano-c4', rootMidi: 60, sampleRate: 8000, channels: 1, pcm: [0.25, -0.5, 0.75, -1], loopStart: 1, loopEnd: 3 };
+  const source = backend.scheduleDecodedSample(sample, { pitch_midi: 60, time_secs: 0, duration_secs: 0.2, velocity: 96 }, audioContext.currentTime);
+  const second = backend.scheduleDecodedSample(sample, { pitch_midi: 72, time_secs: 0.3, duration_secs: 0.2, velocity: 64 }, audioContext.currentTime);
   assert.ok(source);
   assert.equal(second.buffer, source.buffer);
   assert.equal(source.buffer.getChannelData(0)[2], 0.75);
   assert.equal(source.loop, true);
   assert.equal(source.loopStart, 1 / 8000);
   assert.equal(source.loopEnd, 3 / 8000);
+  assert.equal(source.playbackRate.value, 1);
+  assert.equal(second.playbackRate.value, 2);
   backend.stopAll();
   assert.equal(backend.nodes.size, 0);
 });

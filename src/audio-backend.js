@@ -42,7 +42,10 @@
       const sustain = Math.max(0.001, velocity * 0.82);
       source.buffer = buffer; source.loop = Number.isInteger(sample.loopStart) && Number.isInteger(sample.loopEnd) && sample.loopEnd > sample.loopStart;
       if (source.loop) { source.loopStart = sample.loopStart / sampleRate; source.loopEnd = Math.min(frames, sample.loopEnd) / sampleRate; }
-      source.playbackRate.value = Number.isFinite(event.playback_rate) && event.playback_rate > 0 ? event.playback_rate : 1;
+      const rootMidi = Number.isFinite(sample.rootMidi) ? sample.rootMidi : null;
+      const pitchRatio = rootMidi !== null && Number.isFinite(event.pitch_midi) ? 2 ** ((event.pitch_midi - rootMidi) / 12) : 1;
+      const requestedRate = Number.isFinite(event.playback_rate) && event.playback_rate > 0 ? event.playback_rate : 1;
+      source.playbackRate.value = Math.max(0.0625, Math.min(16, pitchRatio * requestedRate));
       gain.gain.setValueAtTime(0.0001, when); gain.gain.linearRampToValueAtTime(Math.max(0.0001, velocity), when + attack);
       gain.gain.setValueAtTime(sustain, when + attack); gain.gain.setValueAtTime(sustain, when + Math.max(attack, duration - release));
       gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
