@@ -10,7 +10,7 @@ function runReleaseQa({ manifestPath = path.resolve('dist/release-artifact-manif
   const results = resultsPath ? JSON.parse(fs.readFileSync(resultsPath, 'utf8')) : [];
   const matrix = matrixPath ? JSON.parse(fs.readFileSync(matrixPath, 'utf8')) : createDistributionQaMatrix();
   const resolvedCommit = currentCommit || execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  const report = createReleaseQaReport({ version: manifest.version, commit: manifest.commit, matrix, results, artifactManifest: manifest, artifactCommitMatches: manifest.commit === resolvedCommit });
+  const report = createReleaseQaReport({ version: manifest.version, commit: manifest.commit, matrix, results, artifactManifest: manifest, artifactCommitMatches: manifest.commit === resolvedCommit, requireEvidence: true });
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, JSON.stringify(report, null, 2) + '\n');
   return { outputPath, report, verification: verifyReleaseQaReport(report) };

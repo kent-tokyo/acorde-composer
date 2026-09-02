@@ -1,8 +1,8 @@
 const crypto = require('node:crypto');
 const { assessArtifactEvidence, assessDistributionQa, verifyArtifactManifest } = require('./distribution-readiness.cjs');
 
-function createReleaseQaReport({ version, commit, matrix = [], results = [], releaseMetadataDigest = null, artifactManifest = null, artifactCommitMatches = null } = {}) {
-  const qa = assessDistributionQa(matrix, results);
+function createReleaseQaReport({ version, commit, matrix = [], results = [], releaseMetadataDigest = null, artifactManifest = null, artifactCommitMatches = null, requireEvidence = false } = {}) {
+  const qa = assessDistributionQa(matrix, results, { requireEvidence });
   const artifactQa = artifactManifest ? { ...assessArtifactEvidence(artifactManifest.artifacts), manifestValid: verifyArtifactManifest(artifactManifest).valid } : null;
   const report = {
     product: 'Acorde Composer', version: typeof version === 'string' ? version : null,

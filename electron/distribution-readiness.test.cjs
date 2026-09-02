@@ -69,3 +69,13 @@ test('distribution QA rejects unknown, duplicate, and malformed result records',
   assert.deepEqual(result.duplicates, ['mac/arm64/install-launch']);
   assert.deepEqual(result.invalid, ['linux/x64/install-launch', 'mac/arm64/new-open-edit']);
 });
+
+test('strict distribution QA requires evidence for passed results', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const results = matrix.flatMap((target) => target.scenarios.map((scenario) => ({ platform: target.platform, arch: target.arch, scenario: scenario.id, status: 'passed' })));
+  const strict = assessDistributionQa(matrix, results, { requireEvidence: true });
+  assert.equal(strict.ready, false);
+  assert.equal(strict.invalid.length, 10);
+  const evidenced = results.map((result) => ({ ...result, evidence: ['local-test'] }));
+  assert.equal(assessDistributionQa(matrix, evidenced, { requireEvidence: true }).ready, true);
+});

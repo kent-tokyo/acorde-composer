@@ -114,6 +114,7 @@ npm start
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物と、checksum・SBOM・NOTICE・provenanceを束ねた`dist/release-artifact-manifest.json`を生成します。証跡不足またはartifact未生成時はmanifest生成を失敗させます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
 `npm run release:qa -- --manifest dist/release-artifact-manifest.json --matrix qa/release-qa-matrix.json --results qa/release-qa-results.json`で20シナリオのrelease QA reportを生成します。現在の結果JSONはclean macOS/Windows実機未実行を`not-run`として記録しており、公開可能判定は通りません。
+`passed`を記録する場合は、各結果に実測証跡の`evidence`配列が必要です。
 
 公開対象リリース：[Acorde Composer v0.1.6](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.6)。現在の作業ツリーでは`npm test` 93件、Rust 17件、構文・差分検証を確認しています。
 

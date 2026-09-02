@@ -48,12 +48,13 @@ function createDistributionQaMatrix({ platforms = ['mac', 'win'], architectures 
   return platforms.flatMap((platform) => (architectures[platform] || ['unknown']).map((arch) => ({ platform, arch, scenarios: QA_SCENARIOS.map((id) => ({ id, status: 'not-run', diagnostics: [] })) })));
 }
 
-function assessDistributionQa(matrix, results = []) {
+function assessDistributionQa(matrix, results = [], { requireEvidence = false } = {}) {
   const expected = new Set(matrix.flatMap((target) => target.scenarios.map((scenario) => `${target.platform}/${target.arch}/${scenario.id}`)));
   const invalid = []; const duplicates = []; const observed = new Map();
   results.forEach((result) => {
     const key = result && `${result.platform}/${result.arch}/${result.scenario}`;
     if (!result || !expected.has(key) || !['passed', 'failed', 'not-run'].includes(result.status)) { invalid.push(key || 'result-invalid'); return; }
+    if (requireEvidence && result.status === 'passed' && (!Array.isArray(result.evidence) || result.evidence.length === 0)) { invalid.push(`${key}:evidence-missing`); return; }
     if (observed.has(key)) duplicates.push(key);
     observed.set(key, result);
   });
