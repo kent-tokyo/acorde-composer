@@ -76,6 +76,6 @@ test('strict distribution QA requires evidence for passed results', () => {
   const strict = assessDistributionQa(matrix, results, { requireEvidence: true });
   assert.equal(strict.ready, false);
   assert.equal(strict.invalid.length, 10);
-  const evidenced = results.map((result) => ({ ...result, evidence: ['local-test'] }));
-  assert.equal(assessDistributionQa(matrix, evidenced, { requireEvidence: true }).ready, true);
+  assert.equal(assessDistributionQa(matrix, results.map((result) => ({ ...result, evidence: [{ kind: 'test', source: 'fixture', detail: 'verified' }] })), { requireEvidence: true }).ready, true);
+  assert.equal(assessDistributionQa(matrix, results.map((result) => ({ ...result, evidence: [{ kind: 'test' }] })), { requireEvidence: true }).invalid.length, 10);
 });

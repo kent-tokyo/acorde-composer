@@ -54,7 +54,10 @@ function assessDistributionQa(matrix, results = [], { requireEvidence = false } 
   results.forEach((result) => {
     const key = result && `${result.platform}/${result.arch}/${result.scenario}`;
     if (!result || !expected.has(key) || !['passed', 'failed', 'not-run'].includes(result.status)) { invalid.push(key || 'result-invalid'); return; }
-    if (requireEvidence && result.status === 'passed' && (!Array.isArray(result.evidence) || result.evidence.length === 0)) { invalid.push(`${key}:evidence-missing`); return; }
+    if (requireEvidence) {
+      const evidenceValid = Array.isArray(result.evidence) && result.evidence.length > 0 && result.evidence.every((item) => item && typeof item === 'object' && typeof item.kind === 'string' && typeof item.source === 'string' && typeof item.detail === 'string');
+      if (!evidenceValid) { invalid.push(`${key}:evidence-invalid`); return; }
+    }
     if (observed.has(key)) duplicates.push(key);
     observed.set(key, result);
   });
