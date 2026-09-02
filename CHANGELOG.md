@@ -18,6 +18,8 @@ Mixerと外部入力の運用性を高め、保存状態と再生中の変更反
 ### Post-release maintenance
 
 - PDF / 印刷プレビューの実寸page geometryとprintable area diagnostics、およびgeometry回帰テストを追加（公開tag後の作業ツリー。バージョン番号は`0.1.2`のまま）
+- 複数MIDI deviceの選択、接続中の切替、device IDの保存・優先復元を追加
+- PDF render metadataの重複防止と、print diagnostics接続契約テストを追加
 
 ## 0.1.1 — 2026-09-02
 

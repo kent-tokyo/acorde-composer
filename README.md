@@ -76,6 +76,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Stemによる選択音符のstem方向（Auto / Up / Down）設定
 - Web MIDI APIによるMIDIキーボードの四分音符入力（AddNote経由）
 - Web MIDI入力の選択位置挿入、接続状態表示、同一ボタンからのdisconnect
+- 複数MIDI deviceの選択、接続中の切替、選択device IDの保存・優先復元
 - ABC notation（テキスト楽譜）のOpenとExport（`acorde-io`のABC parser / serializer経由）
 - Shift選択した小節だけを先頭から一回再生するSelection playback
 - 複数staff / voice、ABC非対応notation、未対応metadataを含むABC exportでは、失われる可能性をdiagnosticsで警告
@@ -95,7 +96,7 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.2](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.2)。現在の作業ツリーでは`npm test` 23件、Rust側`npm run check`、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.2](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.2)。現在の作業ツリーでは`npm test` 24件、Rust側`npm run check`、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
