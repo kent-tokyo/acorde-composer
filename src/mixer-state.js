@@ -12,7 +12,7 @@
       const channel = source.channels?.[index] || {};
       channels[index] = { volume: clamp(channel.volume, 0, 1, 1), pan: clamp(channel.pan, -1, 1, 0), mute: Boolean(channel.mute), solo: Boolean(channel.solo) };
     }
-    return { ...source, master: { volume: clamp(master.volume, 0, 1, 1), pan: clamp(master.pan, -1, 1, 0), mute: Boolean(master.mute) }, soloPiano: Boolean(source.soloPiano), metronome: Boolean(source.metronome), soundfont: source.soundfont || { provider: 'oscillator', path: null, version: null, license: null, offline: true }, channels };
+    return { ...source, master: { volume: clamp(master.volume, 0, 1, 1), pan: clamp(master.pan, -1, 1, 0), mute: Boolean(master.mute) }, soloPiano: Boolean(source.soloPiano), metronome: Boolean(source.metronome), outputDeviceId: typeof source.outputDeviceId === 'string' ? source.outputDeviceId : null, soundfont: source.soundfont || { provider: 'oscillator', path: null, version: null, license: null, offline: true }, channels };
   }
   window.AcordeMixerState = { normalize };
 })();

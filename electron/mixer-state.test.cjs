@@ -23,3 +23,9 @@ test('mixer state preserves channels while the score size is not known yet', () 
   const state = normalize({ channels: { 1: { volume: 0.4, solo: true } } });
   assert.deepEqual({ ...state.channels[1] }, { volume: 0.4, pan: 0, mute: false, solo: true });
 });
+
+test('mixer state rejects malformed persisted output device ids', () => {
+  const normalize = loadNormalize();
+  assert.equal(normalize({ outputDeviceId: { device: 'unexpected' } }).outputDeviceId, null);
+  assert.equal(normalize({ outputDeviceId: 'speaker-1' }).outputDeviceId, 'speaker-1');
+});
