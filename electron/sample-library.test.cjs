@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessSampleLibrary, canActivateSampleLibrary, manifestWithinLimit, normalizeSampleLibrary } = require('./sample-library.cjs');
+const { assessSampleLibrary, canActivateSampleLibrary, manifestWithinLimit, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary } = require('./sample-library.cjs');
 
 const VALID_LIBRARY = {
   id: 'external-orchestra', name: 'External Orchestra', provider: 'licensed-provider', version: '2026.1',
@@ -27,4 +27,23 @@ test('sample library assessment reports offline portability and license diagnost
   assert.deepEqual(unavailable.diagnostics, ['offline-unavailable']);
   assert.equal(unavailable.usable, false);
   assert.deepEqual(assessSampleLibrary({ ...VALID_LIBRARY, licenseStatus: 'unreviewed' }).diagnostics, ['license-unreviewed']);
+});
+
+test('sample library lifecycle activates and updates only validated external manifests', () => {
+  const installed = transitionSampleLibrary(null, 'install', VALID_LIBRARY);
+  assert.equal(installed.status, 'installed');
+  const active = transitionSampleLibrary(installed, 'activate');
+  assert.equal(active.active, true);
+  const updated = transitionSampleLibrary(active, 'update', { ...VALID_LIBRARY, version: '2026.2' });
+  assert.equal(updated.status, 'inactive');
+  assert.equal(updated.version, '2026.2');
+  assert.equal(transitionSampleLibrary(updated, 'activate').active, true);
+  assert.equal(transitionSampleLibrary(updated, 'remove').status, 'removed');
+});
+
+test('sample library lifecycle rejects identity changes and unreviewed activation', () => {
+  const mismatch = transitionSampleLibrary(VALID_LIBRARY, 'update', { ...VALID_LIBRARY, id: 'other' });
+  assert.deepEqual(mismatch.diagnostics, ['library-id-mismatch']);
+  const unreviewed = normalizeSampleLibraryRecord({ ...VALID_LIBRARY, licenseStatus: 'unreviewed' });
+  assert.equal(transitionSampleLibrary(unreviewed, 'activate').active, false);
 });

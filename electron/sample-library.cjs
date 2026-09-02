@@ -1,5 +1,6 @@
 const MAX_LIBRARY_MANIFEST_BYTES = 256 * 1024;
 const LICENSE_STATUSES = new Set(['unreviewed', 'accepted', 'rejected']);
+const LIBRARY_STATUSES = new Set(['installed', 'active', 'inactive', 'removed']);
 
 function normalizeSampleLibrary(value) {
   const source = value && typeof value === 'object' ? value : {};
@@ -38,8 +39,34 @@ function assessSampleLibrary(value, { offlineRequired = false } = {}) {
   return { library, usable: diagnostics.length === 0, portable: diagnostics.length === 0 && library.offline, diagnostics };
 }
 
+function normalizeSampleLibraryRecord(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const library = normalizeSampleLibrary(source.library || source);
+  const assessment = assessSampleLibrary(library, { offlineRequired: source.offlineRequired === true });
+  const status = LIBRARY_STATUSES.has(source.status) ? source.status : 'installed';
+  const valid = assessment.usable && (status !== 'active' || canActivateSampleLibrary(library));
+  return { ...library, status: valid ? status : 'inactive', active: valid && status === 'active', valid, portable: assessment.portable, diagnostics: assessment.diagnostics };
+}
+
+function transitionSampleLibrary(value, action, nextValue) {
+  const current = normalizeSampleLibraryRecord(value);
+  if (action === 'remove') return { ...current, status: 'removed', active: false, valid: true, diagnostics: [] };
+  if (action === 'deactivate') return { ...current, status: 'inactive', active: false };
+  if (action === 'activate') {
+    if (!current.valid || !canActivateSampleLibrary(current)) return { ...current, status: 'inactive', active: false, valid: false, diagnostics: current.diagnostics.length ? current.diagnostics : ['activation-rejected'] };
+    return { ...current, status: 'active', active: true };
+  }
+  if (action === 'install') return { ...normalizeSampleLibraryRecord(nextValue), status: 'installed', active: false };
+  if (action === 'update') {
+    const candidate = normalizeSampleLibraryRecord(nextValue);
+    if (candidate.id !== current.id) return { ...current, status: 'inactive', active: false, valid: false, diagnostics: ['library-id-mismatch'] };
+    return { ...candidate, status: 'inactive', active: false };
+  }
+  return { ...current, status: 'inactive', active: false, valid: false, diagnostics: ['unknown-library-action'] };
+}
+
 function manifestWithinLimit(value) {
   try { return Buffer.byteLength(JSON.stringify(normalizeSampleLibrary(value)), 'utf8') <= MAX_LIBRARY_MANIFEST_BYTES; } catch { return false; }
 }
 
-module.exports = { MAX_LIBRARY_MANIFEST_BYTES, assessSampleLibrary, normalizeSampleLibrary, canActivateSampleLibrary, manifestWithinLimit };
+module.exports = { LIBRARY_STATUSES, MAX_LIBRARY_MANIFEST_BYTES, assessSampleLibrary, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary, canActivateSampleLibrary, manifestWithinLimit };
