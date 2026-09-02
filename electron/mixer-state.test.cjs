@@ -27,12 +27,14 @@ test('mixer state preserves channels while the score size is not known yet', () 
 test('mixer state rejects malformed persisted output device ids', () => {
   const normalize = loadNormalize();
   assert.equal(normalize({ outputDeviceId: { device: 'unexpected' } }).outputDeviceId, null);
+  assert.equal(normalize({ outputDeviceId: '' }).outputDeviceId, null);
   assert.equal(normalize({ outputDeviceId: 'speaker-1' }).outputDeviceId, 'speaker-1');
 });
 
 test('mixer state rejects malformed persisted MIDI input ids', () => {
   const normalize = loadNormalize();
   assert.equal(normalize({ midiInputId: { id: 'unexpected' } }).midiInputId, null);
+  assert.equal(normalize({ midiInputId: '' }).midiInputId, null);
   assert.equal(normalize({ midiInputId: 'keyboard-1' }).midiInputId, 'keyboard-1');
 });
 

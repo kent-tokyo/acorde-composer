@@ -23,7 +23,7 @@
       const channel = source.channels?.[index] || {};
       channels[index] = { volume: clamp(channel.volume, 0, 1, 1), pan: clamp(channel.pan, -1, 1, 0), mute: Boolean(channel.mute), solo: Boolean(channel.solo) };
     }
-    return { ...source, master: { volume: clamp(master.volume, 0, 1, 1), pan: clamp(master.pan, -1, 1, 0), mute: Boolean(master.mute) }, soloPiano: Boolean(source.soloPiano), metronome: Boolean(source.metronome), midiInputId: typeof source.midiInputId === 'string' ? source.midiInputId : null, outputDeviceId: typeof source.outputDeviceId === 'string' ? source.outputDeviceId : null, soundfont: normalizeSoundfont(source.soundfont), channels };
+    return { ...source, master: { volume: clamp(master.volume, 0, 1, 1), pan: clamp(master.pan, -1, 1, 0), mute: Boolean(master.mute) }, soloPiano: Boolean(source.soloPiano), metronome: Boolean(source.metronome), midiInputId: typeof source.midiInputId === 'string' && source.midiInputId.length > 0 ? source.midiInputId : null, outputDeviceId: typeof source.outputDeviceId === 'string' && source.outputDeviceId.length > 0 ? source.outputDeviceId : null, soundfont: normalizeSoundfont(source.soundfont), channels };
   }
   window.AcordeMixerState = { normalize };
 })();
