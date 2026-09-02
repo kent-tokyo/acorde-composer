@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessDistribution, assessDistributionQa, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
+const { assessArtifactEvidence, assessDistribution, assessDistributionQa, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 
 const packageJson = { version: '0.1.6', build: { productName: 'Acorde Composer', mac: { target: ['dmg', 'zip'] }, win: { target: ['nsis'] } } };
 
@@ -28,6 +28,14 @@ test('distribution readiness requires both Windows certificate and password refe
   const result = assessDistribution({ packageJson, platform: 'win', arch: 'x64', env: { WIN_CSC_LINK: 'secret-ref' }, artifacts: ['Acorde Composer Setup.exe'] });
   assert.equal(result.ready, false);
   assert.deepEqual(result.diagnostics, ['windows-signing-credentials-missing']);
+});
+
+test('artifact evidence requires checksum, SBOM, NOTICE, and provenance per artifact', () => {
+  const valid = { name: 'Acorde Composer.dmg', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true };
+  assert.deepEqual(assessArtifactEvidence([valid]), { ready: true, total: 1, valid: 1, diagnostics: [] });
+  const invalid = assessArtifactEvidence([{ name: 'Acorde Composer.dmg', sha256: 'bad', sbom: true }]);
+  assert.equal(invalid.ready, false);
+  assert.deepEqual(invalid.diagnostics, ['Acorde Composer.dmg:sha256-invalid', 'Acorde Composer.dmg:notice-missing', 'Acorde Composer.dmg:provenance-missing']);
 });
 
 test('distribution QA matrix is deterministic and reports missing or failed evidence', () => {

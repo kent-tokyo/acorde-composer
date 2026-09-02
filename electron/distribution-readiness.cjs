@@ -12,6 +12,18 @@ function assessDistribution({ packageJson, platform, arch, env = {}, artifacts =
   return { platform, arch: arch || null, targets, signed: signingDiagnostics.length === 0, ready: diagnostics.length === 0, diagnostics };
 }
 
+function assessArtifactEvidence(artifacts = []) {
+  if (!Array.isArray(artifacts) || artifacts.length === 0) return { ready: false, total: 0, valid: 0, diagnostics: ['artifacts-missing'] };
+  const diagnostics = [];
+  artifacts.forEach((artifact, index) => {
+    const label = artifact && typeof artifact.name === 'string' ? artifact.name : `artifact-${index + 1}`;
+    if (!artifact || typeof artifact !== 'object' || !artifact.name) diagnostics.push(`${label}:name-missing`);
+    if (typeof artifact?.sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(artifact.sha256)) diagnostics.push(`${label}:sha256-invalid`);
+    for (const field of ['sbom', 'notice', 'provenance']) if (artifact?.[field] !== true) diagnostics.push(`${label}:${field}-missing`);
+  });
+  return { ready: diagnostics.length === 0, total: artifacts.length, valid: artifacts.length - new Set(diagnostics.map((item) => item.split(':')[0])).size, diagnostics };
+}
+
 const QA_SCENARIOS = Object.freeze([
   'install-launch', 'new-open-edit', 'multiple-voice-roundtrip', 'playback-mixer', 'musicxml-midi-export',
   'soundfont-absent-fallback', 'providers-disabled', 'read-only-directory', 'missing-sidecar-recovery', 'uninstall-upgrade',
@@ -35,4 +47,4 @@ function assessDistributionQa(matrix, results = []) {
   return { ready: missing.length === 0 && failed.length === 0 && invalid.length === 0 && duplicates.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed, invalid, duplicates };
 }
 
-module.exports = { QA_SCENARIOS, assessDistribution, assessDistributionQa, createDistributionQaMatrix };
+module.exports = { QA_SCENARIOS, assessArtifactEvidence, assessDistribution, assessDistributionQa, createDistributionQaMatrix };
