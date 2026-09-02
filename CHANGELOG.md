@@ -20,6 +20,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - QA結果の未知platform・scenario・status・重複を検出する入力整合性gate
 - 共通provider runtimeのJSON stdin 512 KiB上限
 - provider executableの絶対パス、NUL文字、引数列上限の検証
+- 外部OMR providerのidentity / license gateをspawn前に適用し、未承認providerを起動しない回帰テスト
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
@@ -31,7 +32,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 ### Verification
 
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
-- Composer Node: 87 passed
+- Composer Node: 88 passed
 
 ### Post-release maintenance
 
@@ -39,6 +40,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - Rust未使用importを整理し、`npm run check`をwarningなしで通過
 - acorde v1.0.6でComposerの複数voice PlaybackEvent address fixtureを有効化し、Rust 14件成功を確認
 - acorde Issue #13へ、許諾済みSF2 PCM / SF3 Vorbis decoder・synthesizer実装を要求
+- 外部OMR provider gateをspawn前に強化し、identity不備・license未承認時の起動を防止
 
 ## 0.1.3 — 2026-09-02
 

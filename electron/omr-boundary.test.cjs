@@ -60,7 +60,15 @@ test('OMR bbox navigation selects the smallest deterministic source item', () =>
 
 test('external OMR provider output still enters proposal assessment', async () => {
   const child = { stdout: { on: (event, fn) => { if (event === 'data') process.nextTick(() => fn(Buffer.from(JSON.stringify({ status: 'success', proposal: VALID_PROPOSAL })))); } }, stdin: { end() {} }, on: (event, fn) => { if (event === 'close') process.nextTick(() => fn(0)); }, kill() {} };
-  const result = await runExternalOmrProvider({ executable: '/omr-provider', request: { input: 'fixture' }, spawnImpl: () => child });
+  const result = await runExternalOmrProvider({ executable: '/omr-provider', request: { provider: VALID_PROPOSAL.provider, input: 'fixture' }, spawnImpl: () => child });
   assert.equal(result.usable, true);
   assert.equal(result.proposal.items[0].status, 'review');
+});
+
+test('external OMR provider is rejected before spawn when identity or license is not accepted', async () => {
+  let spawned = false;
+  const spawnImpl = () => { spawned = true; return null; };
+  const result = await runExternalOmrProvider({ executable: '/omr-provider', request: { provider: { ...VALID_PROPOSAL.provider, licenseStatus: 'unreviewed' } }, spawnImpl });
+  assert.deepEqual(result, { status: 'failed', usable: false, proposal: null, diagnostics: ['provider-license-unreviewed'] });
+  assert.equal(spawned, false);
 });

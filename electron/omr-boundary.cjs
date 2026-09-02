@@ -102,6 +102,9 @@ function normalizeOmrRunResult(value) {
 }
 
 async function runExternalOmrProvider({ executable, args, request, timeoutMs, spawnImpl } = {}) {
+  const provider = normalizeOmrProvider(request?.provider);
+  if (!provider.id || !provider.name || !provider.version) return { status: 'failed', usable: false, proposal: null, diagnostics: ['provider-incomplete'] };
+  if (provider.licenseStatus !== 'accepted') return { status: 'failed', usable: false, proposal: null, diagnostics: [`provider-license-${provider.licenseStatus}`] };
   const response = await runJsonProvider({ executable, args, request, timeoutMs, spawnImpl });
   return normalizeOmrRunResult(response.status === 'success' && response.body && typeof response.body === 'object' ? { ...response.body, status: response.status } : response);
 }
