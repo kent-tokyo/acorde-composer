@@ -1,6 +1,22 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { MAX_PLUGIN_STATE_BYTES, isPluginPath, normalizePluginState, pluginFailure, pluginRecord, scanPluginPaths } = require('./plugin-host.cjs');
+const { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, normalizePluginManifest, isPluginPath, normalizePluginState, pluginFailure, pluginRecord, scanPluginPaths } = require('./plugin-host.cjs');
+
+test('plugin manifest accepts only versioned, capability-scoped contracts', () => {
+  assert.deepEqual(normalizePluginManifest({
+    id: 'notation.helper', name: 'Notation Helper', version: '1.2.0', apiVersion: PLUGIN_API_VERSION,
+    capabilities: ['score.read', 'command.propose', 'score.read'],
+  }), {
+    id: 'notation.helper', name: 'Notation Helper', version: '1.2.0', apiVersion: 1,
+    capabilities: ['score.read', 'command.propose'], unsupported: [], valid: true, reason: null,
+  });
+});
+
+test('plugin manifest rejects direct host capabilities and API mismatches', () => {
+  assert.equal(normalizePluginManifest({ id: 'unsafe', name: 'Unsafe', version: '1', apiVersion: 1, capabilities: ['filesystem', 'network'] }).reason, 'unsupported-capability');
+  assert.equal(normalizePluginManifest({ id: 'old', name: 'Old', version: '1', apiVersion: 0 }).reason, 'api-version-mismatch');
+  assert.equal(normalizePluginManifest({ id: 'Bad ID', name: 'Bad', version: '1', apiVersion: 1 }).reason, 'invalid-id');
+});
 
 test('plugin scan recognizes platform plugin bundle and binary extensions', () => {
   assert.equal(isPluginPath('/Library/Audio/Plug-Ins/VST3/Piano.vst3'), true);

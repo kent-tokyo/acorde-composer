@@ -3,9 +3,37 @@ const path = require('node:path');
 
 const MAX_PLUGIN_STATE_BYTES = 1024 * 1024;
 const PLUGIN_EXTENSIONS = new Set(['.component', '.dll', '.dylib', '.so', '.vst', '.vst3']);
+const PLUGIN_API_VERSION = 1;
+const PLUGIN_CAPABILITIES = new Set(['score.read', 'command.propose', 'render.hook', 'playback.hook']);
 
 function pluginExtension(filePath) { return path.extname(typeof filePath === 'string' ? filePath : '').toLowerCase(); }
 function isPluginPath(filePath) { return PLUGIN_EXTENSIONS.has(pluginExtension(filePath)); }
+function normalizePluginManifest(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const capabilities = Array.isArray(source.capabilities)
+    ? [...new Set(source.capabilities.filter((item) => typeof item === 'string'))]
+    : [];
+  const unsupported = capabilities.filter((capability) => !PLUGIN_CAPABILITIES.has(capability));
+  const apiVersion = Number.isInteger(source.apiVersion) ? source.apiVersion : null;
+  const validId = typeof source.id === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(source.id);
+  const validName = typeof source.name === 'string' && source.name.trim().length > 0 && source.name.length <= 128;
+  const validVersion = typeof source.version === 'string' && source.version.length > 0 && source.version.length <= 64;
+  const reason = !validId ? 'invalid-id'
+    : !validName ? 'invalid-name'
+      : !validVersion ? 'invalid-version'
+        : apiVersion !== PLUGIN_API_VERSION ? 'api-version-mismatch'
+          : unsupported.length > 0 ? 'unsupported-capability' : null;
+  return {
+    id: validId ? source.id : null,
+    name: validName ? source.name.trim() : null,
+    version: validVersion ? source.version : null,
+    apiVersion,
+    capabilities,
+    unsupported,
+    valid: reason === null,
+    reason,
+  };
+}
 function normalizePluginState(value) {
   const source = value && typeof value === 'object' ? value : {};
   const state = source.state && typeof source.state === 'object' ? source.state : null;
@@ -53,4 +81,4 @@ function pluginFailure(record, reason) {
   return { ...record, loadStatus: 'disabled', state: { ...normalizePluginState(record?.state), enabled: false, reason: typeof reason === 'string' ? reason : 'plugin-failed' } };
 }
 
-module.exports = { MAX_PLUGIN_STATE_BYTES, PLUGIN_EXTENSIONS, isPluginPath, normalizePluginState, pluginRecord, scanPluginPaths, pluginFailure };
+module.exports = { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, PLUGIN_CAPABILITIES, PLUGIN_EXTENSIONS, isPluginPath, normalizePluginManifest, normalizePluginState, pluginRecord, scanPluginPaths, pluginFailure };
