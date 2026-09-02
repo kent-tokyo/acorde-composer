@@ -39,5 +39,18 @@ test('distribution QA matrix is deterministic and reports missing or failed evid
   assert.equal(partial.passed, 1);
   assert.equal(partial.missing.length, 19);
   const all = matrix.flatMap((target) => target.scenarios.map((scenario) => ({ platform: target.platform, arch: target.arch, scenario: scenario.id, status: 'passed' })));
-  assert.deepEqual(assessDistributionQa(matrix, all), { ready: true, total: 20, passed: 20, missing: [], failed: [] });
+  assert.deepEqual(assessDistributionQa(matrix, all), { ready: true, total: 20, passed: 20, missing: [], failed: [], invalid: [], duplicates: [] });
+});
+
+test('distribution QA rejects unknown, duplicate, and malformed result records', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const result = assessDistributionQa(matrix, [
+    { platform: 'mac', arch: 'arm64', scenario: 'install-launch', status: 'passed' },
+    { platform: 'mac', arch: 'arm64', scenario: 'install-launch', status: 'passed' },
+    { platform: 'linux', arch: 'x64', scenario: 'install-launch', status: 'passed' },
+    { platform: 'mac', arch: 'arm64', scenario: 'new-open-edit', status: 'unknown' },
+  ]);
+  assert.equal(result.ready, false);
+  assert.deepEqual(result.duplicates, ['mac/arm64/install-launch']);
+  assert.deepEqual(result.invalid, ['linux/x64/install-launch', 'mac/arm64/new-open-edit']);
 });

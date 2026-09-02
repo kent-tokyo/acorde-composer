@@ -23,10 +23,16 @@ function createDistributionQaMatrix({ platforms = ['mac', 'win'], architectures 
 
 function assessDistributionQa(matrix, results = []) {
   const expected = new Set(matrix.flatMap((target) => target.scenarios.map((scenario) => `${target.platform}/${target.arch}/${scenario.id}`)));
-  const observed = new Map(results.filter((result) => result && expected.has(`${result.platform}/${result.arch}/${result.scenario}`)).map((result) => [`${result.platform}/${result.arch}/${result.scenario}`, result]));
+  const invalid = []; const duplicates = []; const observed = new Map();
+  results.forEach((result) => {
+    const key = result && `${result.platform}/${result.arch}/${result.scenario}`;
+    if (!result || !expected.has(key) || !['passed', 'failed', 'not-run'].includes(result.status)) { invalid.push(key || 'result-invalid'); return; }
+    if (observed.has(key)) duplicates.push(key);
+    observed.set(key, result);
+  });
   const missing = [...expected].filter((key) => !observed.has(key));
   const failed = [...observed.values()].filter((result) => result.status !== 'passed').map((result) => `${result.platform}/${result.arch}/${result.scenario}`);
-  return { ready: missing.length === 0 && failed.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed };
+  return { ready: missing.length === 0 && failed.length === 0 && invalid.length === 0 && duplicates.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed, invalid, duplicates };
 }
 
 module.exports = { QA_SCENARIOS, assessDistribution, assessDistributionQa, createDistributionQaMatrix };

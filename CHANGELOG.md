@@ -17,6 +17,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - decoder → renderer間のPCM sample contract（format、loop、root note、digest、サイズ上限）
 - Windows署名readinessで証明書参照とパスワード参照を個別必須化
 - signing credential設定とartifact検証を分離したrelease readiness判定
+- QA結果の未知platform・scenario・status・重複を検出する入力整合性gate
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
@@ -28,7 +29,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 ### Verification
 
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
-- Composer Node: 84 passed
+- Composer Node: 85 passed
 
 ## 0.1.3 — 2026-09-02
 
