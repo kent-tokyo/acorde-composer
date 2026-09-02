@@ -61,6 +61,12 @@ test('audio backend updates a scheduled part channel without rebuilding playback
   assert.equal(bus.gain.gain.value, 0);
 });
 
+test('audio backend safely reports unsupported output-device switching', async () => {
+  const backend = createBackend();
+  await backend.resume();
+  assert.equal(await backend.setOutputDevice('external-output'), false);
+});
+
 test('audio backend dispose closes the AudioContext and is idempotent', async () => {
   const backend = createBackend();
   await backend.resume();
