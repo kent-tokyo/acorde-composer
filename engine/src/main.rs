@@ -582,8 +582,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "blocked by acorde issue #2: MusicXML parser currently flattens voices"]
-    fn multi_voice_fixture_preserves_voice_structure_and_playback_addresses() {
+    fn multi_voice_fixture_preserves_voice_structure_and_roundtrip() {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         assert!(parsed.diagnostics.is_empty());
         let measure = &parsed.score.parts[0].staves[0].measures[0];
@@ -596,7 +595,12 @@ mod tests {
         let round_tripped = &reparsed.score.parts[0].staves[0].measures[0];
         assert_eq!(round_tripped.voices.len(), measure.voices.len());
         assert!(round_tripped.voices.iter().skip(1).flatten().any(|item| item.is_rest));
+    }
 
+    #[test]
+    #[ignore = "blocked by acorde issue #8: PlaybackEvent address still flattens voice identity"]
+    fn multi_voice_fixture_preserves_playback_addresses() {
+        let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());
         assert!(events.iter().any(|event| event.address.as_deref().is_some_and(|address| address.split(':').nth(3).is_some_and(|voice| voice != "0"))));
     }
