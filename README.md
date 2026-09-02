@@ -111,7 +111,7 @@ npm start
 
 `npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.8リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
 
-`npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
+`npm run pack` でmacOS arm64のElectronディレクトリ配布物と、checksum・SBOM・NOTICE・provenanceを束ねた`dist/release-artifact-manifest.json`を生成します。証跡不足またはartifact未生成時はmanifest生成を失敗させます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
 公開対象リリース：[Acorde Composer v0.1.6](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.6)。現在の作業ツリーでは`npm test` 93件、Rust 17件、構文・差分検証を確認しています。
 

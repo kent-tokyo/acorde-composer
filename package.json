@@ -8,7 +8,7 @@
     "start": "electron .",
     "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js && cargo check --manifest-path engine/Cargo.toml",
     "test": "node --test electron/*.test.cjs",
-    "pack": "electron-builder --dir"
+    "pack": "electron-builder --dir && node scripts/create-release-artifact-manifest.cjs"
   },
   "devDependencies": {
     "electron": "^38.0.0",

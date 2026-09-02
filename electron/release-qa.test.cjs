@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 const { createReleaseQaReport, verifyReleaseQaReport } = require('./release-qa.cjs');
+const { createArtifactManifest } = require('./distribution-readiness.cjs');
 
 test('release QA report is deterministic and binds version and commit to all passing cases', () => {
   const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
@@ -19,4 +20,14 @@ test('release QA report rejects missing evidence and tampering', () => {
   assert.equal(report.qa.ready, false);
   assert.deepEqual(verifyReleaseQaReport(report), { valid: false, diagnostics: ['release-qa-invalid-or-tampered'] });
   assert.deepEqual(verifyReleaseQaReport({ ...report, commit: 'changed' }), { valid: false, diagnostics: ['release-qa-invalid-or-tampered'] });
+});
+
+test('release QA report binds an artifact manifest and rejects manifest tampering', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const results = matrix.flatMap((target) => target.scenarios.map((scenario) => ({ platform: target.platform, arch: target.arch, scenario: scenario.id, status: 'passed' })));
+  const artifactManifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
+  const report = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results, artifactManifest });
+  assert.equal(report.artifactQa.ready, true);
+  assert.equal(verifyReleaseQaReport(report).valid, true);
+  assert.equal(verifyReleaseQaReport({ ...report, artifactManifest: { ...artifactManifest, artifacts: [] } }).valid, false);
 });
