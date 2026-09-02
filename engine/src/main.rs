@@ -622,7 +622,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "acorde issue #8 is closed, but v1.0.4 still flattens voice identity in PlaybackEvent address"]
+    #[ignore = "acorde v1.0.5 adds direct voice coverage, but Composer MusicXML fixture still flattens voice identity; see issue #11"]
     fn multi_voice_fixture_preserves_playback_addresses() {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());
