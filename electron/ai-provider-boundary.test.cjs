@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
+const { buildAiRequest, executeAiProvider, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 
 const PROVIDER = { id: 'local-assistant', version: '1', licenseStatus: 'accepted', networkPolicy: 'user-approved' };
 const COMMAND = { type: 'batch', label: 'AI proposal', commands: [{ type: 'add_measure', count: 1 }] };
@@ -20,4 +20,10 @@ test('AI response becomes a validated command proposal and never a Score', () =>
   assert.deepEqual(normalizeAiResponse({ status: 'success', body: COMMAND }), { usable: true, proposal: COMMAND, diagnostics: [] });
   assert.deepEqual(normalizeAiResponse({ status: 'success', body: { type: 'load_score' } }).diagnostics, ['proposal-invalid']);
   assert.deepEqual(normalizeAiResponse({ status: 'timeout' }).diagnostics, ['provider-timeout']);
+});
+
+test('AI provider execution is bounded and normalizes failure without throwing', async () => {
+  assert.equal((await executeAiProvider(async (request) => ({ status: 'success', body: request }), COMMAND, 100)).usable, true);
+  assert.deepEqual(await executeAiProvider(() => new Promise(() => {}), COMMAND, 5), { usable: false, proposal: null, diagnostics: ['provider-timeout'] });
+  assert.deepEqual(await executeAiProvider(() => { throw new Error('crashed'); }, COMMAND), { usable: false, proposal: null, diagnostics: ['provider-failed'] });
 });

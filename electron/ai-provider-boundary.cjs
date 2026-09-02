@@ -3,6 +3,7 @@ const { assertCommand } = require('./command-schema.cjs');
 const MAX_AI_PROMPT_BYTES = 32 * 1024;
 const MAX_SCORE_CONTEXT_BYTES = 128 * 1024;
 const MAX_AI_RESPONSE_BYTES = 256 * 1024;
+const MAX_AI_TIMEOUT_MS = 30 * 1000;
 const SENSITIVE_KEYS = new Set(['apiKey', 'authorization', 'password', 'secret', 'token']);
 
 function normalizeAiProvider(value) {
@@ -40,4 +41,21 @@ function normalizeAiResponse(value) {
   return { usable: true, proposal, diagnostics: [] };
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, buildAiRequest, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };
+async function executeAiProvider(providerFn, request, timeoutMs = 10 * 1000) {
+  if (typeof providerFn !== 'function') return { usable: false, proposal: null, diagnostics: ['provider-missing'] };
+  const safeTimeout = Number.isFinite(timeoutMs) ? Math.max(1, Math.min(MAX_AI_TIMEOUT_MS, Math.round(timeoutMs))) : 10 * 1000;
+  let timer;
+  try {
+    const result = await Promise.race([
+      Promise.resolve().then(() => providerFn(request)),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('provider-timeout')), safeTimeout); }),
+    ]);
+    return normalizeAiResponse(result);
+  } catch (error) {
+    return { usable: false, proposal: null, diagnostics: error?.message === 'provider-timeout' ? ['provider-timeout'] : ['provider-failed'] };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, buildAiRequest, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };
