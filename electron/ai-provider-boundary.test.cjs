@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildAiRequest, executeAiProvider, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
+const { buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 
 const PROVIDER = { id: 'local-assistant', version: '1', licenseStatus: 'accepted', networkPolicy: 'user-approved' };
 const COMMAND = { type: 'batch', label: 'AI proposal', commands: [{ type: 'add_measure', count: 1 }] };
@@ -26,4 +26,14 @@ test('AI provider execution is bounded and normalizes failure without throwing',
   assert.equal((await executeAiProvider(async (request) => ({ status: 'success', body: request }), COMMAND, 100)).usable, true);
   assert.deepEqual(await executeAiProvider(() => new Promise(() => {}), COMMAND, 5), { usable: false, proposal: null, diagnostics: ['provider-timeout'] });
   assert.deepEqual(await executeAiProvider(() => { throw new Error('crashed'); }, COMMAND), { usable: false, proposal: null, diagnostics: ['provider-failed'] });
+});
+
+test('AI rate limiter bounds calls and returns deterministic retry timing', () => {
+  let current = 1000;
+  const limiter = createAiRateLimiter({ maxRequests: 2, windowMs: 1000, now: () => current });
+  assert.deepEqual(limiter.check(), { allowed: true, retryAfterMs: 0 });
+  assert.deepEqual(limiter.check(), { allowed: true, retryAfterMs: 0 });
+  assert.deepEqual(limiter.check(), { allowed: false, retryAfterMs: 1000 });
+  current += 1000;
+  assert.deepEqual(limiter.check(), { allowed: true, retryAfterMs: 0 });
 });

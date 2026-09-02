@@ -4,6 +4,7 @@ const MAX_AI_PROMPT_BYTES = 32 * 1024;
 const MAX_SCORE_CONTEXT_BYTES = 128 * 1024;
 const MAX_AI_RESPONSE_BYTES = 256 * 1024;
 const MAX_AI_TIMEOUT_MS = 30 * 1000;
+const MAX_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
 const SENSITIVE_KEYS = new Set(['apiKey', 'authorization', 'password', 'secret', 'token']);
 
 function normalizeAiProvider(value) {
@@ -58,4 +59,19 @@ async function executeAiProvider(providerFn, request, timeoutMs = 10 * 1000) {
   }
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, buildAiRequest, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };
+function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () => Date.now() } = {}) {
+  const limit = Number.isSafeInteger(maxRequests) ? Math.max(1, Math.min(100, maxRequests)) : 5;
+  const window = Number.isSafeInteger(windowMs) ? Math.max(1000, Math.min(MAX_AI_RATE_WINDOW_MS, windowMs)) : 60 * 1000;
+  const timestamps = [];
+  return {
+    check: () => {
+      const current = Number.isFinite(now()) ? now() : 0;
+      while (timestamps.length && current - timestamps[0] >= window) timestamps.shift();
+      if (timestamps.length >= limit) return { allowed: false, retryAfterMs: Math.max(0, window - (current - timestamps[0])) };
+      timestamps.push(current);
+      return { allowed: true, retryAfterMs: 0 };
+    },
+  };
+}
+
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };
