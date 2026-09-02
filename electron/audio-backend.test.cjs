@@ -13,11 +13,12 @@ class FakeNode {
 }
 
 class FakeAudioContext {
-  constructor() { this.currentTime = 0; this.state = 'suspended'; this.closed = false; }
+  constructor() { this.currentTime = 0; this.state = 'suspended'; this.closed = false; this.sinkId = ''; }
   createGain() { return new FakeNode(); }
   createStereoPanner() { return new FakeNode(); }
   createOscillator() { return new FakeNode(); }
   async resume() { this.state = 'running'; }
+  async setSinkId(sinkId) { this.sinkId = sinkId; }
   async close() { this.state = 'closed'; this.closed = true; }
 }
 
@@ -64,7 +65,18 @@ test('audio backend updates a scheduled part channel without rebuilding playback
 test('audio backend safely reports unsupported output-device switching', async () => {
   const backend = createBackend();
   await backend.resume();
+  backend.context.setSinkId = undefined;
   assert.equal(await backend.setOutputDevice('external-output'), false);
+});
+
+test('audio backend switches an active context back to the system default', async () => {
+  const backend = createBackend();
+  await backend.resume();
+  assert.equal(await backend.setOutputDevice('external-output'), true);
+  assert.equal(backend.context.sinkId, 'external-output');
+  assert.equal(await backend.setOutputDevice(null), true);
+  assert.equal(backend.context.sinkId, '');
+  assert.equal(backend.outputDeviceId, null);
 });
 
 test('audio backend dispose closes the AudioContext and is idempotent', async () => {
