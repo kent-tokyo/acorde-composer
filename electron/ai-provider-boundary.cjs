@@ -71,6 +71,15 @@ async function executeAiProvider(providerFn, request, timeoutMs = 10 * 1000) {
   }
 }
 
+async function runAiProvider({ providerFn, provider, prompt, scoreContext, limiter = createAiRateLimiter(), timeoutMs } = {}) {
+  const requestResult = buildAiRequest({ provider, prompt, scoreContext });
+  if (!requestResult.usable) return { ...requestResult, proposal: null };
+  const rate = limiter?.check?.() || { allowed: true, retryAfterMs: 0 };
+  if (!rate.allowed) return { usable: false, proposal: null, diagnostics: ['rate-limited'], retryAfterMs: rate.retryAfterMs };
+  const response = await executeAiProvider(providerFn, requestResult.request, timeoutMs);
+  return { ...response, contextFingerprint: requestResult.request.contextFingerprint };
+}
+
 function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () => Date.now() } = {}) {
   const limit = Number.isSafeInteger(maxRequests) ? Math.max(1, Math.min(100, maxRequests)) : 5;
   const window = Number.isSafeInteger(windowMs) ? Math.max(1000, Math.min(MAX_AI_RATE_WINDOW_MS, windowMs)) : 60 * 1000;
@@ -86,4 +95,4 @@ function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () =
   };
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, fingerprintScoreContext, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, sanitizeScoreContext };
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, fingerprintScoreContext, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, runAiProvider, sanitizeScoreContext };

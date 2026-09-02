@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
+const { buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiResponse, runAiProvider } = require('./ai-provider-boundary.cjs');
 
 const PROVIDER = { id: 'local-assistant', version: '1', licenseStatus: 'accepted', networkPolicy: 'user-approved' };
 const COMMAND = { type: 'batch', label: 'AI proposal', commands: [{ type: 'add_measure', count: 1 }] };
@@ -39,4 +39,12 @@ test('AI rate limiter bounds calls and returns deterministic retry timing', () =
   assert.deepEqual(limiter.check(), { allowed: false, retryAfterMs: 1000 });
   current += 1000;
   assert.deepEqual(limiter.check(), { allowed: true, retryAfterMs: 0 });
+});
+
+test('AI provider gate applies request and rate checks before execution', async () => {
+  const blocked = await runAiProvider({ providerFn: async () => ({ status: 'success', body: COMMAND }), provider: { ...PROVIDER, networkPolicy: 'disabled' }, prompt: 'x' });
+  assert.deepEqual(blocked.diagnostics, ['network-not-approved']);
+  const limiter = { check: () => ({ allowed: false, retryAfterMs: 250 }) };
+  const limited = await runAiProvider({ providerFn: async () => ({ status: 'success', body: COMMAND }), provider: PROVIDER, prompt: 'x', limiter });
+  assert.deepEqual(limited, { usable: false, proposal: null, diagnostics: ['rate-limited'], retryAfterMs: 250 });
 });
