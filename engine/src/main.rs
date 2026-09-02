@@ -363,7 +363,8 @@ mod tests {
     <note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
     <note><pitch><step>E</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
     <backup><duration>1920</duration></backup>
-    <note><rest/><duration>1920</duration><voice>2</voice><type>whole</type></note>
+    <note><pitch><step>G</step><octave>3</octave></pitch><duration>480</duration><voice>2</voice><type>quarter</type></note>
+    <note><rest/><duration>1440</duration><voice>2</voice><type>half</type><dot/></note>
   </measure></part>
 </score-partwise>"#;
 
@@ -654,7 +655,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "acorde v1.0.5 adds direct voice coverage, but Composer MusicXML fixture still flattens voice identity; see issue #11"]
     fn multi_voice_fixture_preserves_playback_addresses() {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());

@@ -37,6 +37,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 
 - 隣接acorde v1.0.6へ依存pinとengine表示を同期（Composer versionは0.1.4のまま）
 - Rust未使用importを整理し、`npm run check`をwarningなしで通過
+- acorde v1.0.6でComposerの複数voice PlaybackEvent address fixtureを有効化し、Rust 14件成功を確認
 
 ## 0.1.3 — 2026-09-02
 

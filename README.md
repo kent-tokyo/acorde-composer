@@ -105,12 +105,12 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 87件、Rust側テスト、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 87件、Rust 14件、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
 1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
-2. `acorde` Issue #11解決後に、複数voiceのPlaybackEvent address fixtureを再開する
+2. 複数voiceのUI編集シナリオと実SoundFont decoder接続を進める
 3. optional SoundFont実providerをlicense・配布条件とともに評価する（Issue #9。codec未実装）
 4. OMR/AI providerの実 executable、認証情報、利用許諾を選定してruntime adapterへ接続する
 5. 署名証明書とclean macOS/Windows環境を用意してpackaging QAを実施する
