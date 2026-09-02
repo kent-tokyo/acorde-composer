@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { MAX_PLUGIN_STATE_BYTES, PLUGIN_API_VERSION, authorizePluginCapability, normalizePluginManifest, isPluginPath, normalizePluginState, pluginFailure, pluginRecord, scanPluginPaths } = require('./plugin-host.cjs');
+const { createPluginRuntime, pluginEditorDescriptor, sandboxPolicy } = require('./plugin-runtime.cjs');
 
 test('plugin manifest accepts only versioned, capability-scoped contracts', () => {
   assert.deepEqual(normalizePluginManifest({
@@ -64,4 +65,53 @@ test('failed plugin records are disabled without changing core playback policy',
   assert.equal(failed.loadStatus, 'disabled');
   assert.equal(failed.state.enabled, false);
   assert.equal(failed.state.reason, 'host-crashed');
+});
+
+function fakeChild() {
+  const { EventEmitter } = require('node:events');
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stdin = { writes: [], write(value) { this.writes.push(value); } };
+  child.kill = () => child.emit('exit', 0, null);
+  return child;
+}
+
+test('runtime host enforces IPC capabilities and returns isolated editor descriptor', async () => {
+  const child = fakeChild();
+  const runtime = createPluginRuntime({
+    pluginPath: '/tmp/Strings.vst3', hostCommand: '/tmp/acorde-plugin-host',
+    manifest: { id: 'strings', name: 'Strings', version: '1', apiVersion: 1, capabilities: ['score.read'] },
+    spawnImpl() { return child; },
+  });
+  assert.equal(runtime.start().status, 'running');
+  const response = runtime.request('score.read', { address: '0:0:0:0:0' });
+  const request = JSON.parse(child.stdin.writes[0]);
+  child.stdout.emit('data', `${JSON.stringify({ id: request.id, ok: true, result: { accepted: true } })}\n`);
+  assert.deepEqual(await response, { accepted: true });
+  await assert.rejects(runtime.request('network', {}), /unsupported-capability/);
+  assert.deepEqual(runtime.editor({ id: 'strings', path: '/tmp/Strings.vst3' }, { width: 100, height: 9999 }), {
+    mode: 'isolated-window', pluginId: 'strings', title: 'Strings.vst3', bounds: { width: 320, height: 1600 },
+    transport: 'host-ipc', canAccessScore: false, canAccessFilesystem: false, canAccessNetwork: false, canAccessAudioContext: false,
+  });
+  runtime.stop();
+});
+
+test('runtime host recovers once after crash then disables after repeated crash', () => {
+  const children = [];
+  const runtime = createPluginRuntime({
+    pluginPath: '/tmp/Piano.vst3', hostCommand: '/tmp/acorde-plugin-host',
+    manifest: { id: 'piano', name: 'Piano', version: '1', apiVersion: 1, capabilities: [] },
+    spawnImpl() { const child = fakeChild(); children.push(child); return child; },
+  });
+  runtime.start();
+  children[0].emit('exit', 1, null);
+  assert.equal(runtime.getStatus(), 'running');
+  children[1].emit('exit', 1, null);
+  assert.equal(runtime.getStatus(), 'disabled');
+  assert.equal(runtime.getRestartCount(), 1);
+});
+
+test('sandbox policy and editor descriptor deny direct host access', () => {
+  assert.deepEqual(sandboxPolicy('/tmp/Piano.vst3'), { mode: 'external-process-policy', cwd: '/tmp', environment: ['PATH', 'LANG'], network: 'denied-by-host-contract', filesystem: 'plugin-path-only-by-host-contract', rendererAccess: 'denied' });
+  assert.equal(pluginEditorDescriptor(null).canAccessScore, false);
 });
