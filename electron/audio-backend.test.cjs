@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 class FakeNode {
-  constructor() { this.disconnected = 0; this.stopped = 0; this.listeners = {}; this.gain = { value: 0, setValueAtTime() {}, exponentialRampToValueAtTime() {} }; this.pan = { value: 0 }; this.frequency = { value: 0 }; }
+  constructor() { this.disconnected = 0; this.stopped = 0; this.listeners = {}; this.gain = { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} }; this.pan = { value: 0 }; this.frequency = { value: 0 }; this.playbackRate = { value: 1 }; this.loop = false; }
   connect(node) { this.destination = node; return node; }
   disconnect() { this.disconnected += 1; }
   addEventListener(name, callback) { this.listeners[name] = callback; }
@@ -12,11 +12,18 @@ class FakeNode {
   stop() { this.stopped += 1; this.listeners.ended?.(); }
 }
 
+class FakeBuffer {
+  constructor(channels, frames) { this.data = Array.from({ length: channels }, () => new Float32Array(frames)); }
+  getChannelData(index) { return this.data[index]; }
+}
+
 class FakeAudioContext {
   constructor() { this.currentTime = 0; this.state = 'suspended'; this.closed = false; this.sinkId = ''; }
   createGain() { return new FakeNode(); }
   createStereoPanner() { return new FakeNode(); }
   createOscillator() { return new FakeNode(); }
+  createBuffer(channels, frames) { return new FakeBuffer(channels, frames); }
+  createBufferSource() { return new FakeNode(); }
   async resume() { this.state = 'running'; }
   async setSinkId(sinkId) { this.sinkId = sinkId; }
   async close() { this.state = 'closed'; this.closed = true; }
@@ -37,6 +44,19 @@ test('audio backend schedules and stops oscillator nodes', async () => {
   backend.stopAll();
   assert.equal(backend.nodes.size, 0);
   assert.equal(backend.channels.size, 0);
+});
+
+test('audio backend renders decoded PCM samples with loop, velocity, and release', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  const source = backend.scheduleDecodedSample({ sampleRate: 8000, channels: 1, pcm: [0.25, -0.5, 0.75, -1], loopStart: 1, loopEnd: 3 }, { time_secs: 0, duration_secs: 0.2, velocity: 96 }, audioContext.currentTime);
+  assert.ok(source);
+  assert.equal(source.buffer.getChannelData(0)[2], 0.75);
+  assert.equal(source.loop, true);
+  assert.equal(source.loopStart, 1 / 8000);
+  assert.equal(source.loopEnd, 3 / 8000);
+  backend.stopAll();
+  assert.equal(backend.nodes.size, 0);
 });
 
 test('audio backend applies master volume, pan, and mute at the master bus', async () => {

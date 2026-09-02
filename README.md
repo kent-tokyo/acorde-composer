@@ -29,6 +29,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - `acorde`のmetronome PlaybackEventを任意でclick音へルーティング
 - SoundFontの選択・保存・missing asset確認とoscillator fallback表示
 - offline前提のSoundFont asset profile（provider / license / version / portability）
+- decoderが返すPCMのWeb Audio実sample再生（loop、velocity envelope、release）とoscillator fallbackの共存
 - `acorde`の`AddPart` / `DeletePart` commandによるpart追加・削除とpart数表示
 - `AddStaff` / `DeleteStaff` / `SetPartName` commandによるstaff操作・part名編集
 - active part selectorによる操作対象partの切り替え
@@ -47,6 +48,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Import / OMR: OMRプロバイダーを接続するための確認UI
 - OMR provider manifest、license gate、draft MusicXML、confidence、source bbox、review状態の安全な境界（Scoreへ直接適用しない）
 - OMR providerのsuccess / failed / timeoutを正規化し、失敗時にScore proposalを生成しない復旧境界
+- 外部OMR/AI executableを接続するJSON stdin/stdout runtime（shellなし、timeout、出力上限、異常終了復旧）
 - `acorde-io` を使ったMusicXML / MXL / MIDIのOpen / Export IPC境界とdiagnostics表示
 - `acorde-io` を使ったABCのOpen / Export IPC境界とdiagnostics表示
 - メインプロセス管理の最大8件recent files履歴と番号指定再オープン
@@ -101,13 +103,15 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 68件、Rust側テスト、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 73件、Rust側テスト、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
 1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
 2. `acorde` Issue #11解決後に、複数voiceのPlaybackEvent address fixtureを再開する
-3. optional SoundFont実providerをlicense・配布条件とともに評価する（Issue #9）
+3. optional SoundFont実providerをlicense・配布条件とともに評価する（Issue #9。codec未実装）
+4. OMR/AI providerの実 executable、認証情報、利用許諾を選定してruntime adapterへ接続する
+5. 署名証明書とclean macOS/Windows環境を用意してpackaging QAを実施する
 
 アクセシビリティ設定（reduced motion / high contrast）は Score settings から変更でき、ローカルに保存されます。譜面上の音符はキーボードフォーカスとARIA labelを持ちます。
 
