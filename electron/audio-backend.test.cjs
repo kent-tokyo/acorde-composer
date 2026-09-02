@@ -49,6 +49,18 @@ test('audio backend applies master volume, pan, and mute at the master bus', asy
   assert.equal(backend.masterPanner.pan.value, 0.7);
 });
 
+test('audio backend updates a scheduled part channel without rebuilding playback', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  backend.schedule([{ pitch_midi: 60, velocity: 100, time_secs: 0, duration_secs: 0.25 }], audioContext.currentTime, { volume: 0.8, pan: -0.2 }, 2);
+  assert.equal(backend.setChannelControls(2, { volume: 0.25, pan: 0.5, mute: false }), true);
+  const bus = backend.channelBuses.get(2);
+  assert.equal(bus.gain.gain.value, 0.25);
+  assert.equal(bus.panner.pan.value, 0.5);
+  assert.equal(backend.setChannelControls(2, { mute: true }), true);
+  assert.equal(bus.gain.gain.value, 0);
+});
+
 test('audio backend dispose closes the AudioContext and is idempotent', async () => {
   const backend = createBackend();
   await backend.resume();
