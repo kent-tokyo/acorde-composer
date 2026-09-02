@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.5 — 2026-09-03
+
+acorde v1.0.7のSoundFont実装をComposer engineへ接続し、OMR入力preflightを強化したリリースです。
+
+### Added
+
+- acorde v1.0.7のSF2 PCM decode / sample render fixture
+- SF3 Vorbis featureを有効化したSoundFont依存構成
+- OMR画像 / PDFのマジックバイト検証
+
+### Verification
+
+- Composer Node: 90 passed
+- Composer Rust: 15 passed
+- `npm run check`: passed without warnings
+
 ## 0.1.4 — 2026-09-02
 
 acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可能なrelease metadataを強化したリリースです。
