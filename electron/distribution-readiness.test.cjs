@@ -7,6 +7,7 @@ const packageJson = { version: '0.1.4', build: { productName: 'Acorde Composer',
 test('distribution readiness reports missing signing and artifact evidence', () => {
   const result = assessDistribution({ packageJson, platform: 'mac', arch: 'arm64' });
   assert.equal(result.ready, false);
+  assert.equal(result.signed, false);
   assert.deepEqual(result.diagnostics, ['mac-signing-identity-missing', 'artifacts-not-tested']);
 });
 
@@ -14,6 +15,13 @@ test('distribution readiness passes a target with signing and artifact evidence'
   const result = assessDistribution({ packageJson, platform: 'win', arch: 'x64', env: { WIN_CSC_LINK: 'secret-ref', WIN_CSC_KEY_PASSWORD: 'secret-ref' }, artifacts: ['Acorde Composer Setup.exe'] });
   assert.equal(result.ready, true);
   assert.deepEqual(result.targets, ['nsis']);
+});
+
+test('distribution readiness distinguishes configured signing from untested artifacts', () => {
+  const result = assessDistribution({ packageJson, platform: 'mac', arch: 'arm64', env: { CSC_NAME: 'Developer ID Application: reference' } });
+  assert.equal(result.signed, true);
+  assert.equal(result.ready, false);
+  assert.deepEqual(result.diagnostics, ['artifacts-not-tested']);
 });
 
 test('distribution readiness requires both Windows certificate and password references', () => {
