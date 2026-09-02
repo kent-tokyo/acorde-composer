@@ -11,7 +11,7 @@ const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, findOmrItemAtPoint, normalizeOmrRunResult } = require('./omr-boundary.cjs');
 const { buildAiRequest, normalizeAiResponse } = require('./ai-provider-boundary.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
-const { inspectOmrInput } = require('./omr-input.cjs');
+const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 
 let engine;
 const RECENT_FILES_LIMIT = 8;
@@ -145,8 +145,12 @@ ipcMain.handle('file:chooseOmrInput', async () => {
   if (result.canceled || !result.filePaths.length) return null;
   const filePath = result.filePaths[0];
   let stat = null;
+  let header = null;
   try { stat = await fs.stat(filePath); } catch {}
-  return inspectOmrInput(filePath, stat);
+  if (stat?.isFile && stat.size > 0) {
+    try { const handle = await fs.open(filePath, 'r'); const buffer = Buffer.alloc(8); await handle.read(buffer, 0, buffer.length, 0); await handle.close(); header = buffer; } catch {}
+  }
+  return inspectOmrInputWithHeader(filePath, stat, header);
 });
 ipcMain.handle('file:validateSoundfont', async (_event, { filePath }) => {
   try { return inspectSoundfontAsset(filePath, await fs.stat(filePath)); } catch { return inspectSoundfontAsset(filePath, null); }

@@ -50,6 +50,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - Import / OMR: OMRプロバイダーを接続するための確認UI
 - OMR provider manifest、license gate、draft MusicXML、confidence、source bbox、review状態の安全な境界（Scoreへ直接適用しない）
 - OMR providerのsuccess / failed / timeoutを正規化し、失敗時にScore proposalを生成しない復旧境界
+- OMR画像 / PDF入力は拡張子・サイズに加えてPNG/JPEG/PDFシグネチャもpreflightで検証
 - 外部OMR/AI executableを接続するJSON stdin/stdout runtime（shellなし、timeout、出力上限、異常終了復旧）
 - `acorde-io` を使ったMusicXML / MXL / MIDIのOpen / Export IPC境界とdiagnostics表示
 - `acorde-io` を使ったABCのOpen / Export IPC境界とdiagnostics表示

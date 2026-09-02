@@ -15,4 +15,16 @@ function inspectOmrInput(filePath, stat) {
   return { usable: true, path: value, inputFormat, reason: null, sizeBytes: stat.size, maxBytes: MAX_OMR_INPUT_BYTES };
 }
 
-module.exports = { MAX_OMR_INPUT_BYTES, inspectOmrInput };
+function hasSupportedSignature(inputFormat, header) {
+  if (!Buffer.isBuffer(header)) return true;
+  if (inputFormat === 'pdf') return header.subarray(0, 5).toString('ascii') === '%PDF-';
+  return header.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) || header.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]));
+}
+
+function inspectOmrInputWithHeader(filePath, stat, header) {
+  const result = inspectOmrInput(filePath, stat);
+  if (result.usable && !hasSupportedSignature(result.inputFormat, header)) return { ...result, usable: false, reason: 'invalid-signature' };
+  return result;
+}
+
+module.exports = { MAX_OMR_INPUT_BYTES, hasSupportedSignature, inspectOmrInput, inspectOmrInputWithHeader };

@@ -22,6 +22,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - provider executableの絶対パス、NUL文字、引数列上限の検証
 - 外部OMR providerのidentity / license gateをspawn前に適用し、未承認providerを起動しない回帰テスト
 - OMR画像 / PDF選択時の拡張子・通常ファイル・64 MiB上限preflightと、provider未接続時のScore非変更UI導線
+- OMR画像 / PDFのPNG/JPEG/PDFマジックバイトを確認する偽装防止preflight
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
