@@ -54,7 +54,7 @@ test('distribution QA matrix is deterministic and reports missing or failed evid
   assert.equal(partial.passed, 1);
   assert.equal(partial.missing.length, 19);
   const all = matrix.flatMap((target) => target.scenarios.map((scenario) => ({ platform: target.platform, arch: target.arch, scenario: scenario.id, status: 'passed' })));
-  assert.deepEqual(assessDistributionQa(matrix, all), { ready: true, total: 20, passed: 20, missing: [], failed: [], invalid: [], duplicates: [] });
+  assert.deepEqual(assessDistributionQa(matrix, all), { ready: true, total: 20, passed: 20, missing: [], failed: [], notRun: [], invalid: [], duplicates: [] });
 });
 
 test('distribution QA rejects unknown, duplicate, and malformed result records', () => {
@@ -78,4 +78,7 @@ test('strict distribution QA requires evidence for passed results', () => {
   assert.equal(strict.invalid.length, 10);
   assert.equal(assessDistributionQa(matrix, results.map((result) => ({ ...result, evidence: [{ kind: 'test', source: 'fixture', detail: 'verified' }] })), { requireEvidence: true }).ready, true);
   assert.equal(assessDistributionQa(matrix, results.map((result) => ({ ...result, evidence: [{ kind: 'test' }] })), { requireEvidence: true }).invalid.length, 10);
+  const notRun = assessDistributionQa(matrix, results.map((result) => ({ ...result, status: 'not-run', evidence: [{ kind: 'blocked', source: 'fixture', detail: 'unavailable' }] })), { requireEvidence: true });
+  assert.deepEqual(notRun.notRun.length, 10);
+  assert.equal(notRun.failed.length, 0);
 });

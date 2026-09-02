@@ -8,7 +8,7 @@
 {"kind":"manual","source":"clean-mac-arm64-2026-09-03","detail":"installer launch and first window verified"}
 ```
 
-`status`は`passed`、`failed`、`not-run`のいずれかです。`not-run`は未検証として扱われ、公開可能判定を通過しません。`passed`は実測証跡がある場合だけ使用します。
+`status`は`passed`、`failed`、`not-run`のいずれかです。reportでは`failed`と`notRun`を分離します。`not-run`は未検証として扱われ、公開可能判定を通過しません。`passed`は実測証跡がある場合だけ使用します。
 
 pack後に次を実行すると、artifact manifestと20件の結果を束ねたreportを生成します。
 

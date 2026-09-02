@@ -62,8 +62,9 @@ function assessDistributionQa(matrix, results = [], { requireEvidence = false } 
     observed.set(key, result);
   });
   const missing = [...expected].filter((key) => !observed.has(key));
-  const failed = [...observed.values()].filter((result) => result.status !== 'passed').map((result) => `${result.platform}/${result.arch}/${result.scenario}`);
-  return { ready: missing.length === 0 && failed.length === 0 && invalid.length === 0 && duplicates.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed, invalid, duplicates };
+  const failed = [...observed.values()].filter((result) => result.status === 'failed').map((result) => `${result.platform}/${result.arch}/${result.scenario}`);
+  const notRun = [...observed.values()].filter((result) => result.status === 'not-run').map((result) => `${result.platform}/${result.arch}/${result.scenario}`);
+  return { ready: missing.length === 0 && failed.length === 0 && notRun.length === 0 && invalid.length === 0 && duplicates.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed, notRun, invalid, duplicates };
 }
 
 module.exports = { QA_SCENARIOS, assessArtifactEvidence, assessDistribution, assessDistributionQa, createArtifactManifest, createDistributionQaMatrix, verifyArtifactManifest };
