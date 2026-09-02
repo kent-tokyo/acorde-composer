@@ -17,7 +17,7 @@
   "build": {
     "appId": "io.acorde.composer",
     "productName": "Acorde Composer",
-    "files": ["electron/**/*", "src/**/*", "package.json"],
+    "files": ["electron/**/*", "src/**/*", "package.json", "NOTICE.md", "README.md", "CHANGELOG.md"],
     "mac": { "category": "public.app-category.music" },
     "win": { "target": "nsis" }
   }

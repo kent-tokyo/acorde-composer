@@ -103,7 +103,7 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 73件、Rust側テスト、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 78件、Rust側テスト、構文・差分検証を確認しています。
 
 ## 次の実装単位
 

@@ -13,6 +13,8 @@ test('release metadata identifies the Acorde Composer v0.1.4 release', () => {
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
   assert.ok(packageJson.build.files.includes('src/**/*'));
+  assert.ok(packageJson.build.files.includes('NOTICE.md'));
+  assert.ok(fs.existsSync(path.join(root, 'NOTICE.md')));
 });
 
 test('internal roadmap and generated artifacts stay out of the repository', () => {

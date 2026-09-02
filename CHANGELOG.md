@@ -22,7 +22,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 ### Verification
 
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
-- Composer Node: 76 passed
+- Composer Node: 78 passed
 
 ## 0.1.3 — 2026-09-02
 
