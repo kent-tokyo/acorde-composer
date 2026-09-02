@@ -1,7 +1,7 @@
 (function () {
   class OscillatorAudioBackend {
     constructor() { this.context = null; this.master = null; this.masterPanner = null; this.nodes = new Set(); this.channels = new Set(); this.channelBuses = new Map(); }
-    async resume() { this.context ||= new AudioContext(); if (!this.master) { this.master = this.context.createGain(); this.masterPanner = this.context.createStereoPanner(); this.master.connect(this.masterPanner).connect(this.context.destination); } if (this.outputDeviceId) await this.setOutputDevice(this.outputDeviceId); await this.context.resume(); return this.context; }
+    async resume() { this.context ||= new AudioContext(); if (!this.master) { this.master = this.context.createGain(); this.masterPanner = this.context.createStereoPanner(); this.master.connect(this.masterPanner).connect(this.context.destination); } if (this.outputDeviceId) { try { await this.setOutputDevice(this.outputDeviceId); } catch { this.outputDeviceId = null; } } await this.context.resume(); return this.context; }
     setMasterControls({ volume = 1, pan = 0, mute = false } = {}) { if (!this.master || !this.masterPanner) return; this.master.gain.value = mute ? 0 : Math.max(0, Math.min(1, Number(volume))); this.masterPanner.pan.value = Math.max(-1, Math.min(1, Number(pan))); }
     async setOutputDevice(deviceId) { if (!this.context || !deviceId || typeof this.context.setSinkId !== 'function') return false; await this.context.setSinkId(deviceId); this.outputDeviceId = deviceId; return true; }
     schedule(events, start, channel = {}, channelKey = null) {
