@@ -30,6 +30,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - SoundFontの選択・保存・missing asset確認とoscillator fallback表示
 - offline前提のSoundFont asset profile（provider / license / version / portability）
 - decoderが返すPCMのWeb Audio実sample再生（cache、root note pitch変換、loop、velocity envelope、sustain、release、polyphony制限）とoscillator fallbackの共存
+- decoder → renderer間のPCM format、loop、root note、digest、サイズ上限を検証するsample contract
 - `acorde`の`AddPart` / `DeletePart` commandによるpart追加・削除とpart数表示
 - `AddStaff` / `DeleteStaff` / `SetPartName` commandによるstaff操作・part名編集
 - active part selectorによる操作対象partの切り替え
@@ -103,7 +104,7 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 78件、Rust側テスト、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.4](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.4)。現在の作業ツリーでは`npm test` 82件、Rust側テスト、構文・差分検証を確認しています。
 
 ## 次の実装単位
 

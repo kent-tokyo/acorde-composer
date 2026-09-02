@@ -14,6 +14,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - sample voiceのsustain保持とpedal release lifecycle
 - 最大polyphony制限とFIFO voice stealing
 - sample root noteからPlaybackEvent pitchへの安全なpitch ratio変換
+- decoder → renderer間のPCM sample contract（format、loop、root note、digest、サイズ上限）
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
@@ -25,7 +26,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 ### Verification
 
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
-- Composer Node: 78 passed
+- Composer Node: 82 passed
 
 ## 0.1.3 — 2026-09-02
 
