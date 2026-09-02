@@ -17,3 +17,9 @@ test('mixer state normalizes persisted values and removes deleted part channels'
   assert.deepEqual({ ...state.channels[0] }, { volume: 1, pan: 1, mute: false, solo: true });
   assert.equal(Object.hasOwn(state.channels, '2'), false);
 });
+
+test('mixer state preserves channels while the score size is not known yet', () => {
+  const normalize = loadNormalize();
+  const state = normalize({ channels: { 1: { volume: 0.4, solo: true } } });
+  assert.deepEqual({ ...state.channels[1] }, { volume: 0.4, pan: 0, mute: false, solo: true });
+});
