@@ -33,6 +33,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - decoder → renderer間のPCM format、loop、root note、digest、サイズ上限を検証するsample contract
 - acorde v1.0.8のSF2 PCM / SF3 Vorbis decode結果をengine JSON IPCから受け取るbounded sample API
 - OMR review queueのstatus filter、confidence / bbox表示、accept / reject操作（Scoreへ自動適用しない）
+- OMR review itemのcorrection入力とbbox navigation target通知（proposal状態のみ）
 - sample contractをElectron main/preload IPCへ接続し、decoder出力をrenderer前に検証
 - `acorde`の`AddPart` / `DeletePart` commandによるpart追加・削除とpart数表示
 - `AddStaff` / `DeleteStaff` / `SetPartName` commandによるstaff操作・part名編集

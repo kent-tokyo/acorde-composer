@@ -11,6 +11,8 @@ test('OMR review UI is wired to the provider-neutral queue without Score applica
   assert.match(app, /omr-review-list/);
   assert.match(app, /listOmrReviewItems/);
   assert.match(app, /transitionOmrItem/);
+  assert.match(app, /action === 'correct'/);
+  assert.match(app, /omr-navigation-target/);
   assert.match(app, /omr-proposal-ready/);
   assert.doesNotMatch(app, /applyCommand\([^)]*omrReview/);
 });

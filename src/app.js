@@ -99,11 +99,13 @@ function renderOmrReviewQueue() {
     row.innerHTML = `<strong>${item.kind}</strong><span>${confidence} · ${item.status}</span><small>bbox ${box.x},${box.y} ${box.width}×${box.height}</small>`;
     const actions = document.createElement('div');
     actions.className = 'omr-review-actions';
-    for (const action of ['accept', 'reject']) {
+    for (const action of ['accept', 'reject', 'correct']) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'quiet'; button.textContent = action[0].toUpperCase() + action.slice(1);
       button.addEventListener('click', async () => {
-        const next = await window.acorde.transitionOmrItem(item, action);
+        const correction = action === 'correct' ? (() => { const value = window.prompt('Correction value', item.proposal?.value || ''); return value === null ? null : { type: 'correction', value: value.trim() }; })() : null;
+        if (action === 'correct' && correction === null) return;
+        const next = await window.acorde.transitionOmrItem(item, action, correction);
         if (!next) return;
         omrReviewItems = omrReviewItems.map((candidate) => candidate.id === next.id ? next : candidate);
         renderOmrReviewQueue();
@@ -111,7 +113,7 @@ function renderOmrReviewQueue() {
       actions.append(button);
     }
     row.append(actions);
-    row.addEventListener('click', (event) => { if (event.target.closest('button')) return; document.querySelectorAll('.omr-review-item').forEach((candidate) => candidate.classList.remove('selected')); row.classList.add('selected'); row.setAttribute('aria-label', `Selected OMR ${item.kind} at ${box.x},${box.y}`); });
+    row.addEventListener('click', (event) => { if (event.target.closest('button')) return; document.querySelectorAll('.omr-review-item').forEach((candidate) => candidate.classList.remove('selected')); row.classList.add('selected'); row.setAttribute('aria-label', `Selected OMR ${item.kind} at ${box.x},${box.y}`); window.dispatchEvent(new CustomEvent('omr-navigation-target', { detail: { id: item.id, sourceBox: box } })); });
     return row;
   }));
 }
