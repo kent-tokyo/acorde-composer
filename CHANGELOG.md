@@ -19,6 +19,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - signing credential設定とartifact検証を分離したrelease readiness判定
 - QA結果の未知platform・scenario・status・重複を検出する入力整合性gate
 - 共通provider runtimeのJSON stdin 512 KiB上限
+- provider executableの絶対パス、NUL文字、引数列上限の検証
 - macOS / Windows配布QA matrix（20ケース）と未実施・失敗gate
 - version / commit / release metadata digestへ結び付けた改変検出可能なQA report
 
@@ -30,7 +31,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 ### Verification
 
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
-- Composer Node: 86 passed
+- Composer Node: 87 passed
 
 ## 0.1.3 — 2026-09-02
 

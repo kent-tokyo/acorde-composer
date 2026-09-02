@@ -30,3 +30,11 @@ test('JSON provider runtime rejects oversized input before spawning a provider',
   assert.deepEqual(result, { status: 'failed', error: 'provider-input-too-large' });
   assert.equal(spawned, false);
 });
+
+test('JSON provider runtime rejects unsafe executable paths and arguments before spawning', async () => {
+  let spawned = false;
+  const spawnImpl = () => { spawned = true; return fakeChild(); };
+  assert.deepEqual(await runJsonProvider({ executable: 'provider', request: {}, spawnImpl }), { status: 'failed', error: 'provider-command-invalid' });
+  assert.deepEqual(await runJsonProvider({ executable: '/provider', args: ['x\0y'], request: {}, spawnImpl }), { status: 'failed', error: 'provider-command-invalid' });
+  assert.equal(spawned, false);
+});

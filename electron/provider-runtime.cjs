@@ -2,10 +2,12 @@ const { spawn } = require('node:child_process');
 
 const MAX_PROVIDER_OUTPUT_BYTES = 4 * 1024 * 1024;
 const MAX_PROVIDER_INPUT_BYTES = 512 * 1024;
+const MAX_PROVIDER_ARGS_BYTES = 16 * 1024;
 const MAX_PROVIDER_TIMEOUT_MS = 60 * 1000;
 
 function runJsonProvider({ executable, args = [], request, timeoutMs = 10 * 1000, maxOutputBytes = MAX_PROVIDER_OUTPUT_BYTES, spawnImpl = spawn } = {}) {
   if (typeof executable !== 'string' || executable.length === 0) return Promise.resolve({ status: 'failed', error: 'provider-missing' });
+  if (!executable.startsWith('/') || executable.includes('\0') || !Array.isArray(args) || args.some((arg) => String(arg).includes('\0')) || Buffer.byteLength(args.map(String).join('\0'), 'utf8') > MAX_PROVIDER_ARGS_BYTES) return Promise.resolve({ status: 'failed', error: 'provider-command-invalid' });
   let serializedRequest;
   try { serializedRequest = JSON.stringify(request ?? {}); } catch { return Promise.resolve({ status: 'failed', error: 'provider-input-invalid' }); }
   if (Buffer.byteLength(serializedRequest, 'utf8') > MAX_PROVIDER_INPUT_BYTES) return Promise.resolve({ status: 'failed', error: 'provider-input-too-large' });
@@ -32,4 +34,4 @@ function runJsonProvider({ executable, args = [], request, timeoutMs = 10 * 1000
   });
 }
 
-module.exports = { MAX_PROVIDER_INPUT_BYTES, MAX_PROVIDER_OUTPUT_BYTES, MAX_PROVIDER_TIMEOUT_MS, runJsonProvider };
+module.exports = { MAX_PROVIDER_ARGS_BYTES, MAX_PROVIDER_INPUT_BYTES, MAX_PROVIDER_OUTPUT_BYTES, MAX_PROVIDER_TIMEOUT_MS, runJsonProvider };
