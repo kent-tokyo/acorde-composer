@@ -22,3 +22,12 @@ test('print geometry reports oriented page and printable dimensions', () => {
 test('print geometry rejects margins that consume the page', () => {
   assert.equal(calculate()('A5', 'portrait', 4).valid, false);
 });
+
+test('SVG bounds analysis detects elements outside the viewBox', () => {
+  const source = fs.readFileSync(require.resolve('../src/print-geometry.js'), 'utf8');
+  const context = vm.createContext({ window: {} });
+  vm.runInContext(source, context);
+  const analyze = context.window.AcordePrintGeometry.analyzeSvgBounds;
+  assert.equal(analyze('<svg viewBox="0 0 100 100"><rect x="10" y="10" width="20" height="20" /></svg>').valid, true);
+  assert.equal(analyze('<svg viewBox="0 0 100 100"><rect x="90" y="10" width="20" height="20" /></svg>').valid, false);
+});
