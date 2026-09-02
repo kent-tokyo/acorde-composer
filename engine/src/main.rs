@@ -266,9 +266,13 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
         .map_err(|error| error.to_string()),
         Request::InspectSoundfont { data, provider_version, bank, program } => {
             let asset = load_soundfont(&data, provider_version).map_err(|error| error.to_string())?;
-            let selected = match (bank, program) {
-                (Some(bank), Some(program)) => Some(asset.preset(bank, program).map_err(|error| error.to_string())?),
-                (None, None) => None,
+            let (selected, diagnostics) = match (bank, program) {
+                (Some(bank), Some(program)) => match asset.preset(bank, program) {
+                    Ok(preset) => (Some(preset), Vec::<String>::new()),
+                    Err(acorde_soundfont::Error::PresetNotFound { .. }) => (None, vec![format!("missing-preset:{bank}:{program}")]),
+                    Err(error) => return Err(error.to_string()),
+                },
+                (None, None) => (None, Vec::new()),
                 _ => return Err("bank and program must be provided together".into()),
             };
             Ok(serde_json::json!({
@@ -279,6 +283,7 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 "preset_count": asset.presets.len(),
                 "presets": asset.presets.iter().take(256).map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })).collect::<Vec<_>>(),
                 "preset": selected.map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })),
+                "diagnostics": diagnostics,
             }))
         }
     }
@@ -518,6 +523,21 @@ mod tests {
         assert_eq!(value["provider_version"], "test-provider");
         assert_eq!(value["preset"]["name"], "Piano");
         assert_eq!(value["preset_count"], 1);
+        assert!(value["diagnostics"].as_array().is_some_and(|items| items.is_empty()));
+    }
+
+    #[test]
+    fn soundfont_missing_preset_is_a_diagnostic_not_an_ipc_failure() {
+        let mut engine = None;
+        let value = handle(Request::InspectSoundfont {
+            data: soundfont_fixture(false),
+            provider_version: "test-provider".into(),
+            bank: Some(0),
+            program: Some(99),
+        }, &mut engine)
+        .expect("missing preset remains a valid metadata response");
+        assert!(value["preset"].is_null());
+        assert_eq!(value["diagnostics"][0], "missing-preset:0:99");
     }
 
     #[test]
