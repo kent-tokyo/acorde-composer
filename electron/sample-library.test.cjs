@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessSampleLibrary, canActivateSampleLibrary, manifestWithinLimit, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary } = require('./sample-library.cjs');
+const { assessSampleLibrary, canActivateSampleLibrary, createSampleLibraryRegistry, manifestWithinLimit, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary } = require('./sample-library.cjs');
 
 const VALID_LIBRARY = {
   id: 'external-orchestra', name: 'External Orchestra', provider: 'licensed-provider', version: '2026.1',
@@ -46,4 +46,14 @@ test('sample library lifecycle rejects identity changes and unreviewed activatio
   assert.deepEqual(mismatch.diagnostics, ['library-id-mismatch']);
   const unreviewed = normalizeSampleLibraryRecord({ ...VALID_LIBRARY, licenseStatus: 'unreviewed' });
   assert.equal(transitionSampleLibrary(unreviewed, 'activate').active, false);
+});
+
+test('sample library registry keeps deterministic records and isolated transitions', () => {
+  const registry = createSampleLibraryRegistry([{ ...VALID_LIBRARY, id: 'z-library' }, { ...VALID_LIBRARY, id: 'a-library' }]);
+  assert.deepEqual(registry.list().map((record) => record.id), ['a-library', 'z-library']);
+  const active = registry.transition('a-library', 'activate');
+  assert.equal(active.active, true);
+  assert.equal(registry.get('a-library').active, true);
+  assert.equal(registry.get('z-library').active, false);
+  assert.equal(registry.transition('missing', 'activate').valid, false);
 });

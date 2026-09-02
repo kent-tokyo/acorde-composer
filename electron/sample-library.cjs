@@ -65,8 +65,26 @@ function transitionSampleLibrary(value, action, nextValue) {
   return { ...current, status: 'inactive', active: false, valid: false, diagnostics: ['unknown-library-action'] };
 }
 
+function createSampleLibraryRegistry(initial = []) {
+  const records = new Map();
+  for (const value of Array.isArray(initial) ? initial : []) {
+    const record = normalizeSampleLibraryRecord(value);
+    if (record.id) records.set(record.id, record);
+  }
+  return {
+    get: (id) => records.get(typeof id === 'string' ? id : '') || null,
+    list: () => [...records.values()].sort((left, right) => left.id.localeCompare(right.id)),
+    transition: (id, action, nextValue) => {
+      const current = records.get(typeof id === 'string' ? id : '') || null;
+      const result = transitionSampleLibrary(current, action, nextValue);
+      if (result.id) records.set(result.id, result);
+      return result;
+    },
+  };
+}
+
 function manifestWithinLimit(value) {
   try { return Buffer.byteLength(JSON.stringify(normalizeSampleLibrary(value)), 'utf8') <= MAX_LIBRARY_MANIFEST_BYTES; } catch { return false; }
 }
 
-module.exports = { LIBRARY_STATUSES, MAX_LIBRARY_MANIFEST_BYTES, assessSampleLibrary, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary, canActivateSampleLibrary, manifestWithinLimit };
+module.exports = { LIBRARY_STATUSES, MAX_LIBRARY_MANIFEST_BYTES, assessSampleLibrary, normalizeSampleLibrary, normalizeSampleLibraryRecord, transitionSampleLibrary, createSampleLibraryRegistry, canActivateSampleLibrary, manifestWithinLimit };
