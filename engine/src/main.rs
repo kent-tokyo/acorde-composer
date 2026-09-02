@@ -8,6 +8,7 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
+use acorde_soundfont::load as load_soundfont;
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
 
@@ -90,6 +91,12 @@ enum Request {
     },
     ParseMxlReport {
         data: Vec<u8>,
+    },
+    InspectSoundfont {
+        data: Vec<u8>,
+        provider_version: String,
+        bank: Option<u16>,
+        program: Option<u16>,
     },
 }
 
@@ -257,6 +264,22 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
             parse_mxl_with_report(&data).map_err(|error| error.to_string())?,
         )
         .map_err(|error| error.to_string()),
+        Request::InspectSoundfont { data, provider_version, bank, program } => {
+            let asset = load_soundfont(&data, provider_version).map_err(|error| error.to_string())?;
+            let selected = match (bank, program) {
+                (Some(bank), Some(program)) => Some(asset.preset(bank, program).map_err(|error| error.to_string())?),
+                (None, None) => None,
+                _ => return Err("bank and program must be provided together".into()),
+            };
+            Ok(serde_json::json!({
+                "contract_version": acorde_soundfont::PLAYBACK_CONTRACT_VERSION,
+                "format": match asset.format { acorde_soundfont::SoundFontFormat::Sf2 => "sf2", acorde_soundfont::SoundFontFormat::Sf3 => "sf3" },
+                "checksum": asset.checksum,
+                "provider_version": asset.provider_version,
+                "preset_count": asset.presets.len(),
+                "preset": selected.map(|preset| serde_json::json!({ "bank": preset.bank, "program": preset.program, "name": preset.name })),
+            }))
+        }
     }
 }
 
@@ -333,6 +356,29 @@ mod tests {
     <note><rest/><duration>1920</duration><voice>2</voice><type>whole</type></note>
   </measure></part>
 </score-partwise>"#;
+
+    fn soundfont_fixture(ogg: bool) -> Vec<u8> {
+        let mut preset = vec![0u8; 38 * 2];
+        preset[..6].copy_from_slice(b"Piano\0");
+        preset[20..22].copy_from_slice(&0u16.to_le_bytes());
+        preset[22..24].copy_from_slice(&0u16.to_le_bytes());
+        preset[38..42].copy_from_slice(b"EOP\0");
+        let mut phdr = b"phdr".to_vec();
+        phdr.extend((preset.len() as u32).to_le_bytes());
+        phdr.extend(preset);
+        let mut list = b"LIST".to_vec();
+        list.extend(((phdr.len() + 4) as u32).to_le_bytes());
+        list.extend(b"pdta");
+        list.extend(phdr);
+        let mut out = b"RIFFxxxxsfbk".to_vec();
+        out.extend(list);
+        if ogg {
+            out.extend(b"data");
+            out.extend(4u32.to_le_bytes());
+            out.extend(b"OggS");
+        }
+        out
+    }
 
     #[test]
     fn musicxml_report_round_trip_preserves_score_identity_fields() {
@@ -454,6 +500,23 @@ mod tests {
             .expect("MIDI report request succeeds");
         assert_eq!(midi["format"], "midi");
         assert!(midi["output"].as_array().is_some_and(|bytes| !bytes.is_empty()));
+    }
+
+    #[test]
+    fn soundfont_metadata_crosses_json_ipc_boundary() {
+        let mut engine = None;
+        let value = handle(Request::InspectSoundfont {
+            data: soundfont_fixture(false),
+            provider_version: "test-provider".into(),
+            bank: Some(0),
+            program: Some(0),
+        }, &mut engine)
+        .expect("SoundFont metadata request succeeds");
+        assert_eq!(value["contract_version"], 1);
+        assert_eq!(value["format"], "sf2");
+        assert_eq!(value["provider_version"], "test-provider");
+        assert_eq!(value["preset"]["name"], "Piano");
+        assert_eq!(value["preset_count"], 1);
     }
 
     #[test]

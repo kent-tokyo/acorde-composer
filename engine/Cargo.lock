@@ -10,13 +10,14 @@ dependencies = [
  "acorde-io",
  "acorde-layout",
  "acorde-render-svg",
+ "acorde-soundfont",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "acorde-core"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -26,7 +27,7 @@ dependencies = [
 
 [[package]]
 name = "acorde-io"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "acorde-core",
  "midly",
@@ -38,7 +39,7 @@ dependencies = [
 
 [[package]]
 name = "acorde-layout"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "acorde-core",
  "serde",
@@ -46,11 +47,19 @@ dependencies = [
 
 [[package]]
 name = "acorde-render-svg"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "acorde-core",
  "acorde-layout",
  "serde",
+]
+
+[[package]]
+name = "acorde-soundfont"
+version = "1.0.2"
+dependencies = [
+ "acorde-core",
+ "thiserror",
 ]
 
 [[package]]
