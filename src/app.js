@@ -42,9 +42,7 @@ const $ = (id) => document.getElementById(id);
 function syncSelectionPlaybackControl() { const button = $('selection-play-button'); if (!button) return; button.disabled = !selectedRange; button.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first'; }
 let storedMixer = null;
 try { storedMixer = JSON.parse(localStorage.getItem(MIXER_KEY) || 'null'); } catch { localStorage.removeItem(MIXER_KEY); }
-const mixerState = storedMixer || { master: { volume: 1, pan: 0, mute: false }, soloPiano: false, metronome: false, soundfont: window.AcordeAudioProfile.fallback() };
-if (!mixerState.soundfont) mixerState.soundfont = window.AcordeAudioProfile.fallback();
-if (!mixerState.channels) mixerState.channels = {};
+let mixerState = window.AcordeMixerState.normalize(storedMixer || { soundfont: window.AcordeAudioProfile.fallback() });
 function saveMixer() { localStorage.setItem(MIXER_KEY, JSON.stringify(mixerState)); }
 let accessibilityState = { reducedMotion: false, highContrast: false };
 try { accessibilityState = { ...accessibilityState, ...JSON.parse(localStorage.getItem(ACCESSIBILITY_KEY) || '{}') }; } catch { localStorage.removeItem(ACCESSIBILITY_KEY); }
@@ -210,7 +208,7 @@ installPresentationControls();
 function installPrintSettingsPersistence() { const defaults = { preset: 'a4', orientation: 'portrait', margin: 'standard' }; let saved = defaults; try { saved = { ...defaults, ...JSON.parse(localStorage.getItem(PRINT_SETTINGS_KEY) || '{}') }; } catch { localStorage.removeItem(PRINT_SETTINGS_KEY); } const preset = $('page-preset'); const orientation = $('page-orientation'); const margin = $('page-margin'); if (!preset || !orientation || !margin) return; const hasOption = (select, value) => Array.from(select.options).some((option) => option.value === value); if (hasOption(preset, saved.preset)) preset.value = saved.preset; if (hasOption(orientation, saved.orientation)) orientation.value = saved.orientation; if (hasOption(margin, saved.margin)) margin.value = saved.margin; const persist = () => localStorage.setItem(PRINT_SETTINGS_KEY, JSON.stringify({ preset: preset.value, orientation: orientation.value, margin: margin.value })); [preset, orientation, margin].forEach((control) => control.addEventListener('change', persist)); persist(); }
 installPrintSettingsPersistence();
 installRenderDiagnostics();
-window.addEventListener('score-changed', () => { const selector = $('part-select'); if (!selector || !currentScore) return; const previous = activePartIndex; selector.replaceChildren(...currentScore.parts.map((part, index) => { const option = document.createElement('option'); option.value = index; option.textContent = part.name || `Part ${index + 1}`; return option; })); activePartIndex = Math.min(previous, Math.max(0, currentScore.parts.length - 1)); selector.value = String(activePartIndex); });
+window.addEventListener('score-changed', () => { if (currentScore) mixerState = window.AcordeMixerState.normalize(mixerState, currentScore.parts?.length || 0); const selector = $('part-select'); if (!selector || !currentScore) return; const previous = activePartIndex; selector.replaceChildren(...currentScore.parts.map((part, index) => { const option = document.createElement('option'); option.value = index; option.textContent = part.name || `Part ${index + 1}`; return option; })); activePartIndex = Math.min(previous, Math.max(0, currentScore.parts.length - 1)); selector.value = String(activePartIndex); });
 window.addEventListener('score-changed', refreshVoiceSelector);
 window.addEventListener('score-changed', refreshStaffSelector);
 window.addEventListener('score-changed', applyPartView);
