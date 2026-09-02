@@ -28,4 +28,11 @@ function isReleaseMetadataValid(value) {
   return Boolean(metadata.version && metadata.commit && metadata.target && metadata.engineVersion && metadata.buildType === 'release' && metadata.signed && Object.keys(metadata.checksums).length > 0);
 }
 
-module.exports = { BUILD_TYPES, createReleaseMetadata, isReleaseMetadataValid, normalizeReleaseMetadata };
+function verifyReleaseMetadata(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const expectedDigest = createReleaseMetadata(source).inputDigest;
+  const valid = isReleaseMetadataValid(source) && typeof source.inputDigest === 'string' && source.inputDigest === expectedDigest;
+  return { valid, diagnostics: valid ? [] : ['release-metadata-invalid-or-tampered'] };
+}
+
+module.exports = { BUILD_TYPES, createReleaseMetadata, isReleaseMetadataValid, normalizeReleaseMetadata, verifyReleaseMetadata };
