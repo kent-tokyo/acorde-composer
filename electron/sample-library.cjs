@@ -26,8 +26,20 @@ function canActivateSampleLibrary(value) {
   return Boolean(library.id && library.version && library.rootPath && library.checksum && library.licenseStatus === 'accepted');
 }
 
+function assessSampleLibrary(value, { offlineRequired = false } = {}) {
+  const library = normalizeSampleLibrary(value);
+  const diagnostics = [];
+  if (!library.id || !library.name || !library.provider) diagnostics.push('identity-incomplete');
+  if (!library.version) diagnostics.push('version-missing');
+  if (!library.rootPath) diagnostics.push('root-path-missing');
+  if (!library.checksum) diagnostics.push('checksum-missing');
+  if (library.licenseStatus !== 'accepted') diagnostics.push(`license-${library.licenseStatus}`);
+  if (offlineRequired && !library.offline) diagnostics.push('offline-unavailable');
+  return { library, usable: diagnostics.length === 0, portable: diagnostics.length === 0 && library.offline, diagnostics };
+}
+
 function manifestWithinLimit(value) {
   try { return Buffer.byteLength(JSON.stringify(normalizeSampleLibrary(value)), 'utf8') <= MAX_LIBRARY_MANIFEST_BYTES; } catch { return false; }
 }
 
-module.exports = { MAX_LIBRARY_MANIFEST_BYTES, normalizeSampleLibrary, canActivateSampleLibrary, manifestWithinLimit };
+module.exports = { MAX_LIBRARY_MANIFEST_BYTES, assessSampleLibrary, normalizeSampleLibrary, canActivateSampleLibrary, manifestWithinLimit };
