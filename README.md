@@ -111,7 +111,7 @@ npm start
 
 1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
 2. 複数voiceのUI編集シナリオと実SoundFont decoder接続を進める
-3. optional SoundFont実providerをlicense・配布条件とともに評価する（Issue #9。codec未実装）
+3. optional SoundFont実providerをlicense・配布条件とともに評価する（acorde Issue #13。codec未実装）
 4. OMR/AI providerの実 executable、認証情報、利用許諾を選定してruntime adapterへ接続する
 5. 署名証明書とclean macOS/Windows環境を用意してpackaging QAを実施する
 
