@@ -622,7 +622,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "blocked by acorde issue #8: PlaybackEvent address still flattens voice identity"]
+    #[ignore = "acorde issue #8 is closed, but v1.0.4 still flattens voice identity in PlaybackEvent address"]
     fn multi_voice_fixture_preserves_playback_addresses() {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());
