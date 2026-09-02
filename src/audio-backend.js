@@ -1,6 +1,6 @@
 (function () {
   class OscillatorAudioBackend {
-    constructor() { this.context = null; this.master = null; this.masterPanner = null; this.nodes = new Set(); this.channels = new Set(); this.channelBuses = new Map(); }
+    constructor() { this.context = null; this.master = null; this.masterPanner = null; this.nodes = new Set(); this.channels = new Set(); this.channelBuses = new Map(); this.sampleBuffers = new Map(); }
     async resume() { this.context ||= new AudioContext(); if (!this.master) { this.master = this.context.createGain(); this.masterPanner = this.context.createStereoPanner(); this.master.connect(this.masterPanner).connect(this.context.destination); } if (this.outputDeviceId) { try { await this.setOutputDevice(this.outputDeviceId); } catch { this.outputDeviceId = null; } } await this.context.resume(); return this.context; }
     setMasterControls({ volume = 1, pan = 0, mute = false } = {}) { if (!this.master || !this.masterPanner) return; this.master.gain.value = mute ? 0 : Math.max(0, Math.min(1, Number(volume))); this.masterPanner.pan.value = Math.max(-1, Math.min(1, Number(pan))); }
     async setOutputDevice(deviceId = null) { if (!this.context || typeof this.context.setSinkId !== 'function') return false; await this.context.setSinkId(deviceId || ''); this.outputDeviceId = deviceId || null; return true; }
@@ -20,11 +20,15 @@
       const sampleRate = Number.isFinite(sample.sampleRate) ? Math.max(1, sample.sampleRate) : 44100;
       const pcm = Array.isArray(sample.pcm) || ArrayBuffer.isView(sample.pcm) ? sample.pcm : null;
       if (!pcm || pcm.length === 0 || pcm.length % channels !== 0) return null;
-      const frames = pcm.length / channels;
-      const buffer = this.context.createBuffer(channels, frames, sampleRate);
-      for (let channel = 0; channel < channels; channel++) {
-        const data = buffer.getChannelData(channel);
-        for (let frame = 0; frame < frames; frame++) data[frame] = Number(pcm[frame * channels + channel]) || 0;
+      const frames = pcm.length / channels; const cacheKey = typeof sample.cacheKey === 'string' && sample.cacheKey.length <= 256 ? sample.cacheKey : null;
+      let buffer = cacheKey ? this.sampleBuffers.get(cacheKey) : null;
+      if (!buffer) {
+        buffer = this.context.createBuffer(channels, frames, sampleRate);
+        for (let channel = 0; channel < channels; channel++) {
+          const data = buffer.getChannelData(channel);
+          for (let frame = 0; frame < frames; frame++) data[frame] = Number(pcm[frame * channels + channel]) || 0;
+        }
+        if (cacheKey) this.sampleBuffers.set(cacheKey, buffer);
       }
       const source = this.context.createBufferSource(); const gain = this.context.createGain();
       const when = start + Math.max(0, Number(event.time_secs) || 0);
@@ -44,7 +48,7 @@
     }
     setChannelControls(channelKey, { volume = 1, pan = 0, mute = false } = {}) { const bus = this.channelBuses.get(channelKey); if (!bus) return false; bus.gain.gain.value = mute ? 0 : Math.max(0, Math.min(1, Number(volume))); bus.panner.pan.value = Math.max(-1, Math.min(1, Number(pan))); return true; }
     stopAll() { this.nodes.forEach((node) => { try { node.stop(); } catch {} try { node.disconnect(); } catch {} }); this.nodes.clear(); this.channels.forEach((node) => { try { node.disconnect(); } catch {} }); this.channels.clear(); this.channelBuses.clear(); }
-    async dispose() { this.stopAll(); if (this.context && this.context.state !== 'closed') await this.context.close(); this.context = null; this.master = null; this.masterPanner = null; }
+    async dispose() { this.stopAll(); if (this.context && this.context.state !== 'closed') await this.context.close(); this.context = null; this.master = null; this.masterPanner = null; this.sampleBuffers.clear(); }
   }
   window.AcordeAudioBackend = OscillatorAudioBackend;
 })();

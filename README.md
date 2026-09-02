@@ -29,7 +29,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - `acorde`のmetronome PlaybackEventを任意でclick音へルーティング
 - SoundFontの選択・保存・missing asset確認とoscillator fallback表示
 - offline前提のSoundFont asset profile（provider / license / version / portability）
-- decoderが返すPCMのWeb Audio実sample再生（loop、velocity envelope、release）とoscillator fallbackの共存
+- decoderが返すPCMのWeb Audio実sample再生（cache、loop、velocity envelope、release）とoscillator fallbackの共存
 - `acorde`の`AddPart` / `DeletePart` commandによるpart追加・削除とpart数表示
 - `AddStaff` / `DeleteStaff` / `SetPartName` commandによるstaff操作・part名編集
 - active part selectorによる操作対象partの切り替え
