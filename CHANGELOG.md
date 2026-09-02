@@ -60,6 +60,7 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - acorde v1.0.7のSF2 PCM decode / sample renderをComposer engine fixtureで確認（SF3 Vorbisはfeature経由）
 - SoundFont decode結果をengine JSON IPC / preloadのbounded sample APIへ接続し、SF2 / SF3 formatを明示化
 - OMR review queueの一覧取得・status filter・単一item遷移をstatelessなmain / preload IPCへ接続
+- 複数voice UIで`[` / `]`によるvoice切替とselector・入力対象の同期を追加
 - acorde v1.0.7でIssue #13のSF2 PCM decoder / synthesizer基盤が解決され、Composer側の実API fixture接続へ移行
 - 外部OMR provider gateをspawn前に強化し、identity不備・license未承認時の起動を防止
 

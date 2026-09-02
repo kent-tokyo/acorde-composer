@@ -120,7 +120,7 @@ npm start
 
 アクセシビリティ設定（reduced motion / high contrast）は Score settings から変更でき、ローカルに保存されます。譜面上の音符はキーボードフォーカスとARIA labelを持ちます。
 
-複数voiceを含む譜面では、編集toolbarのVoice selectorで入力・選択対象のvoiceを切り替えられます。
+複数voiceを含む譜面では、編集toolbarのVoice selectorまたは`[` / `]`キーで入力・選択対象のvoiceを切り替えられます。
 
 選択中の音符は編集toolbarからsharp / flat / naturalを適用できます。
 音価の横のDotを有効にすると、付点音符・付点休符の入力と変更ができます。
