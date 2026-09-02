@@ -74,6 +74,23 @@ test('audio backend holds sustained sample voices until pedal release', async ()
   await backend.dispose();
 });
 
+test('audio backend uses pedal state and deterministically steals the oldest voice at the polyphony limit', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  backend.setMaxPolyphony(2);
+  backend.setSustain(4, true);
+  const sample = { sampleRate: 8000, channels: 1, pcm: [0.25, -0.5], cacheKey: 'polyphony' };
+  const first = backend.scheduleDecodedSample(sample, { time_secs: 0, duration_secs: 0.2, velocity: 100 }, audioContext.currentTime, backend.master, 4);
+  const second = backend.scheduleDecodedSample(sample, { time_secs: 0, duration_secs: 0.2, velocity: 100 }, audioContext.currentTime, backend.master, 4);
+  const third = backend.scheduleDecodedSample(sample, { time_secs: 0, duration_secs: 0.2, velocity: 100 }, audioContext.currentTime, backend.master, 4);
+  assert.equal(first.stopped, 1);
+  assert.equal(second.stopped, 0);
+  assert.equal(third.stopped, 0);
+  assert.equal(backend.nodes.size, 2);
+  assert.equal(backend.setSustain(4, false), true);
+  await backend.dispose();
+});
+
 test('audio backend applies master volume, pan, and mute at the master bus', async () => {
   const backend = createBackend();
   await backend.resume();
