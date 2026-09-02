@@ -30,6 +30,12 @@ test('mixer state rejects malformed persisted output device ids', () => {
   assert.equal(normalize({ outputDeviceId: 'speaker-1' }).outputDeviceId, 'speaker-1');
 });
 
+test('mixer state rejects malformed persisted MIDI input ids', () => {
+  const normalize = loadNormalize();
+  assert.equal(normalize({ midiInputId: { id: 'unexpected' } }).midiInputId, null);
+  assert.equal(normalize({ midiInputId: 'keyboard-1' }).midiInputId, 'keyboard-1');
+});
+
 test('mixer state normalizes persisted SoundFont profiles', () => {
   const normalize = loadNormalize();
   assert.deepEqual({ ...normalize({ soundfont: { provider: 'unknown', path: 42, version: {}, license: false, offline: 0 } }).soundfont }, {
