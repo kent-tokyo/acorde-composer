@@ -32,4 +32,5 @@ contextBridge.exposeInMainWorld('acorde', {
   inspectSoundfont: (data, providerVersion, bank = null, program = null) => ipcRenderer.invoke('engine:inspectSoundfont', { data, provider_version: providerVersion, bank, program }),
   assessOmrProposal: (proposal) => ipcRenderer.invoke('omr:assessProposal', proposal),
   normalizeOmrRunResult: (result) => ipcRenderer.invoke('omr:normalizeRunResult', result),
+  findOmrItemAtPoint: (proposal, x, y) => ipcRenderer.invoke('omr:findItemAtPoint', { proposal, x, y }),
 });

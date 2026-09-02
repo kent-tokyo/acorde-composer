@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessOmrProposal, createOmrReviewQueue, normalizeOmrRunResult, transitionOmrItem } = require('./omr-boundary.cjs');
+const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, transitionOmrItem } = require('./omr-boundary.cjs');
 
 const VALID_PROPOSAL = {
   provider: { id: 'omr-local', name: 'Local OMR', version: '1.0', licenseStatus: 'accepted', distribution: 'optional-external' },
@@ -46,4 +46,14 @@ test('OMR provider failure and timeout recover without producing a Score proposa
   const success = normalizeOmrRunResult({ status: 'success', proposal: VALID_PROPOSAL });
   assert.equal(success.usable, true);
   assert.equal(success.proposal.items[0].status, 'review');
+});
+
+test('OMR bbox navigation selects the smallest deterministic source item', () => {
+  const proposal = { ...VALID_PROPOSAL, items: [
+    { ...VALID_PROPOSAL.items[0], id: 'outer', sourceBox: { x: 0, y: 0, width: 100, height: 100 } },
+    { ...VALID_PROPOSAL.items[0], id: 'inner', sourceBox: { x: 20, y: 20, width: 10, height: 10 } },
+  ] };
+  assert.equal(findOmrItemAtPoint(proposal, 25, 25).id, 'inner');
+  assert.equal(findOmrItemAtPoint(proposal, 150, 150), null);
+  assert.equal(findOmrItemAtPoint(proposal, 'bad', 25), null);
 });

@@ -81,6 +81,15 @@ function createOmrReviewQueue(value) {
   };
 }
 
+function findOmrItemAtPoint(value, x, y) {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  const assessed = assessOmrProposal(value);
+  return assessed.proposal.items
+    .filter((item) => item.id && item.sourceBox.x !== null && item.sourceBox.y !== null && item.sourceBox.width !== null && item.sourceBox.height !== null)
+    .filter((item) => x >= item.sourceBox.x && x <= item.sourceBox.x + item.sourceBox.width && y >= item.sourceBox.y && y <= item.sourceBox.y + item.sourceBox.height)
+    .sort((left, right) => (left.sourceBox.width * left.sourceBox.height) - (right.sourceBox.width * right.sourceBox.height) || left.id.localeCompare(right.id))[0] || null;
+}
+
 function normalizeOmrRunResult(value) {
   const source = value && typeof value === 'object' ? value : {};
   const status = ['success', 'failed', 'timeout'].includes(source.status) ? source.status : 'failed';
@@ -91,4 +100,4 @@ function normalizeOmrRunResult(value) {
   return { status, usable: assessed.usable, proposal: assessed.proposal, diagnostics: assessed.diagnostics };
 }
 
-module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, normalizeOmrItem, normalizeOmrProvider, normalizeOmrRunResult, transitionOmrItem };
+module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrItem, normalizeOmrProvider, normalizeOmrRunResult, transitionOmrItem };
