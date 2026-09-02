@@ -1,5 +1,5 @@
 use acorde_core::{
-    Command, PlaybackEvent, PlaybackOptions, Score, ScoreEngine, compute_playback_position, to_playback_events,
+    Command, PlaybackOptions, Score, ScoreEngine, compute_playback_position, to_playback_events,
 };
 use acorde_io::{
     parse_midi, parse_midi_with_report, parse_mxl_with_report, parse_musicxml,
@@ -8,7 +8,11 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
-use acorde_soundfont::{DecodedSample, SampleAction, SampleDecoder, SampleRegion, SampleRenderer, load as load_soundfont, schedule_sample_note_on};
+use acorde_soundfont::load as load_soundfont;
+#[cfg(test)]
+use acorde_core::PlaybackEvent;
+#[cfg(test)]
+use acorde_soundfont::{DecodedSample, SampleAction, SampleDecoder, SampleRegion, SampleRenderer, schedule_sample_note_on};
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, Write};
 

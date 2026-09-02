@@ -33,6 +33,11 @@ acorde v1.0.5へ更新し、OMR / AI provider / 外部音源境界と再現可�
 - Composer Rust: 13 passed / 1 ignored（MusicXML voice identityのacorde側残件）
 - Composer Node: 87 passed
 
+### Post-release maintenance
+
+- 隣接acorde v1.0.6へ依存pinとengine表示を同期（Composer versionは0.1.4のまま）
+- Rust未使用importを整理し、`npm run check`をwarningなしで通過
+
 ## 0.1.3 — 2026-09-02
 
 acorde v1.0.3へ更新し、optional pluginを安全に扱うためのruntime・GUI・lifecycle境界を追加した候補リリースです。

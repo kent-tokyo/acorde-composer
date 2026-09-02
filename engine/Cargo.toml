@@ -5,10 +5,10 @@ edition = "2024"
 publish = false
 
 [dependencies]
-acorde-core = { version = "1.0.5", path = "../../acorde/crates/core" }
-acorde-io = { version = "1.0.5", path = "../../acorde/crates/io", default-features = false, features = ["musicxml", "midi", "abc"] }
-acorde-layout = { version = "1.0.5", path = "../../acorde/crates/layout" }
-acorde-render-svg = { version = "1.0.5", path = "../../acorde/crates/render-svg" }
-acorde-soundfont = { version = "1.0.5", path = "../../acorde/crates/soundfont" }
+acorde-core = { version = "1.0.6", path = "../../acorde/crates/core" }
+acorde-io = { version = "1.0.6", path = "../../acorde/crates/io", default-features = false, features = ["musicxml", "midi", "abc"] }
+acorde-layout = { version = "1.0.6", path = "../../acorde/crates/layout" }
+acorde-render-svg = { version = "1.0.6", path = "../../acorde/crates/render-svg" }
+acorde-soundfont = { version = "1.0.6", path = "../../acorde/crates/soundfont" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
