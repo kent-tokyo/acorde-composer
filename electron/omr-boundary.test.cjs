@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessOmrProposal, createOmrReviewQueue, transitionOmrItem } = require('./omr-boundary.cjs');
+const { assessOmrProposal, createOmrReviewQueue, normalizeOmrRunResult, transitionOmrItem } = require('./omr-boundary.cjs');
 
 const VALID_PROPOSAL = {
   provider: { id: 'omr-local', name: 'Local OMR', version: '1.0', licenseStatus: 'accepted', distribution: 'optional-external' },
@@ -38,4 +38,12 @@ test('OMR review queue prioritizes uncertain items and isolates transitions by i
   assert.equal(queue.transition('low', 'accept').status, 'accepted');
   assert.equal(queue.list('review').length, 1);
   assert.equal(queue.transition('missing', 'reject'), null);
+});
+
+test('OMR provider failure and timeout recover without producing a Score proposal', () => {
+  assert.deepEqual(normalizeOmrRunResult({ status: 'timeout' }), { status: 'timeout', usable: false, proposal: null, diagnostics: ['provider-timeout'] });
+  assert.deepEqual(normalizeOmrRunResult({ status: 'failed', error: 'crashed' }), { status: 'failed', usable: false, proposal: null, diagnostics: ['provider-failed'] });
+  const success = normalizeOmrRunResult({ status: 'success', proposal: VALID_PROPOSAL });
+  assert.equal(success.usable, true);
+  assert.equal(success.proposal.items[0].status, 'review');
 });

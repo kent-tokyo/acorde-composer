@@ -81,4 +81,14 @@ function createOmrReviewQueue(value) {
   };
 }
 
-module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, normalizeOmrItem, normalizeOmrProvider, transitionOmrItem };
+function normalizeOmrRunResult(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const status = ['success', 'failed', 'timeout'].includes(source.status) ? source.status : 'failed';
+  if (status !== 'success') {
+    return { status, usable: false, proposal: null, diagnostics: [status === 'timeout' ? 'provider-timeout' : 'provider-failed'] };
+  }
+  const assessed = assessOmrProposal(source.proposal);
+  return { status, usable: assessed.usable, proposal: assessed.proposal, diagnostics: assessed.diagnostics };
+}
+
+module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, normalizeOmrItem, normalizeOmrProvider, normalizeOmrRunResult, transitionOmrItem };
