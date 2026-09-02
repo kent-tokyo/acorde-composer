@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiResponse, runAiProvider } = require('./ai-provider-boundary.cjs');
+const { buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiResponse, runAiProvider, runExternalAiProvider } = require('./ai-provider-boundary.cjs');
 
 const PROVIDER = { id: 'local-assistant', version: '1', licenseStatus: 'accepted', networkPolicy: 'user-approved' };
 const COMMAND = { type: 'batch', label: 'AI proposal', commands: [{ type: 'add_measure', count: 1 }] };
@@ -47,4 +47,12 @@ test('AI provider gate applies request and rate checks before execution', async 
   const limiter = { check: () => ({ allowed: false, retryAfterMs: 250 }) };
   const limited = await runAiProvider({ providerFn: async () => ({ status: 'success', body: COMMAND }), provider: PROVIDER, prompt: 'x', limiter });
   assert.deepEqual(limited, { usable: false, proposal: null, diagnostics: ['rate-limited'], retryAfterMs: 250 });
+});
+
+test('external AI provider uses the same validated proposal and context gate', async () => {
+  const fingerprint = buildAiRequest({ provider: PROVIDER, prompt: 'Add a cadence', scoreContext: { title: 'Draft' } }).request.contextFingerprint;
+  const child = { stdout: { on: (event, fn) => { if (event === 'data') process.nextTick(() => fn(Buffer.from(JSON.stringify({ status: 'success', body: COMMAND, contextFingerprint: fingerprint })))); } }, stdin: { end() {} }, on: (event, fn) => { if (event === 'close') process.nextTick(() => fn(0)); }, kill() {} };
+  const result = await runExternalAiProvider({ executable: '/ai-provider', provider: PROVIDER, prompt: 'Add a cadence', scoreContext: { title: 'Draft' }, spawnImpl: () => child });
+  assert.equal(result.usable, true);
+  assert.deepEqual(result.proposal, COMMAND);
 });

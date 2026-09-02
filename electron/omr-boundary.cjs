@@ -1,6 +1,7 @@
 const MAX_OMR_INPUT_BYTES = 64 * 1024 * 1024;
 const MAX_DRAFT_MUSICXML_BYTES = 8 * 1024 * 1024;
 const MAX_OMR_ITEMS = 4096;
+const { runJsonProvider } = require('./provider-runtime.cjs');
 const OMR_INPUT_FORMATS = new Set(['image', 'pdf']);
 const OMR_ITEM_STATUSES = new Set(['review', 'accepted', 'rejected', 'corrected']);
 
@@ -100,4 +101,9 @@ function normalizeOmrRunResult(value) {
   return { status, usable: assessed.usable, proposal: assessed.proposal, diagnostics: assessed.diagnostics };
 }
 
-module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrItem, normalizeOmrProvider, normalizeOmrRunResult, transitionOmrItem };
+async function runExternalOmrProvider({ executable, args, request, timeoutMs, spawnImpl } = {}) {
+  const response = await runJsonProvider({ executable, args, request, timeoutMs, spawnImpl });
+  return normalizeOmrRunResult(response.status === 'success' && response.body && typeof response.body === 'object' ? { ...response.body, status: response.status } : response);
+}
+
+module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrItem, normalizeOmrProvider, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem };

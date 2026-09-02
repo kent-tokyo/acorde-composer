@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const { assertCommand } = require('./command-schema.cjs');
+const { runJsonProvider } = require('./provider-runtime.cjs');
 
 const MAX_AI_PROMPT_BYTES = 32 * 1024;
 const MAX_SCORE_CONTEXT_BYTES = 128 * 1024;
@@ -80,6 +81,16 @@ async function runAiProvider({ providerFn, provider, prompt, scoreContext, limit
   return { ...response, contextFingerprint: requestResult.request.contextFingerprint };
 }
 
+async function runExternalAiProvider({ executable, args, provider, prompt, scoreContext, limiter = createAiRateLimiter(), timeoutMs, spawnImpl } = {}) {
+  const requestResult = buildAiRequest({ provider, prompt, scoreContext });
+  if (!requestResult.usable) return { ...requestResult, proposal: null };
+  const rate = limiter?.check?.() || { allowed: true, retryAfterMs: 0 };
+  if (!rate.allowed) return { usable: false, proposal: null, diagnostics: ['rate-limited'], retryAfterMs: rate.retryAfterMs };
+  const response = await runJsonProvider({ executable, args, request: requestResult.request, timeoutMs, spawnImpl });
+  const normalized = normalizeAiResponse(response.status === 'success' && response.body && typeof response.body === 'object' ? { ...response.body, status: response.status } : response, { expectedContextFingerprint: requestResult.request.contextFingerprint });
+  return { ...normalized, contextFingerprint: requestResult.request.contextFingerprint };
+}
+
 function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () => Date.now() } = {}) {
   const limit = Number.isSafeInteger(maxRequests) ? Math.max(1, Math.min(100, maxRequests)) : 5;
   const window = Number.isSafeInteger(windowMs) ? Math.max(1000, Math.min(MAX_AI_RATE_WINDOW_MS, windowMs)) : 60 * 1000;
@@ -95,4 +106,4 @@ function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () =
   };
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, fingerprintScoreContext, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, runAiProvider, sanitizeScoreContext };
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, fingerprintScoreContext, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, runAiProvider, runExternalAiProvider, sanitizeScoreContext };

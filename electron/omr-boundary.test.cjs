@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, transitionOmrItem } = require('./omr-boundary.cjs');
+const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
 
 const VALID_PROPOSAL = {
   provider: { id: 'omr-local', name: 'Local OMR', version: '1.0', licenseStatus: 'accepted', distribution: 'optional-external' },
@@ -56,4 +56,11 @@ test('OMR bbox navigation selects the smallest deterministic source item', () =>
   assert.equal(findOmrItemAtPoint(proposal, 25, 25).id, 'inner');
   assert.equal(findOmrItemAtPoint(proposal, 150, 150), null);
   assert.equal(findOmrItemAtPoint(proposal, 'bad', 25), null);
+});
+
+test('external OMR provider output still enters proposal assessment', async () => {
+  const child = { stdout: { on: (event, fn) => { if (event === 'data') process.nextTick(() => fn(Buffer.from(JSON.stringify({ status: 'success', proposal: VALID_PROPOSAL })))); } }, stdin: { end() {} }, on: (event, fn) => { if (event === 'close') process.nextTick(() => fn(0)); }, kill() {} };
+  const result = await runExternalOmrProvider({ executable: '/omr-provider', request: { input: 'fixture' }, spawnImpl: () => child });
+  assert.equal(result.usable, true);
+  assert.equal(result.proposal.items[0].status, 'review');
 });
