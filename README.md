@@ -37,6 +37,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - A4 / Letter / Compact page preset、Portrait / Landscape向き、標準 / 狭い / 広い余白によるPDF・印刷プレビュー設定
 - 印刷設定（用紙・向き・余白）のlocalStorage保存と再起動後の復元
 - PDF書き出し前に用紙・向き・余白をdiagnosticsとして表示
+- PDF / 印刷プレビューで実寸page geometryとprintable areaをdiagnosticsとして表示
 - SVG書き出し時に実出力のwidth / height / viewBox geometryをdiagnosticsとして表示
 - SVG geometryのwidth / height / viewBoxが正の数値か検証し、不正な出力をWarningとして表示
 - 印刷プレビュー開始時にも同じページ設定をdiagnosticsとして表示
@@ -94,11 +95,11 @@ npm start
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物を生成できます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
-公開対象リリース：[Acorde Composer v0.1.2](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.2)。`npm test` 21件、Rust側`npm run check`、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.2](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.2)。現在の作業ツリーでは`npm test` 23件、Rust側`npm run check`、構文・差分検証を確認しています。
 
 ## 次の実装単位
 
-1. PDFの実page geometry検証とfont / glyph diagnosticsを強化する（設定・印刷プレビュー経路は接続済み）
+1. PDFのfont / glyph diagnosticsとclipping検証を強化する（page geometryは接続済み）
 2. `acorde` Issue #2解決後に、複数voiceのparse → 編集 → 保存fixtureを再開する
 3. optional SoundFont実providerをlicense・配布条件とともに評価する
 

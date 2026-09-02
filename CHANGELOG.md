@@ -15,6 +15,10 @@ Mixerと外部入力の運用性を高め、保存状態と再生中の変更反
 - `npm test` 21件成功、JavaScript構文検証、差分検証
 - `npm run check`成功、Electron package contractと`acorde` v1.0.1 path依存を確認
 
+### Post-release maintenance
+
+- PDF / 印刷プレビューの実寸page geometryとprintable area diagnostics、およびgeometry回帰テストを追加（公開tag後の作業ツリー。バージョン番号は`0.1.2`のまま）
+
 ## 0.1.1 — 2026-09-02
 
 `v0.1.0`の基盤を、再生・IPC・配布検証の回帰テストとパッケージ契約で補強した保守リリースです。
