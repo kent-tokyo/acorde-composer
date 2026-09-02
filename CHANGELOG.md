@@ -9,12 +9,18 @@ acorde v1.0.7のSoundFont実装をComposer engineへ接続し、OMR入力preflig
 - acorde v1.0.7のSF2 PCM decode / sample render fixture
 - SF3 Vorbis featureを有効化したSoundFont依存構成
 - OMR画像 / PDFのマジックバイト検証
+- Composer engine JSON boundaryでSF2 PCM / SF3 Vorbisの実decode結果を検証する回帰fixture
 
 ### Verification
 
 - Composer Node: 90 passed
-- Composer Rust: 15 passed
+- Composer Rust: 17 passed
 - `npm run check`: passed without warnings
+
+### Post-release maintenance
+
+- 隣接acorde v1.0.8へ5 crateの依存pinとengine表示を同期（Composer versionは0.1.5のまま）
+- v1.0.8でSF2 PCM / SF3 Vorbis decode boundary fixtureとRust 17件成功を再確認
 
 ## 0.1.4 — 2026-09-02
 

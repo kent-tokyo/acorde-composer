@@ -623,6 +623,14 @@ mod tests {
     }
 
     #[test]
+    fn soundfont_sf3_decode_request_crosses_engine_json_boundary() {
+        let value = handle(Request::DecodeSoundfontSample { format: "sf3".into(), data: include_bytes!("../../../acorde/tests/fixtures/synthetic.sf3").to_vec(), start_frame: None, end_frame: None, sample_rate: 8_000, channels: 2 }, &mut None).expect("SF3 decode request succeeds");
+        assert_eq!(value["sample_rate"], 8_000);
+        assert_eq!(value["channels"], 2);
+        assert!(value["pcm_i16"].as_array().is_some_and(|samples| !samples.is_empty()));
+    }
+
+    #[test]
     fn svg_render_and_metadata_preserve_geometry_and_accessible_text() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
         let svg = render_svg(&score, &SvgRenderOptions { width: 900.0, ..Default::default() })
