@@ -53,3 +53,7 @@ test('accepts notation annotation commands used by the editor', () => {
   assert.doesNotThrow(() => assertCommand({ type: 'set_part_group', group: { first_part: 0, last_part: 1, symbol: 'Bracket', barlines_connect: true } }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_stem', part_index: 0, staff_index: 0, measure_index: 0, voice_index: 0, note_index: 0, stem_up: true }));
 });
+
+test('accepts structured tremolo articulation used by the Composer UI', () => {
+  assert.doesNotThrow(() => assertCommand({ type: 'toggle_articulation', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, note_index: 0, articulation: { Tremolo: 1 } }));
+});
