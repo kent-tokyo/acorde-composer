@@ -8,7 +8,8 @@ const COMMAND = { type: 'batch', label: 'AI proposal', commands: [{ type: 'add_m
 test('AI request applies provider license, network, size, and redaction gates', () => {
   const result = buildAiRequest({ provider: PROVIDER, prompt: 'Add a cadence', scoreContext: { title: 'Draft', token: 'do-not-send' } });
   assert.equal(result.usable, true);
-  assert.equal(result.request.scoreContext.token, '[REDACTED]');
+  assert.equal(result.request.scoreContext.token, undefined);
+  assert.equal(result.request.scoreContext.title, 'Draft');
 });
 
 test('AI request rejects unapproved or unlicensed providers', () => {

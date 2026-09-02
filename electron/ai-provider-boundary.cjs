@@ -6,6 +6,7 @@ const MAX_AI_RESPONSE_BYTES = 256 * 1024;
 const MAX_AI_TIMEOUT_MS = 30 * 1000;
 const MAX_AI_RATE_WINDOW_MS = 10 * 60 * 1000;
 const SENSITIVE_KEYS = new Set(['apiKey', 'authorization', 'password', 'secret', 'token']);
+const SCORE_CONTEXT_KEYS = new Set(['title', 'tempoBpm', 'timeSignature', 'keySignature', 'parts', 'measures', 'selection']);
 
 function normalizeAiProvider(value) {
   const source = value && typeof value === 'object' ? value : {};
@@ -23,10 +24,15 @@ function redactSensitiveFields(value, depth = 0) {
   return Object.fromEntries(Object.entries(value).slice(0, 4096).map(([key, item]) => [key, SENSITIVE_KEYS.has(key) ? '[REDACTED]' : redactSensitiveFields(item, depth + 1)]));
 }
 
+function sanitizeScoreContext(value) {
+  const source = redactSensitiveFields(value && typeof value === 'object' ? value : {});
+  return Object.fromEntries(Object.entries(source).filter(([key]) => SCORE_CONTEXT_KEYS.has(key)));
+}
+
 function buildAiRequest({ provider, prompt, scoreContext } = {}) {
   const normalizedProvider = normalizeAiProvider(provider);
   const safePrompt = typeof prompt === 'string' ? prompt.slice(0, MAX_AI_PROMPT_BYTES) : '';
-  const safeContext = redactSensitiveFields(scoreContext && typeof scoreContext === 'object' ? scoreContext : {});
+  const safeContext = sanitizeScoreContext(scoreContext);
   const request = { provider: normalizedProvider, prompt: safePrompt, scoreContext: safeContext };
   const bytes = Buffer.byteLength(JSON.stringify(request), 'utf8');
   return { request, usable: normalizedProvider.id !== null && normalizedProvider.licenseStatus === 'accepted' && normalizedProvider.networkPolicy === 'user-approved' && safePrompt.length > 0 && bytes <= MAX_SCORE_CONTEXT_BYTES, diagnostics: normalizedProvider.id === null ? ['provider-incomplete'] : normalizedProvider.licenseStatus !== 'accepted' ? [`provider-license-${normalizedProvider.licenseStatus}`] : normalizedProvider.networkPolicy !== 'user-approved' ? ['network-not-approved'] : safePrompt.length === 0 ? ['prompt-missing'] : bytes > MAX_SCORE_CONTEXT_BYTES ? ['request-too-large'] : [] };
@@ -74,4 +80,4 @@ function createAiRateLimiter({ maxRequests = 5, windowMs = 60 * 1000, now = () =
   };
 }
 
-module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields };
+module.exports = { MAX_AI_PROMPT_BYTES, MAX_SCORE_CONTEXT_BYTES, MAX_AI_RESPONSE_BYTES, MAX_AI_TIMEOUT_MS, MAX_AI_RATE_WINDOW_MS, buildAiRequest, createAiRateLimiter, executeAiProvider, normalizeAiProvider, normalizeAiResponse, redactSensitiveFields, sanitizeScoreContext };
