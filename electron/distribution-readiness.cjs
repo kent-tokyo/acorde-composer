@@ -10,4 +10,21 @@ function assessDistribution({ packageJson, platform, arch, env = {}, artifacts =
   return { platform, arch: arch || null, targets, signed: diagnostics.every((item) => !item.includes('signing')), ready: diagnostics.length === 0, diagnostics };
 }
 
-module.exports = { assessDistribution };
+const QA_SCENARIOS = Object.freeze([
+  'install-launch', 'new-open-edit', 'multiple-voice-roundtrip', 'playback-mixer', 'musicxml-midi-export',
+  'soundfont-absent-fallback', 'providers-disabled', 'read-only-directory', 'missing-sidecar-recovery', 'uninstall-upgrade',
+]);
+
+function createDistributionQaMatrix({ platforms = ['mac', 'win'], architectures = { mac: ['arm64', 'x64'], win: ['x64'] } } = {}) {
+  return platforms.flatMap((platform) => (architectures[platform] || ['unknown']).map((arch) => ({ platform, arch, scenarios: QA_SCENARIOS.map((id) => ({ id, status: 'not-run', diagnostics: [] })) })));
+}
+
+function assessDistributionQa(matrix, results = []) {
+  const expected = new Set(matrix.flatMap((target) => target.scenarios.map((scenario) => `${target.platform}/${target.arch}/${scenario.id}`)));
+  const observed = new Map(results.filter((result) => result && expected.has(`${result.platform}/${result.arch}/${result.scenario}`)).map((result) => [`${result.platform}/${result.arch}/${result.scenario}`, result]));
+  const missing = [...expected].filter((key) => !observed.has(key));
+  const failed = [...observed.values()].filter((result) => result.status !== 'passed').map((result) => `${result.platform}/${result.arch}/${result.scenario}`);
+  return { ready: missing.length === 0 && failed.length === 0, total: expected.size, passed: [...observed.values()].filter((result) => result.status === 'passed').length, missing, failed };
+}
+
+module.exports = { QA_SCENARIOS, assessDistribution, assessDistributionQa, createDistributionQaMatrix };
