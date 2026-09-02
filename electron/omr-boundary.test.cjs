@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assessOmrProposal, transitionOmrItem } = require('./omr-boundary.cjs');
+const { assessOmrProposal, createOmrReviewQueue, transitionOmrItem } = require('./omr-boundary.cjs');
 
 const VALID_PROPOSAL = {
   provider: { id: 'omr-local', name: 'Local OMR', version: '1.0', licenseStatus: 'accepted', distribution: 'optional-external' },
@@ -26,4 +26,16 @@ test('OMR review transitions produce proposal state only', () => {
   assert.equal(transitionOmrItem(item, 'accept').status, 'accepted');
   assert.equal(transitionOmrItem(item, 'reject').status, 'rejected');
   assert.equal(transitionOmrItem(item, 'correct', { type: 'rest' }).proposal.type, 'rest');
+});
+
+test('OMR review queue prioritizes uncertain items and isolates transitions by id', () => {
+  const queue = createOmrReviewQueue({ ...VALID_PROPOSAL, items: [
+    { ...VALID_PROPOSAL.items[0], id: 'high', confidence: 0.95 },
+    { ...VALID_PROPOSAL.items[0], id: 'low', confidence: 0.42 },
+  ] });
+  assert.equal(queue.usable, true);
+  assert.deepEqual(queue.list('review').map((item) => item.id), ['low', 'high']);
+  assert.equal(queue.transition('low', 'accept').status, 'accepted');
+  assert.equal(queue.list('review').length, 1);
+  assert.equal(queue.transition('missing', 'reject'), null);
 });

@@ -61,4 +61,24 @@ function transitionOmrItem(value, action, correction) {
   return { ...item, status: 'review' };
 }
 
-module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, normalizeOmrItem, normalizeOmrProvider, transitionOmrItem };
+function createOmrReviewQueue(value) {
+  const assessed = assessOmrProposal(value);
+  const items = new Map(assessed.proposal.items.filter((item) => item.id).map((item) => [item.id, item]));
+  return {
+    usable: assessed.usable,
+    diagnostics: assessed.diagnostics,
+    get: (id) => items.get(typeof id === 'string' ? id : '') || null,
+    list: (status = null) => [...items.values()]
+      .filter((item) => !status || item.status === status)
+      .sort((left, right) => (left.confidence ?? 1) - (right.confidence ?? 1) || left.id.localeCompare(right.id)),
+    transition: (id, action, correction) => {
+      const current = items.get(typeof id === 'string' ? id : '');
+      if (!current) return null;
+      const next = transitionOmrItem(current, action, correction);
+      items.set(next.id, next);
+      return next;
+    },
+  };
+}
+
+module.exports = { MAX_DRAFT_MUSICXML_BYTES, MAX_OMR_INPUT_BYTES, MAX_OMR_ITEMS, assessOmrProposal, createOmrReviewQueue, normalizeOmrItem, normalizeOmrProvider, transitionOmrItem };
