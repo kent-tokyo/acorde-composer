@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { MAX_SUPPORT_BUNDLE_BYTES, createSupportBundle, serializeSupportBundle } = require('./support-bundle.cjs');
 const { createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 const { createReleaseQaReport } = require('./release-qa.cjs');
+const { DEFAULT_SUPPORT_BUNDLE_FILENAME, supportBundleSaveDialogOptions } = require('./support-bundle-path.cjs');
 
 test('support bundle redacts sensitive diagnostics and remains deterministic', () => {
   const input = { version: '0.1.6', platform: 'darwin-arm64', releaseQa: { reportDigest: 'abc', token: 'secret' }, diagnostics: [{ code: 'engine-failed', password: 'secret' }] };
@@ -50,4 +51,11 @@ test('support bundle normalizes invalid input and bounds deep or circular diagno
   assert.match(JSON.stringify(bundle), /\[TRUNCATED\]/);
   assert.equal(bundle.diagnostics[0].self, '[CIRCULAR]');
   assert.doesNotMatch(JSON.stringify(bundle), /must-not-leak/);
+});
+
+test('support bundle save dialog uses a bounded JSON filename and preserves an explicit destination', () => {
+  assert.deepEqual(supportBundleSaveDialogOptions(), { defaultPath: DEFAULT_SUPPORT_BUNDLE_FILENAME, filters: [{ name: 'Acorde support bundle', extensions: ['json'] }] });
+  assert.equal(supportBundleSaveDialogOptions('   ').defaultPath, DEFAULT_SUPPORT_BUNDLE_FILENAME);
+  assert.equal(supportBundleSaveDialogOptions('/tmp/custom-support.json').defaultPath, '/tmp/custom-support.json');
+  assert.deepEqual(supportBundleSaveDialogOptions('custom.json').filters, [{ name: 'Acorde support bundle', extensions: ['json'] }]);
 });

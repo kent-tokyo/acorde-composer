@@ -13,6 +13,7 @@ const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiP
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
+const { supportBundleSaveDialogOptions } = require('./support-bundle-path.cjs');
 
 let engine;
 const aiRateLimiter = createAiRateLimiter();
@@ -104,7 +105,7 @@ ipcMain.handle('file:save', async (_event, { suggestedName, content }) => {
   return result.filePath;
 });
 ipcMain.handle('file:saveSupportBundle', async (_event, { suggestedName, diagnostics, releaseQa } = {}) => {
-  const result = await dialog.showSaveDialog({ defaultPath: suggestedName || 'acorde-support-bundle.json', filters: [{ name: 'Acorde support bundle', extensions: ['json'] }] });
+  const result = await dialog.showSaveDialog(supportBundleSaveDialogOptions(suggestedName));
   if (result.canceled || !result.filePath) return null;
   const content = serializeSupportBundle({ version: app.getVersion(), platform: `${process.platform}-${process.arch}`, diagnostics, releaseQa });
   await fs.writeFile(result.filePath, content, 'utf8');

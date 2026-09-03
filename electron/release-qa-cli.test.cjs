@@ -49,3 +49,28 @@ test('release QA CLI output crosses the support bundle boundary with redaction i
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-fixture-'));
+  try {
+    const manifestPath = path.join(root, 'manifest.json');
+    const outputPath = path.join(root, 'qa.json');
+    const matrixPath = path.resolve(__dirname, '../qa/release-qa-matrix.json');
+    const resultsPath = path.resolve(__dirname, '../qa/release-qa-results.json');
+    const matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));
+    const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+    const manifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const result = require('../scripts/run-release-qa.cjs').runReleaseQa({ manifestPath, outputPath, matrixPath, resultsPath, currentCommit: 'be680d5' });
+    assert.equal(matrix.flatMap((target) => target.scenarios).length, 20);
+    assert.equal(results.length, 20);
+    assert.equal(result.report.qa.total, 20);
+    assert.equal(result.report.qa.notRun.length, 20);
+    assert.equal(result.report.qa.missing.length, 0);
+    assert.equal(result.report.qa.failed.length, 0);
+    assert.equal(result.report.qa.ready, false);
+    assert.ok(fs.existsSync(outputPath));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
