@@ -8,6 +8,7 @@ const { createArtifactManifest, createDistributionQaMatrix } = require('./distri
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { validateReleaseQaReportSchema } = require('./release-qa.cjs');
 const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
+const { validateReleaseQaFile } = require('../scripts/validate-release-qa.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-'));
@@ -57,6 +58,28 @@ test('release QA CLI output schema rejects malformed summaries', () => {
   assert.equal(validateReleaseQaCliOutput({ schemaVersion: 2, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
   assert.equal(validateReleaseQaCliOutput({ schemaVersion: 1, valid: 'false', ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
   assert.equal(validateReleaseQaCliOutput(null).valid, false);
+});
+
+test('standalone schema CLI migrates a legacy v0 fixture to v1', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-schema-'));
+  try {
+    const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+    const current = require('./release-qa.cjs').createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+    const { schemaVersion, reportDigest, ...legacyBody } = current;
+    const legacy = { ...legacyBody, reportDigest: require('node:crypto').createHash('sha256').update(JSON.stringify(legacyBody)).digest('hex') };
+    const inputPath = path.join(root, 'legacy-v0.json');
+    fs.writeFileSync(inputPath, JSON.stringify(legacy));
+    const migrated = validateReleaseQaFile({ inputPath, migrate: true });
+    assert.equal(migrated.migrated, true);
+    assert.equal(migrated.report.schemaVersion, 1);
+    assert.equal(migrated.validation.valid, true);
+    const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', inputPath, '--migrate'], { encoding: 'utf8' });
+    assert.equal(cli.status, 0);
+    const output = JSON.parse(cli.stdout);
+    assert.deepEqual(output, { schemaVersion: 1, valid: true, migrated: true, input: path.resolve(inputPath), diagnostics: [] });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
