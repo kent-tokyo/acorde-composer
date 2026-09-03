@@ -4,6 +4,10 @@ const { migrateReleaseQaReport, validateReleaseQaReportSchema } = require('../el
 
 const CLI_SCHEMA_VERSION = 1;
 function option(args, name) { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : null; }
+function resolveInputPath(inputPath, pathModule = path) {
+  if (typeof inputPath !== 'string' || !inputPath.trim()) throw new Error('missing input path');
+  return pathModule.resolve(inputPath);
+}
 
 function validateReleaseQaFile({ inputPath, migrate = false } = {}) {
   const source = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
@@ -24,7 +28,7 @@ if (require.main === module) {
     const inputPath = option(args, '--input');
     const outputPath = option(args, '--output');
     if (!inputPath) throw new Error('missing --input');
-    const result = validateReleaseQaFile({ inputPath: path.resolve(inputPath), migrate: args.includes('--migrate') });
+    const result = validateReleaseQaFile({ inputPath: resolveInputPath(inputPath), migrate: args.includes('--migrate') });
     const output = { schemaVersion: CLI_SCHEMA_VERSION, valid: result.validation.valid, migrated: result.migrated, input: result.inputPath, diagnostics: result.validation.diagnostics };
     writeValidationOutput(outputPath ? path.resolve(outputPath) : null, output);
     process.stdout.write(`${JSON.stringify(output)}\n`);
@@ -35,4 +39,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { CLI_SCHEMA_VERSION, validateReleaseQaFile, writeValidationOutput };
+module.exports = { CLI_SCHEMA_VERSION, resolveInputPath, validateReleaseQaFile, writeValidationOutput };

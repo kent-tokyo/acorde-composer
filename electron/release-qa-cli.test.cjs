@@ -8,7 +8,7 @@ const { createArtifactManifest, createDistributionQaMatrix } = require('./distri
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { validateReleaseQaReportSchema } = require('./release-qa.cjs');
 const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
-const { validateReleaseQaFile } = require('../scripts/validate-release-qa.cjs');
+const { resolveInputPath, validateReleaseQaFile } = require('../scripts/validate-release-qa.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-'));
@@ -108,6 +108,14 @@ test('v1 to future-version migration fixture keeps the unimplemented v2 policy e
     { name: 'future-v2', action: 'reject-until-migration-defined' },
   ]);
   assert.throws(() => require('./release-qa.cjs').migrateReleaseQaReport({ schemaVersion: 2 }, 1), /unsupported-release-qa-source-version/);
+});
+
+test('standalone schema CLI resolves POSIX and Windows path formats deterministically', () => {
+  assert.equal(resolveInputPath('/tmp/release-qa.json', require('node:path').posix), '/tmp/release-qa.json');
+  assert.equal(resolveInputPath('reports/release-qa.json', require('node:path').posix), require('node:path').posix.resolve('reports/release-qa.json'));
+  assert.equal(resolveInputPath('C:\\reports\\release-qa.json', require('node:path').win32), 'C:\\reports\\release-qa.json');
+  assert.equal(resolveInputPath('reports\\release-qa.json', require('node:path').win32), require('node:path').win32.resolve('reports\\release-qa.json'));
+  assert.throws(() => resolveInputPath('  '), /missing input path/);
 });
 
 test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
