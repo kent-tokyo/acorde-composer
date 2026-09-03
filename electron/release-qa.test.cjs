@@ -43,3 +43,14 @@ test('release QA report has a fixed schema and rejects malformed input', () => {
   assert.deepEqual(verifyReleaseQaReport({ ...report, schemaVersion: 2 }), { valid: false, diagnostics: ['release-qa-schema-invalid'] });
   assert.throws(() => JSON.parse('{"schemaVersion":'), SyntaxError);
 });
+
+test('release QA report keeps schema-less legacy reports readable', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const current = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+  const { schemaVersion, reportDigest, ...legacyBody } = current;
+  const legacy = { ...legacyBody, reportDigest: require('node:crypto').createHash('sha256').update(JSON.stringify(legacyBody)).digest('hex') };
+  assert.equal(schemaVersion, 1);
+  assert.equal(validateReleaseQaReportSchema(legacy).valid, true);
+  assert.equal(verifyReleaseQaReport(legacy).valid, false);
+  assert.equal(verifyReleaseQaReport({ ...legacy, qa: { ...legacy.qa, ready: true, missing: [], notRun: [], passed: 10 } }).valid, false);
+});

@@ -6,7 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { createArtifactManifest, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
-const { runReleaseQa } = require('../scripts/run-release-qa.cjs');
+const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-'));
@@ -38,6 +38,7 @@ test('release QA CLI output crosses the support bundle boundary with redaction i
     const cli = spawnSync(process.execPath, [path.join(__dirname, '../scripts/run-release-qa.cjs'), '--manifest', manifestPath, '--output', outputPath], { encoding: 'utf8', env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1' } });
     assert.equal(cli.status, 1);
     const summary = JSON.parse(cli.stdout);
+    assert.deepEqual(validateReleaseQaCliOutput(summary), { valid: true, diagnostics: [] });
     const report = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
     fs.writeFileSync(bundlePath, serializeSupportBundle({ version: report.version, releaseQa: report, diagnostics: [{ code: 'cli-export', token: 'must-not-leak' }] }));
     const bundle = JSON.parse(fs.readFileSync(bundlePath, 'utf8'));
@@ -48,6 +49,13 @@ test('release QA CLI output crosses the support bundle boundary with redaction i
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('release QA CLI output schema rejects malformed summaries', () => {
+  assert.deepEqual(validateReleaseQaCliOutput({ schemaVersion: 1, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }), { valid: true, diagnostics: [] });
+  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 2, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
+  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 1, valid: 'false', ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
+  assert.equal(validateReleaseQaCliOutput(null).valid, false);
 });
 
 test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
