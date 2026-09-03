@@ -89,3 +89,15 @@ test('v2 report preserves primary fields through serialize and parse', () => {
   assert.deepEqual(parsed.migration, { sourceSchemaVersion: 1 });
   assert.equal(verifyReleaseQaReport(parsed).valid, true);
 });
+
+test('v2 migration rejects tampered or incomplete source reports', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const v1 = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+  assert.throws(() => migrateReleaseQaReport({ ...v1, reportDigest: '0'.repeat(64) }, 2), /release-qa-source-digest-invalid/);
+  assert.throws(() => migrateReleaseQaReport({ ...v1, qa: null }, 2), /release-qa-source-digest-invalid/);
+  const v2 = migrateReleaseQaReport(v1, 2);
+  assert.equal(validateReleaseQaReportSchema({ ...v2, migration: undefined }).valid, false);
+  assert.equal(validateReleaseQaReportSchema({ ...v2, reportDigest: '0'.repeat(64) }).valid, true);
+  assert.equal(verifyReleaseQaReport({ ...v2, reportDigest: '0'.repeat(64) }).valid, false);
+  assert.throws(() => migrateReleaseQaReport({ ...v2, schemaVersion: 3 }, 2), /unsupported-release-qa-source-version/);
+});

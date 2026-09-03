@@ -132,6 +132,19 @@ test('standalone schema CLI migrates a v1 report to v2 and validates its output 
   }
 });
 
+test('standalone schema CLI validates the checked-in v2 fixture', () => {
+  const fixturePath = path.resolve(__dirname, '../qa/release-qa-v2-fixture.json');
+  const result = validateReleaseQaFile({ inputPath: fixturePath });
+  assert.equal(result.report.schemaVersion, 2);
+  assert.deepEqual(validateReleaseQaReportSchema(result.report), { valid: true, diagnostics: [] });
+  const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', fixturePath], { encoding: 'utf8' });
+  assert.equal(cli.status, 0);
+  const output = JSON.parse(cli.stdout);
+  assert.deepEqual(validateReleaseQaValidationOutput(output), { valid: true, diagnostics: [] });
+  assert.equal(output.targetVersion, 2);
+  assert.equal(output.migrated, false);
+});
+
 test('standalone schema CLI resolves POSIX and Windows path formats deterministically', () => {
   assert.equal(resolveInputPath('/tmp/release-qa.json', require('node:path').posix), '/tmp/release-qa.json');
   assert.equal(resolveInputPath('reports/release-qa.json', require('node:path').posix), require('node:path').posix.resolve('reports/release-qa.json'));

@@ -73,6 +73,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - release QA / engine診断をredactして出力する512 KiB上限付きsupport bundle
 - `npm run release:qa:validate -- --input <report.json> [--migrate] [--output <summary.json>]`によるQA schema検証
 - v1→v2 release QA schema migrationは`docs/release-qa-schema-migration.md`に定義・実装
+- checked-in v2 report fixtureをstandalone validator CLIで検証
 - diagnosticsパネルのExport JSONからredacted support bundleを保存
 - release metadataによるversion / commit / target / acorde engine version / build type / signature / checksumの検証
 - IPC境界でのcommand schema検証（対応operation、非負index、空batch、64操作上限）
