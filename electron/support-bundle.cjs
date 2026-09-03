@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const MAX_SUPPORT_BUNDLE_BYTES = 512 * 1024;
 const SENSITIVE_KEYS = new Set(['apiKey', 'authorization', 'password', 'secret', 'token', 'privateKey', 'credential']);
 
@@ -25,4 +26,12 @@ function serializeSupportBundle(bundle) {
   return output;
 }
 
-module.exports = { MAX_SUPPORT_BUNDLE_BYTES, createSupportBundle, redact, serializeSupportBundle };
+function checksumSupportBundle(content) {
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+function verifySupportBundleChecksum(content, expected) {
+  return typeof expected === 'string' && /^[a-f0-9]{64}$/i.test(expected) && checksumSupportBundle(content) === expected.toLowerCase();
+}
+
+module.exports = { MAX_SUPPORT_BUNDLE_BYTES, checksumSupportBundle, createSupportBundle, redact, serializeSupportBundle, verifySupportBundleChecksum };

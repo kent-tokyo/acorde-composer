@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createDistributionQaMatrix } = require('./distribution-readiness.cjs');
-const { createReleaseQaReport, verifyReleaseQaReport } = require('./release-qa.cjs');
+const { createReleaseQaReport, validateReleaseQaReportSchema, verifyReleaseQaReport } = require('./release-qa.cjs');
 const { createArtifactManifest } = require('./distribution-readiness.cjs');
 
 test('release QA report is deterministic and binds version and commit to all passing cases', () => {
@@ -30,4 +30,16 @@ test('release QA report binds an artifact manifest and rejects manifest tamperin
   assert.equal(report.artifactQa.ready, true);
   assert.equal(verifyReleaseQaReport(report).valid, true);
   assert.equal(verifyReleaseQaReport({ ...report, artifactManifest: { ...artifactManifest, artifacts: [] } }).valid, false);
+});
+
+test('release QA report has a fixed schema and rejects malformed input', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const report = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+  assert.equal(report.schemaVersion, 1);
+  assert.deepEqual(validateReleaseQaReportSchema(report), { valid: true, diagnostics: [] });
+  assert.equal(validateReleaseQaReportSchema({ ...report, schemaVersion: 2 }).valid, false);
+  assert.equal(validateReleaseQaReportSchema({ ...report, qa: { ...report.qa, total: '20' } }).valid, false);
+  assert.equal(validateReleaseQaReportSchema({ ...report, reportDigest: 'broken' }).valid, false);
+  assert.deepEqual(verifyReleaseQaReport({ ...report, schemaVersion: 2 }), { valid: false, diagnostics: ['release-qa-schema-invalid'] });
+  assert.throws(() => JSON.parse('{"schemaVersion":'), SyntaxError);
 });

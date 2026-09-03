@@ -1,6 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { MAX_SUPPORT_BUNDLE_BYTES, createSupportBundle, serializeSupportBundle } = require('./support-bundle.cjs');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { MAX_SUPPORT_BUNDLE_BYTES, checksumSupportBundle, createSupportBundle, serializeSupportBundle, verifySupportBundleChecksum } = require('./support-bundle.cjs');
 const { createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 const { createReleaseQaReport } = require('./release-qa.cjs');
 const { DEFAULT_SUPPORT_BUNDLE_FILENAME, supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./support-bundle-path.cjs');
@@ -61,4 +64,21 @@ test('support bundle save dialog uses a bounded JSON filename and preserves an e
   assert.equal(supportBundleSaveResult({ canceled: true, filePath: '/tmp/ignored.json' }), null);
   assert.equal(supportBundleSaveResult({ canceled: false, filePath: '' }), null);
   assert.equal(supportBundleSaveResult({ canceled: false, filePath: '/tmp/support.json' }), '/tmp/support.json');
+});
+
+test('support bundle can be reloaded from a file and detects checksum tampering', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-support-'));
+  try {
+    const filePath = path.join(root, 'support-bundle.json');
+    const content = serializeSupportBundle({ version: '0.1.6', diagnostics: [{ code: 'engine-failed' }] });
+    fs.writeFileSync(filePath, content, 'utf8');
+    const reloaded = fs.readFileSync(filePath);
+    const checksum = checksumSupportBundle(reloaded);
+    assert.equal(verifySupportBundleChecksum(reloaded, checksum), true);
+    assert.equal(JSON.parse(reloaded.toString('utf8')).product, 'Acorde Composer');
+    assert.equal(verifySupportBundleChecksum(Buffer.concat([reloaded, Buffer.from('\n')]), checksum), false);
+    assert.equal(verifySupportBundleChecksum(reloaded, 'broken'), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
