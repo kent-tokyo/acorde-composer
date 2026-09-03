@@ -31,6 +31,14 @@ function refreshScore() {
   refreshHistoryButtons();
 }
 
+$('score-view').addEventListener('click', (event) => {
+  const note = event.target.closest?.('[data-acorde-kind="note"]');
+  if (!note) return;
+  $('score-view').querySelectorAll('.selected-note').forEach((item) => item.classList.remove('selected-note'));
+  note.classList.add('selected-note');
+  setStatus(`Selected ${note.dataset.noteAddr || 'note'}. Use Quick edit to change the score.`);
+});
+
 function addNote(isRest) {
   try {
     engine.apply(JSON.stringify({
