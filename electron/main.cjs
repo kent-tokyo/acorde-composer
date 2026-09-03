@@ -13,7 +13,7 @@ const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiP
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
-const { supportBundleSaveDialogOptions } = require('./support-bundle-path.cjs');
+const { supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./support-bundle-path.cjs');
 
 let engine;
 const aiRateLimiter = createAiRateLimiter();
@@ -106,10 +106,11 @@ ipcMain.handle('file:save', async (_event, { suggestedName, content }) => {
 });
 ipcMain.handle('file:saveSupportBundle', async (_event, { suggestedName, diagnostics, releaseQa } = {}) => {
   const result = await dialog.showSaveDialog(supportBundleSaveDialogOptions(suggestedName));
-  if (result.canceled || !result.filePath) return null;
+  const filePath = supportBundleSaveResult(result);
+  if (!filePath) return null;
   const content = serializeSupportBundle({ version: app.getVersion(), platform: `${process.platform}-${process.arch}`, diagnostics, releaseQa });
-  await fs.writeFile(result.filePath, content, 'utf8');
-  return result.filePath;
+  await fs.writeFile(filePath, content, 'utf8');
+  return filePath;
 });
 ipcMain.handle('file:savePdf', async (_event, { suggestedName, pageSize, landscape = false, margin = 0.4 }) => {
   const sourceWindow = BrowserWindow.getFocusedWindow();

@@ -74,3 +74,32 @@ test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('release QA CLI rejects duplicate, unknown, and evidence-missing fixture records', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-invalid-fixture-'));
+  try {
+    const matrixPath = path.resolve(__dirname, '../qa/release-qa-matrix.json');
+    const sourceResults = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../qa/release-qa-results.json'), 'utf8'));
+    const matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));
+    const manifestPath = path.join(root, 'manifest.json');
+    const manifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    const run = (name, results) => {
+      const resultsPath = path.join(root, `${name}-results.json`);
+      const outputPath = path.join(root, `${name}-report.json`);
+      fs.writeFileSync(resultsPath, JSON.stringify(results));
+      return require('../scripts/run-release-qa.cjs').runReleaseQa({ manifestPath, outputPath, matrixPath, resultsPath, currentCommit: 'be680d5' }).report.qa;
+    };
+    const duplicate = run('duplicate', [...sourceResults, sourceResults[0]]);
+    const unknown = run('unknown', [{ ...sourceResults[0], scenario: 'unknown-scenario' }, ...sourceResults.slice(1)]);
+    const evidenceMissing = run('evidence-missing', [{ ...sourceResults[0], evidence: undefined }, ...sourceResults.slice(1)]);
+    assert.deepEqual(duplicate.duplicates, ['mac/arm64/install-launch']);
+    assert.equal(unknown.invalid[0], 'mac/arm64/unknown-scenario');
+    assert.equal(evidenceMissing.invalid[0], 'mac/arm64/install-launch:evidence-invalid');
+    assert.equal(duplicate.ready, false);
+    assert.equal(unknown.ready, false);
+    assert.equal(evidenceMissing.ready, false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

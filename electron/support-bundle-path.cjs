@@ -5,4 +5,9 @@ function supportBundleSaveDialogOptions(suggestedName) {
   return { defaultPath, filters: [{ name: 'Acorde support bundle', extensions: ['json'] }] };
 }
 
-module.exports = { DEFAULT_SUPPORT_BUNDLE_FILENAME, supportBundleSaveDialogOptions };
+function supportBundleSaveResult(result) {
+  if (!result || result.canceled === true || typeof result.filePath !== 'string' || !result.filePath.trim()) return null;
+  return result.filePath;
+}
+
+module.exports = { DEFAULT_SUPPORT_BUNDLE_FILENAME, supportBundleSaveDialogOptions, supportBundleSaveResult };
