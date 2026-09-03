@@ -20,11 +20,15 @@ function refreshScore() {
   const score = JSON.parse(scoreJson);
   $('score-title').textContent = score.metadata?.title || 'Untitled score';
   $('score-view').innerHTML = acorde.render_score_svg(scoreJson, JSON.stringify({ width: 900, interactive: true }));
-  $('score-view').querySelectorAll('[data-acorde-kind="note"]').forEach((note) => note.addEventListener('click', () => {
-    $('score-view').querySelectorAll('.selected-note').forEach((item) => item.classList.remove('selected-note'));
-    note.classList.add('selected-note');
-    setStatus(`Selected ${note.dataset.noteAddr || 'note'}. Use Quick edit to change the score.`);
-  }));
+  const svg = $('score-view').querySelector('svg');
+  svg?.querySelectorAll('[data-acorde-kind="note"]').forEach((note) => {
+    const box = note.getBBox();
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hit.setAttribute('x', String(box.x - 8)); hit.setAttribute('y', String(box.y - 8));
+    hit.setAttribute('width', String(box.width + 16)); hit.setAttribute('height', String(box.height + 16));
+    hit.setAttribute('fill', 'transparent'); hit.dataset.acordeNoteHit = note.dataset.noteAddr || '';
+    hit.classList.add('note-hit'); svg.append(hit);
+  });
   $('download-button').disabled = false;
   $('add-note-button').disabled = false;
   $('add-rest-button').disabled = false;
@@ -32,11 +36,12 @@ function refreshScore() {
 }
 
 $('score-view').addEventListener('click', (event) => {
-  const note = event.target.closest?.('[data-acorde-kind="note"]');
+  const note = event.target.closest?.('[data-acorde-kind="note"], [data-acorde-note-hit]');
   if (!note) return;
   $('score-view').querySelectorAll('.selected-note').forEach((item) => item.classList.remove('selected-note'));
-  note.classList.add('selected-note');
-  setStatus(`Selected ${note.dataset.noteAddr || 'note'}. Use Quick edit to change the score.`);
+  const address = note.dataset.noteAddr || note.dataset.acordeNoteHit || 'note';
+  $('score-view').querySelector(`[data-note-addr="${address}"]`)?.classList.add('selected-note');
+  setStatus(`Selected ${address}. Use Quick edit to change the score.`);
 });
 
 function addNote(isRest) {
