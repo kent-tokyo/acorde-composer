@@ -62,8 +62,10 @@ function createPluginRuntime({ pluginPath, manifest, hostCommand, hostArgs = [],
       let newline;
       while ((newline = state.buffer.indexOf('\n')) >= 0) { const line = state.buffer.slice(0, newline).trim(); state.buffer = state.buffer.slice(newline + 1); if (line) handleLine(line); }
     });
-    child.on('error', () => { if (state.status === 'running') fail('host-error'); });
+    child.stdin?.on?.('error', () => { if (state.status === 'running') fail('host-input-failed'); });
+    child.on('error', () => { if (state.child === child && state.status === 'running') fail('host-error'); });
     child.on('exit', () => {
+      if (state.child !== child) return;
       state.child = null;
       if (state.status !== 'running') return;
       if (state.restartCount < restartLimit) { state.restartCount += 1; state.status = 'stopped'; start(); }
@@ -86,12 +88,19 @@ function createPluginRuntime({ pluginPath, manifest, hostCommand, hostArgs = [],
     if (!authorization.allowed) return Promise.reject(new Error(authorization.reason));
     if (state.status !== 'running' || !state.child?.stdin?.write) return Promise.reject(new Error('host-not-running'));
     const id = state.nextRequestId++;
-    const message = JSON.stringify({ id, capability, payload });
+    let message;
+    try { message = JSON.stringify({ id, capability, payload }); } catch { return Promise.reject(new Error('request-invalid')); }
     if (Buffer.byteLength(message, 'utf8') > MAX_PLUGIN_MESSAGE_BYTES) return Promise.reject(new Error('request-too-large'));
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => { state.pending.delete(id); fail('request-timeout'); }, timeoutMs);
       state.pending.set(id, { resolve, reject, timer });
-      state.child.stdin.write(`${message}\n`);
+      try {
+        state.child.stdin.write(`${message}\n`);
+      } catch {
+        clearTimeout(timer);
+        state.pending.delete(id);
+        reject(new Error('host-input-failed'));
+      }
     });
   }
   function stop() {

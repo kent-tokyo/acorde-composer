@@ -18,23 +18,38 @@ const { supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./s
 let engine;
 const aiRateLimiter = createAiRateLimiter();
 const RECENT_FILES_LIMIT = 8;
+const MAX_PENDING_ENGINE_REQUESTS = 64;
 function recentFilesPath() { return path.join(app.getPath('userData'), 'recent-files.json'); }
 async function readRecentFiles() { try { const value = JSON.parse(await fs.readFile(recentFilesPath(), 'utf8')); return Array.isArray(value) ? value.filter((item) => item?.path).slice(0, RECENT_FILES_LIMIT) : []; } catch { return []; } }
 async function rememberRecentFile(filePath) { const items = (await readRecentFiles()).filter((item) => item.path !== filePath); items.unshift({ path: filePath, name: path.basename(filePath), openedAt: new Date().toISOString() }); await fs.mkdir(app.getPath('userData'), { recursive: true }); await fs.writeFile(recentFilesPath(), JSON.stringify(items.slice(0, RECENT_FILES_LIMIT)), 'utf8'); }
 function startEngine() {
-  const child = process.env.ACORDE_ENGINE_BIN
-    ? spawn(process.env.ACORDE_ENGINE_BIN, [], { stdio: ['pipe', 'pipe', 'pipe'] })
+  const packagedPath = path.join(process.resourcesPath, 'engine', `acorde-composer-engine${process.platform === 'win32' ? '.exe' : ''}`);
+  const enginePath = process.env.ACORDE_ENGINE_BIN || (app.isPackaged ? packagedPath : null);
+  if (app.isPackaged && !process.env.ACORDE_ENGINE_BIN && !require('node:fs').existsSync(packagedPath)) {
+    throw new Error(`Packaged acorde engine is missing: ${packagedPath}`);
+  }
+  const child = enginePath
+    ? spawn(enginePath, [], { stdio: ['pipe', 'pipe', 'pipe'] })
     : spawn('cargo', ['run', '--quiet', '--manifest-path', path.join(__dirname, '../engine/Cargo.toml')], { stdio: ['pipe', 'pipe', 'pipe'] });
   const pending = [];
+  const failPending = (message) => { while (pending.length) pending.shift().reject(new Error(message)); engine = null; };
   readline.createInterface({ input: child.stdout }).on('line', (line) => {
     const item = pending.shift();
     if (!item) return;
-    const response = JSON.parse(line);
-    response.ok ? item.resolve(response.result) : item.reject(new Error(response.error));
+    try {
+      const response = JSON.parse(line);
+      response.ok ? item.resolve(response.result) : item.reject(new Error(response.error || 'acorde engine request failed'));
+    } catch {
+      item.reject(new Error('acorde engine returned invalid JSON'));
+      failPending('acorde engine returned invalid JSON');
+      child.kill();
+    }
   });
   child.stderr.on('data', (data) => console.error(`[acorde-engine] ${data}`));
-  child.on('exit', () => { while (pending.length) pending.shift().reject(new Error('acorde engine stopped')); engine = null; });
-  return (request) => new Promise((resolve, reject) => { const payload = JSON.stringify(request); try { assertEngineRequestSize(Buffer.byteLength(payload)); } catch (error) { return reject(error); } pending.push({ resolve, reject }); child.stdin.write(`${payload}\n`); });
+  child.stdin.on('error', (error) => { console.error(`[acorde-engine] stdin failed: ${error.message}`); failPending('acorde engine input failed'); });
+  child.on('error', (error) => { console.error(`[acorde-engine] spawn failed: ${error.message}`); failPending('acorde engine failed to start'); });
+  child.on('exit', (code, signal) => { console.error(`[acorde-engine] exited code=${code} signal=${signal || 'none'}`); failPending('acorde engine stopped'); });
+  return (request) => new Promise((resolve, reject) => { const payload = JSON.stringify(request); try { assertEngineRequestSize(Buffer.byteLength(payload)); } catch (error) { return reject(error); } if (pending.length >= MAX_PENDING_ENGINE_REQUESTS) return reject(new Error('acorde engine request queue is full')); pending.push({ resolve, reject }); try { child.stdin.write(`${payload}\n`); } catch { pending.pop(); reject(new Error('acorde engine input failed')); } });
 }
 function callEngine(request) { engine ||= startEngine(); return engine(request); }
 

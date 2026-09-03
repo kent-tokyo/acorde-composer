@@ -12,7 +12,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.7 + acorde v1.0.9）
+## 現在の縦切り（v0.1.8 + acorde v1.0.9）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
@@ -121,7 +121,7 @@ npm start
 `npm run release:qa -- --manifest dist/release-artifact-manifest.json --matrix qa/release-qa-matrix.json --results qa/release-qa-results.json`で20シナリオのrelease QA reportを生成します。現在の結果JSONはclean macOS/Windows実機未実行を`not-run`として記録しており、公開可能判定は通りません。
 `passed`を記録する場合は、各結果に実測証跡の`evidence`配列が必要です。
 
-公開対象リリース：[Acorde Composer v0.1.7](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.7)。現在の作業ツリーでは`npm test` 126件、Rust `cargo check`、構文・差分検証を確認しています。
+公開対象リリース：[Acorde Composer v0.1.8](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.8)。今回のリリース候補では`npm test` 152件、Rust unit test 18件、`cargo check`／`clippy`、構文・差分検証を確認しています。
 
 ## 次の実装単位
 

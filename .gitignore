@@ -1,6 +1,7 @@
 node_modules/
 engine/target/
 dist/
+build/
 release/
 .DS_Store
 ROADMAP.md

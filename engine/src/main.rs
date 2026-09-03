@@ -156,14 +156,13 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 staff_size: staff_size.unwrap_or(10.0),
                 measures_per_system: measures_per_system.unwrap_or(4),
                 interactive: interactive.unwrap_or(true),
-                ..Default::default()
             };
             render_svg(&score, &options)
                 .map(serde_json::Value::String)
                 .map_err(|error| error.to_string())
         }
         Request::RenderSvgMetadata { score, width, staff_size, measures_per_system, interactive } => {
-            let options = SvgRenderOptions { width: width.unwrap_or(900.0), staff_size: staff_size.unwrap_or(10.0), measures_per_system: measures_per_system.unwrap_or(4), interactive: interactive.unwrap_or(true), ..Default::default() };
+            let options = SvgRenderOptions { width: width.unwrap_or(900.0), staff_size: staff_size.unwrap_or(10.0), measures_per_system: measures_per_system.unwrap_or(4), interactive: interactive.unwrap_or(true) };
             let layout = compute_layout(&score, &LayoutConfig { measures_per_row: options.measures_per_system, ..Default::default() });
             serde_json::to_value(render_svg_metadata(&score, &layout, &options).map_err(|error| error.to_string())?).map_err(|error| error.to_string())
         }
@@ -340,9 +339,12 @@ fn main() {
                 error: Some(error.to_string()),
             },
         };
-        serde_json::to_writer(&mut stdout, &response).expect("write response");
-        stdout.write_all(b"\n").expect("write newline");
-        stdout.flush().expect("flush response");
+        if serde_json::to_writer(&mut stdout, &response).is_err()
+            || stdout.write_all(b"\n").is_err()
+            || stdout.flush().is_err()
+        {
+            break;
+        }
     }
 }
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.8 — 2026-09-03
+
+再生・IPC・plugin hostの安定性と、編集時の不要な処理を改善した保守リリースです。依存する音楽処理基盤は `acorde` v1.0.9のままです。
+
+### Changed
+
+- 未保存変更のOpen／Recent／New／Template確認を共通UIモーダルへ統一
+- 再生ハイライトを時系列カーソルとアドレスMapで処理し、毎フレームの配列生成・全ノートDOM走査を削減
+- 同一再生ノートへの冗長なCSS更新を抑止
+- mixer設定の未変更時に同期localStorage書込みを省略
+- 空／不完全scoreの再生開始と非同期再生開始の競合をガード
+- engine stdoutの親プロセス終了時panicを防止
+- plugin hostのstdin失敗、serialize不能payload、再起動中の旧childイベントを安全に処理
+
+### Verification
+
+- Composer Node: 152 passed
+- Composer Rust: 18 passed
+- `npm run check`: passed
+- `cargo clippy --all-targets -- -D warnings`: passed
+- `git diff --check`: passed
+
 ## 0.1.7 — 2026-09-03
 
 acorde v1.0.9同期、エディタUIの操作整理、SoundFont状態表示、Quick startガイドを含むリリースです。

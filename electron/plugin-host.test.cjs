@@ -96,6 +96,33 @@ test('runtime host enforces IPC capabilities and returns isolated editor descrip
   runtime.stop();
 });
 
+test('runtime host cleans up a request when plugin stdin rejects a write', async () => {
+  const child = fakeChild();
+  child.stdin.write = () => { throw new Error('closed pipe'); };
+  const runtime = createPluginRuntime({
+    pluginPath: '/tmp/Piano.vst3', hostCommand: '/tmp/acorde-plugin-host',
+    manifest: { id: 'piano', name: 'Piano', version: '1', apiVersion: 1, capabilities: ['score.read'] },
+    spawnImpl() { return child; },
+  });
+  runtime.start();
+  await assert.rejects(runtime.request('score.read', {}), /host-input-failed/);
+  runtime.stop();
+});
+
+test('runtime host rejects a circular payload without throwing synchronously', async () => {
+  const child = fakeChild();
+  const runtime = createPluginRuntime({
+    pluginPath: '/tmp/Piano.vst3', hostCommand: '/tmp/acorde-plugin-host',
+    manifest: { id: 'piano', name: 'Piano', version: '1', apiVersion: 1, capabilities: ['score.read'] },
+    spawnImpl() { return child; },
+  });
+  runtime.start();
+  const payload = {}; payload.self = payload;
+  await assert.rejects(runtime.request('score.read', payload), /request-invalid/);
+  assert.equal(child.stdin.writes.length, 0);
+  runtime.stop();
+});
+
 test('runtime host recovers once after crash then disables after repeated crash', () => {
   const children = [];
   const runtime = createPluginRuntime({
@@ -109,6 +136,21 @@ test('runtime host recovers once after crash then disables after repeated crash'
   children[1].emit('exit', 1, null);
   assert.equal(runtime.getStatus(), 'disabled');
   assert.equal(runtime.getRestartCount(), 1);
+});
+
+test('runtime host ignores delayed events from a replaced child process', () => {
+  const children = [];
+  const runtime = createPluginRuntime({
+    pluginPath: '/tmp/Piano.vst3', hostCommand: '/tmp/acorde-plugin-host',
+    manifest: { id: 'piano', name: 'Piano', version: '1', apiVersion: 1, capabilities: [] },
+    spawnImpl() { const child = fakeChild(); children.push(child); return child; },
+  });
+  runtime.start();
+  children[0].emit('exit', 1, null);
+  assert.equal(runtime.getStatus(), 'running');
+  children[0].emit('error', new Error('late old-child error'));
+  assert.equal(runtime.getStatus(), 'running');
+  runtime.stop();
 });
 
 test('sandbox policy and editor descriptor deny direct host access', () => {

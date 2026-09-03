@@ -1,13 +1,14 @@
 {
   "name": "acorde-composer",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A cross-platform AI-assisted score editor for the acorde music engine.",
   "main": "electron/main.cjs",
   "scripts": {
     "start": "electron .",
     "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js && cargo check --manifest-path engine/Cargo.toml",
     "test": "node --test electron/*.test.cjs",
-    "pack": "electron-builder --dir && node scripts/create-release-artifact-manifest.cjs",
+    "pack": "node scripts/build-engine.cjs && electron-builder --dir && node scripts/create-release-artifact-manifest.cjs",
+    "bench:engine": "node scripts/benchmark-engine.cjs",
     "release:qa": "node scripts/run-release-qa.cjs",
     "release:qa:validate": "node scripts/validate-release-qa.cjs"
   },
@@ -19,6 +20,7 @@
     "appId": "io.acorde.composer",
     "productName": "Acorde Composer",
     "files": ["electron/**/*", "src/**/*", "package.json", "NOTICE.md", "README.md", "CHANGELOG.md"],
+    "extraResources": [{ "from": "build/engine", "to": "engine" }],
     "mac": { "category": "public.app-category.music" },
     "win": { "target": "nsis" }
   }
