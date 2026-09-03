@@ -1,7 +1,6 @@
 {
   "name": "acorde-composer",
   "version": "0.1.7",
-  "private": true,
   "description": "A cross-platform AI-assisted score editor for the acorde music engine.",
   "main": "electron/main.cjs",
   "scripts": {

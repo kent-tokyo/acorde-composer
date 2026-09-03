@@ -10,6 +10,7 @@ const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/
 test('release metadata identifies the Acorde Composer v0.1.7 release', () => {
   assert.equal(packageJson.name, 'acorde-composer');
   assert.equal(packageJson.version, '0.1.7');
+  assert.notEqual(packageJson.private, true);
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
   assert.ok(packageJson.build.files.includes('src/**/*'));
