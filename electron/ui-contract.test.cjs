@@ -50,6 +50,18 @@ test('editor dialogs expose their purpose to assistive technology', () => {
   assert.match(app, /heading\.id \|\|=/);
 });
 
+test('application preferences expose persisted English, Japanese, and Chinese language choices', () => {
+  assert.match(index, /id="preferences-button"/);
+  assert.match(index, /id="preferences-dialog"/);
+  assert.match(index, /id="language-select"/);
+  assert.match(index, /value="en">English/);
+  assert.match(index, /value="ja">日本語/);
+  assert.match(index, /value="zh">简体中文/);
+  assert.match(app, /acorde-composer\.language\.v1/);
+  assert.match(app, /document\.documentElement\.lang = language/);
+  assert.match(app, /saveLanguagePreference/);
+});
+
 test('editor labels use the English UI contract and route prompt/alert/confirm through the shared modal', () => {
   assert.match(index, /<html lang="en">/);
   assert.match(app, /function uiAlert\(message\)/);

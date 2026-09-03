@@ -1,0 +1,60 @@
+name: Publish Playground to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'playground/**'
+      - 'src/playground/**'
+      - '.github/workflows/pages-playground.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Composer
+        uses: actions/checkout@v4
+      - name: Checkout Acorde
+        uses: actions/checkout@v4
+        with:
+          repository: kent-tokyo/acorde
+          path: acorde
+          ref: v1.0.9
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack@v0.4.0
+        with:
+          version: latest
+      - name: Build Acorde WASM and assemble site
+        run: |
+          wasm-pack build acorde/crates/wasm --target web --out-dir "$GITHUB_WORKSPACE/src/playground/acorde-wasm" --release --no-typescript
+          rm -f src/playground/acorde-wasm/.gitignore
+          mkdir -p _site/playground _site/src
+          cp -R playground/. _site/playground/
+          cp -R src/playground/. _site/src/playground/
+          touch _site/.nojekyll
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

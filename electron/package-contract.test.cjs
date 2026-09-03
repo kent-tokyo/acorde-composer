@@ -16,6 +16,8 @@ test('release metadata identifies the Acorde Composer v0.1.8 release', () => {
   assert.ok(packageJson.build.files.includes('electron/**/*'));
   assert.ok(packageJson.build.files.includes('src/**/*'));
   assert.ok(packageJson.build.files.includes('NOTICE.md'));
+  assert.ok(packageJson.build.files.includes('README_ja.md'));
+  assert.ok(packageJson.build.files.includes('README_zh.md'));
   assert.ok(fs.existsSync(path.join(root, 'NOTICE.md')));
 });
 

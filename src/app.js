@@ -39,6 +39,53 @@ const AUTOSAVE_KEY = 'acorde-composer.autosave.v1';
 const MIXER_KEY = 'acorde-composer.mixer.v1';
 const ACCESSIBILITY_KEY = 'acorde-composer.accessibility.v1';
 const PRINT_SETTINGS_KEY = 'acorde-composer.print-settings.v1';
+const LANGUAGE_KEY = 'acorde-composer.language.v1';
+const LANGUAGE_COPY = {
+  en: {
+    preferences: 'Application preferences', preferencesHelp: 'Choose the language used by Acorde Composer. Changes apply immediately.', language: 'Language', close: 'Close', done: 'Done',
+    new: 'New', template: 'Template', open: 'Open', save: 'Save MusicXML', midi: 'Export MIDI', keyboard: 'Keyboard', preferencesButton: 'Preferences',
+    select: 'Select', note: 'Note', rest: 'Rest', slur: 'Slur', tie: 'Tie', scoreSettings: 'Edit score settings', history: 'History', mixer: 'Mixer',
+    voice: 'Voice', duration: 'Duration', dot: 'Dot', tuplet: 'Tuplet', dynamic: 'Dynamic', grace: 'Grace note', accidental: 'Accidental', articulation: 'Articulation',
+    scoreSettingsTitle: 'Score settings', accessibility: 'Accessibility', reduceMotion: 'Reduce animation and motion', highContrast: 'High contrast notation', apply: 'Apply changes', cancel: 'Cancel',
+    saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', saveFailed: 'Save failed',
+  },
+  ja: {
+    preferences: 'アプリの環境設定', preferencesHelp: 'Acorde Composerで使用する言語を選択します。変更はすぐに反映されます。', language: '言語', close: '閉じる', done: '完了',
+    new: '新規', template: 'テンプレート', open: '開く', save: 'MusicXMLを保存', midi: 'MIDIを書き出す', keyboard: 'キーボード', preferencesButton: '環境設定',
+    select: '選択', note: '音符', rest: '休符', slur: 'スラー', tie: 'タイ', scoreSettings: '譜面設定', history: '履歴', mixer: 'ミキサー',
+    voice: 'ボイス', duration: '音価', dot: '付点', tuplet: '連符', dynamic: 'ダイナミクス', grace: '装飾音', accidental: '臨時記号', articulation: 'アーティキュレーション',
+    scoreSettingsTitle: '譜面設定', accessibility: 'アクセシビリティ', reduceMotion: 'アニメーションを減らす', highContrast: '譜面の高コントラスト表示', apply: '変更を適用', cancel: 'キャンセル',
+    saved: '保存済み', unsaved: '未保存の変更', saving: '保存中…', saveFailed: '保存に失敗',
+  },
+  zh: {
+    preferences: '应用偏好设置', preferencesHelp: '选择 Acorde Composer 使用的语言。更改会立即生效。', language: '语言', close: '关闭', done: '完成',
+    new: '新建', template: '模板', open: '打开', save: '保存 MusicXML', midi: '导出 MIDI', keyboard: '键盘', preferencesButton: '偏好设置',
+    select: '选择', note: '音符', rest: '休止符', slur: '连线', tie: '连音线', scoreSettings: '乐谱设置', history: '历史', mixer: '混音器',
+    voice: '声部', duration: '时值', dot: '附点', tuplet: '连音', dynamic: '力度', grace: '装饰音', accidental: '变音记号', articulation: '奏法',
+    scoreSettingsTitle: '乐谱设置', accessibility: '无障碍', reduceMotion: '减少动画和动态效果', highContrast: '高对比度乐谱', apply: '应用更改', cancel: '取消',
+    saved: '已保存', unsaved: '有未保存的更改', saving: '保存中…', saveFailed: '保存失败',
+  },
+};
+let language = 'en';
+try { language = LANGUAGE_COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
+function applyLanguage(nextLanguage = language) {
+  language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en';
+  const copy = LANGUAGE_COPY[language];
+  document.documentElement.lang = language;
+  document.documentElement.dataset.language = language;
+  const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
+  [['new-button', copy.new], ['template-button', copy.template], ['open-button', copy.open], ['save-button', copy.save], ['midi-save-button', copy.midi], ['shortcuts-button', copy.keyboard], ['preferences-button', copy.preferencesButton], ['select-tool', `↖ ${copy.select}`], ['note-tool', `♩ ${copy.note}`], ['rest-tool', `𝄽 ${copy.rest}`], ['slur-tool', `⌁ ${copy.slur}`], ['tie-tool', `⌒ ${copy.tie}`], ['settings-button', copy.scoreSettings], ['history-button', copy.history], ['mixer-button', copy.mixer]].forEach(([id, value]) => text(id, value));
+  const dialogTitle = (id, value) => { const heading = $(id)?.querySelector('h2'); if (heading) heading.textContent = value; };
+  dialogTitle('score-settings', copy.scoreSettingsTitle); dialogTitle('preferences-dialog', copy.preferences);
+  [['preferences-help', copy.preferencesHelp], ['language-label', copy.language], ['preferences-close', copy.close], ['preferences-done', copy.done], ['accessibility-legend', copy.accessibility], ['score-cancel', copy.cancel], ['score-apply', copy.apply]].forEach(([id, value]) => text(id, value));
+  const setLabelText = (id, value) => { const label = $(id); if (label?.firstChild?.nodeType === Node.TEXT_NODE) label.firstChild.textContent = `${value} `; };
+  setLabelText('reduce-motion-label', copy.reduceMotion); setLabelText('high-contrast-label', copy.highContrast);
+  const select = $('language-select'); if (select) select.value = language;
+  const toolLabels = { 'voice-select': copy.voice, 'duration-select': copy.duration, 'tuplet-select': copy.tuplet, 'dynamic-select': copy.dynamic, 'grace-select': copy.grace, 'accidental-select': copy.accidental, 'articulation-select': copy.articulation };
+  Object.entries(toolLabels).forEach(([id, label]) => $(id)?.setAttribute('aria-label', label));
+  if ($('save-status')) updateSaveStatus(dirty ? 'unsaved' : 'saved');
+}
+function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(language); }
 const aiProposal = { type: 'batch', label: 'AI proposal', commands: [
   { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 4, pitch: { step: 'C', octave: 3, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
   { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 5, pitch: { step: 'G', octave: 3, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
@@ -70,6 +117,7 @@ try { accessibilityState = { ...accessibilityState, ...JSON.parse(localStorage.g
 function applyAccessibilityPreferences() { document.documentElement.classList.toggle('reduced-motion', Boolean(accessibilityState.reducedMotion)); document.documentElement.classList.toggle('high-contrast', Boolean(accessibilityState.highContrast)); }
 function saveAccessibilityPreferences() { localStorage.setItem(ACCESSIBILITY_KEY, JSON.stringify(accessibilityState)); applyAccessibilityPreferences(); }
 applyAccessibilityPreferences();
+applyLanguage();
 
 function renderNotes() {
   $('notes').innerHTML = notes.map((note) => `<button class="note" data-note-id="${note.id}" style="left:${note.left}%;top:${note.top}%" title="${note.label}"><span></span></button>`).join('');
@@ -451,6 +499,8 @@ $('mixer-apply').addEventListener('click', () => { mixerState.master.volume = Nu
 $('soundfont-button').addEventListener('click', async () => { const path = await window.acorde.chooseSoundfont(); if (!path) return; mixerState.soundfont = window.AcordeAudioProfile.soundfont(path); $('soundfont-path').textContent = `${path} (analyzing with acorde-soundfont...)`; saveMixer(); await refreshSoundfontStatus(); });
 $('soundfont-preset-select').addEventListener('change', () => { const [bank, program] = $('soundfont-preset-select').value.split(':').map(Number); mixerState.soundfont.preset = Number.isInteger(bank) && Number.isInteger(program) ? (mixerState.soundfont.presets || []).find((preset) => preset.bank === bank && preset.program === program) || null : null; saveMixer(); });
 $('settings-button').addEventListener('click', openScoreSettings);
+$('preferences-button').addEventListener('click', () => { $('language-select').value = language; $('preferences-dialog').showModal(); });
+$('language-select').addEventListener('change', (event) => saveLanguagePreference(event.target.value));
 $('history-button').addEventListener('click', () => { renderHistory(); $('history-dialog').showModal(); });
  $('diagnostics-export').addEventListener('click', async () => { if (!lastDiagnosticsReport) return; try { const saved = await window.acorde.saveSupportBundle({ suggestedName: 'acorde-support-bundle.json', diagnostics: [lastDiagnosticsReport] }); if (saved) $('file-name').textContent = saved.split(/[\\/]/).pop(); } catch (error) { uiAlert(`support bundleを書き出せませんでした: ${userFacingError(error)}`); } });
 $('shortcuts-button').addEventListener('click', () => $('shortcuts-dialog').showModal());

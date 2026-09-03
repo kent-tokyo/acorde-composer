@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Try Acorde Composer in your browser: edit a small score with the Acorde MusicXML and ABC engine." />
+    <title>Acorde Composer Playground</title>
+    <link rel="stylesheet" href="./playground.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero"><a href="../index.html" class="brand">♫ Acorde <strong>Composer</strong></a><span class="engine-status" id="engine-status">Loading acorde engine…</span><h1>Edit a score in your browser</h1><p>Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.</p></header>
+      <section class="workspace" aria-label="Score playground">
+        <section class="score-card"><div class="card-heading"><div><span class="eyebrow">LIVE SCORE</span><h2 id="score-title">ABC fixture</h2></div><div class="actions"><button id="undo-button" disabled>Undo</button><button id="redo-button" disabled>Redo</button><button id="download-button" class="primary" disabled>Download MusicXML</button></div></div><div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div><p id="status" class="status" role="status"></p></section>
+        <aside class="controls"><div class="control-section"><h2>Quick edit</h2><p>These edits are applied through Acorde's <code>ScoreEngine</code>.</p><button id="add-note-button" class="primary wide" disabled>＋ Add C4 quarter note</button><button id="add-rest-button" class="wide" disabled>＋ Add quarter rest</button></div><div class="control-section"><h2>Import ABC</h2><label for="abc-input">ABC notation</label><textarea id="abc-input" spellcheck="false">X:1
+T:Playground sketch
+M:4/4
+L:1/4
+K:C
+C D E F | G A B c |
+</textarea><button id="load-abc-button" class="wide" disabled>Load ABC into Acorde</button></div><div class="control-section note"><strong>Local-first demo</strong><span>No score data is uploaded. The browser calls the bundled <code>acorde-wasm</code> module directly.</span></div></aside>
+      </section>
+      <footer><a href="../../README.md">Desktop Composer</a><span>·</span><a href="../../README_ja.md">日本語</a><span>·</span><a href="../../README_zh.md">简体中文</a></footer>
+    </main>
+    <script type="module" src="./playground.js"></script>
+  </body>
+</html>
