@@ -30,3 +30,24 @@ test('support bundle preserves a release QA report while redacting nested eviden
   assert.equal(bundle.diagnostics[0].credential, '[REDACTED]');
   assert.equal(bundle.releaseQa.reportDigest, report.reportDigest);
 });
+
+test('support bundle normalizes invalid input and bounds deep or circular diagnostics', () => {
+  assert.deepEqual(JSON.parse(serializeSupportBundle(null)), {
+    schemaVersion: 1,
+    product: 'Acorde Composer',
+    version: null,
+    platform: null,
+    releaseQa: null,
+    diagnostics: [],
+    sensitiveFieldsRemoved: true,
+  });
+  const deep = { level: 0 };
+  let cursor = deep;
+  for (let level = 1; level < 12; level += 1) { cursor.next = { level }; cursor = cursor.next; }
+  cursor.token = 'must-not-leak';
+  deep.self = deep;
+  const bundle = JSON.parse(serializeSupportBundle({ diagnostics: [deep] }));
+  assert.match(JSON.stringify(bundle), /\[TRUNCATED\]/);
+  assert.equal(bundle.diagnostics[0].self, '[CIRCULAR]');
+  assert.doesNotMatch(JSON.stringify(bundle), /must-not-leak/);
+});
