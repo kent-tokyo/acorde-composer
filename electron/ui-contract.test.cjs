@@ -31,6 +31,21 @@ test('selection-dependent actions are disabled until a score selection exists', 
   assert.match(app, /Select a note or measure first/);
 });
 
+test('editor UI groups dense metadata controls and explains first use', () => {
+  assert.match(index, /id="first-use-guide"/);
+  assert.match(index, /Quick start/);
+  assert.match(app, /groupScoreMetaControls/);
+  assert.match(app, /Notation: \[/);
+  assert.match(app, /installQuickStartGuide/);
+  assert.match(app, /acorde-composer\.quick-start-dismissed/);
+});
+
+test('editor UI exposes SoundFont readiness beside playback controls', () => {
+  assert.match(app, /soundfont-indicator/);
+  assert.match(app, /SoundFont: \$\{label\}/);
+  assert.match(app, /active · \$\{mixerState\.soundfont\.presetCount\} presets/);
+});
+
 test('OMR review UI is wired to the provider-neutral queue without Score application', () => {
   assert.match(app, /omr-review-filter/);
   assert.match(app, /omr-review-list/);
