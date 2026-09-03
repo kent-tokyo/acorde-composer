@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createDistributionQaMatrix } = require('./distribution-readiness.cjs');
-const { createReleaseQaReport, validateReleaseQaReportSchema, verifyReleaseQaReport } = require('./release-qa.cjs');
+const { createReleaseQaReport, migrateReleaseQaReport, validateReleaseQaReportSchema, verifyReleaseQaReport } = require('./release-qa.cjs');
 const { createArtifactManifest } = require('./distribution-readiness.cjs');
 
 test('release QA report is deterministic and binds version and commit to all passing cases', () => {
@@ -53,4 +53,17 @@ test('release QA report keeps schema-less legacy reports readable', () => {
   assert.equal(validateReleaseQaReportSchema(legacy).valid, true);
   assert.equal(verifyReleaseQaReport(legacy).valid, false);
   assert.equal(verifyReleaseQaReport({ ...legacy, qa: { ...legacy.qa, ready: true, missing: [], notRun: [], passed: 10 } }).valid, false);
+});
+
+test('release QA schema migration converts legacy reports and rejects future versions', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const current = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+  const { schemaVersion, reportDigest, ...legacyBody } = current;
+  const legacy = { ...legacyBody, reportDigest: require('node:crypto').createHash('sha256').update(JSON.stringify(legacyBody)).digest('hex') };
+  const migrated = migrateReleaseQaReport(legacy);
+  assert.equal(migrated.schemaVersion, 1);
+  assert.equal(validateReleaseQaReportSchema(migrated).valid, true);
+  assert.equal(verifyReleaseQaReport(migrated).valid, false);
+  assert.throws(() => migrateReleaseQaReport({ ...current, schemaVersion: 2 }), /unsupported-release-qa-source-version/);
+  assert.throws(() => migrateReleaseQaReport(current, 2), /unsupported-release-qa-target-version/);
 });

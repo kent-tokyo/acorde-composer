@@ -3,6 +3,10 @@ const { assessArtifactEvidence, assessDistributionQa, verifyArtifactManifest } =
 const RELEASE_QA_SCHEMA_VERSION = 1;
 const LEGACY_RELEASE_QA_SCHEMA_VERSION = 0;
 
+function withReportDigest(report) {
+  return { ...report, reportDigest: crypto.createHash('sha256').update(JSON.stringify(report)).digest('hex') };
+}
+
 function validateReleaseQaReportSchema(value) {
   const report = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
   const qa = report?.qa;
@@ -11,6 +15,16 @@ function validateReleaseQaReportSchema(value) {
   const schemaVersion = report?.schemaVersion ?? LEGACY_RELEASE_QA_SCHEMA_VERSION;
   const valid = (schemaVersion === LEGACY_RELEASE_QA_SCHEMA_VERSION || schemaVersion === RELEASE_QA_SCHEMA_VERSION) && report?.product === 'Acorde Composer' && typeof report?.version === 'string' && typeof report?.commit === 'string' && (report?.releaseMetadataDigest === null || report?.releaseMetadataDigest === undefined || typeof report?.releaseMetadataDigest === 'string') && (report?.artifactManifest === null || report?.artifactManifest === undefined || typeof report?.artifactManifest === 'object') && (report?.artifactQa === null || report?.artifactQa === undefined || typeof report?.artifactQa === 'object') && (report?.artifactCommitMatches === null || report?.artifactCommitMatches === undefined || typeof report?.artifactCommitMatches === 'boolean') && validQa && typeof report?.reportDigest === 'string' && /^[a-f0-9]{64}$/i.test(report.reportDigest);
   return { valid, diagnostics: valid ? [] : ['release-qa-schema-invalid'] };
+}
+
+function migrateReleaseQaReport(value, targetVersion = RELEASE_QA_SCHEMA_VERSION) {
+  if (targetVersion !== RELEASE_QA_SCHEMA_VERSION) throw new Error('unsupported-release-qa-target-version');
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+  const sourceVersion = source?.schemaVersion ?? LEGACY_RELEASE_QA_SCHEMA_VERSION;
+  if (sourceVersion === RELEASE_QA_SCHEMA_VERSION) return source;
+  if (sourceVersion !== LEGACY_RELEASE_QA_SCHEMA_VERSION) throw new Error('unsupported-release-qa-source-version');
+  const { reportDigest, ...body } = source;
+  return withReportDigest({ ...body, schemaVersion: RELEASE_QA_SCHEMA_VERSION });
 }
 
 function createReleaseQaReport({ version, commit, matrix = [], results = [], releaseMetadataDigest = null, artifactManifest = null, artifactCommitMatches = null, requireEvidence = false } = {}) {
@@ -26,7 +40,7 @@ function createReleaseQaReport({ version, commit, matrix = [], results = [], rel
     artifactCommitMatches,
     qa,
   };
-  return { ...report, reportDigest: crypto.createHash('sha256').update(JSON.stringify(report)).digest('hex') };
+  return withReportDigest(report);
 }
 
 function verifyReleaseQaReport(value) {
@@ -39,4 +53,4 @@ function verifyReleaseQaReport(value) {
   return { valid, diagnostics: valid ? [] : [schema.valid ? 'release-qa-invalid-or-tampered' : 'release-qa-schema-invalid'] };
 }
 
-module.exports = { LEGACY_RELEASE_QA_SCHEMA_VERSION, RELEASE_QA_SCHEMA_VERSION, createReleaseQaReport, validateReleaseQaReportSchema, verifyReleaseQaReport };
+module.exports = { LEGACY_RELEASE_QA_SCHEMA_VERSION, RELEASE_QA_SCHEMA_VERSION, createReleaseQaReport, migrateReleaseQaReport, validateReleaseQaReportSchema, verifyReleaseQaReport };

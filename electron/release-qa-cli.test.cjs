@@ -6,6 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { createArtifactManifest, createDistributionQaMatrix } = require('./distribution-readiness.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
+const { validateReleaseQaReportSchema } = require('./release-qa.cjs');
 const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
@@ -77,6 +78,9 @@ test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
     assert.equal(result.report.qa.missing.length, 0);
     assert.equal(result.report.qa.failed.length, 0);
     assert.equal(result.report.qa.ready, false);
+    assert.deepEqual(validateReleaseQaReportSchema(result.report), { valid: true, diagnostics: [] });
+    const cliSummary = JSON.parse(spawnSync(process.execPath, [path.join(__dirname, '../scripts/run-release-qa.cjs'), '--manifest', manifestPath, '--matrix', matrixPath, '--results', resultsPath, '--output', outputPath], { encoding: 'utf8', env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1' } }).stdout);
+    assert.deepEqual(validateReleaseQaCliOutput(cliSummary), { valid: true, diagnostics: [] });
     assert.ok(fs.existsSync(outputPath));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
