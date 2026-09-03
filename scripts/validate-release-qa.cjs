@@ -12,13 +12,21 @@ function validateReleaseQaFile({ inputPath, migrate = false } = {}) {
   return { inputPath, migrated: migrate && source.schemaVersion !== report.schemaVersion, report, validation };
 }
 
+function writeValidationOutput(outputPath, output) {
+  if (!outputPath) return;
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify(output)}\n`, 'utf8');
+}
+
 if (require.main === module) {
   try {
     const args = process.argv.slice(2);
     const inputPath = option(args, '--input');
+    const outputPath = option(args, '--output');
     if (!inputPath) throw new Error('missing --input');
     const result = validateReleaseQaFile({ inputPath: path.resolve(inputPath), migrate: args.includes('--migrate') });
     const output = { schemaVersion: CLI_SCHEMA_VERSION, valid: result.validation.valid, migrated: result.migrated, input: result.inputPath, diagnostics: result.validation.diagnostics };
+    writeValidationOutput(outputPath ? path.resolve(outputPath) : null, output);
     process.stdout.write(`${JSON.stringify(output)}\n`);
     if (!result.validation.valid) process.exitCode = 1;
   } catch (error) {
@@ -27,4 +35,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { CLI_SCHEMA_VERSION, validateReleaseQaFile };
+module.exports = { CLI_SCHEMA_VERSION, validateReleaseQaFile, writeValidationOutput };

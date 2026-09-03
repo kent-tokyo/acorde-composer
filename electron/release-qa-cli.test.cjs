@@ -73,13 +73,41 @@ test('standalone schema CLI migrates a legacy v0 fixture to v1', () => {
     assert.equal(migrated.migrated, true);
     assert.equal(migrated.report.schemaVersion, 1);
     assert.equal(migrated.validation.valid, true);
-    const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', inputPath, '--migrate'], { encoding: 'utf8' });
+    const outputPath = path.join(root, 'validated', 'summary.json');
+    const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', inputPath, '--output', outputPath, '--migrate'], { encoding: 'utf8' });
     assert.equal(cli.status, 0);
     const output = JSON.parse(cli.stdout);
     assert.deepEqual(output, { schemaVersion: 1, valid: true, migrated: true, input: path.resolve(inputPath), diagnostics: [] });
+    assert.deepEqual(JSON.parse(fs.readFileSync(outputPath, 'utf8')), output);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('standalone schema CLI rejects malformed JSON and missing input files', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-schema-errors-'));
+  try {
+    const malformedPath = path.join(root, 'malformed.json');
+    fs.writeFileSync(malformedPath, '{"schemaVersion":');
+    const malformed = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', malformedPath], { encoding: 'utf8' });
+    assert.equal(malformed.status, 1);
+    assert.match(malformed.stderr, /release QA validation failed/);
+    const missing = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', path.join(root, 'missing.json')], { encoding: 'utf8' });
+    assert.equal(missing.status, 1);
+    assert.match(missing.stderr, /release QA validation failed/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('v1 to future-version migration fixture keeps the unimplemented v2 policy explicit', () => {
+  const fixtures = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../qa/release-qa-schema-migration-fixtures.json'), 'utf8'));
+  assert.deepEqual(fixtures.map(({ name, action }) => ({ name, action })), [
+    { name: 'legacy-v0', action: 'migrate' },
+    { name: 'current-v1', action: 'preserve' },
+    { name: 'future-v2', action: 'reject-until-migration-defined' },
+  ]);
+  assert.throws(() => require('./release-qa.cjs').migrateReleaseQaReport({ schemaVersion: 2 }, 1), /unsupported-release-qa-source-version/);
 });
 
 test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
