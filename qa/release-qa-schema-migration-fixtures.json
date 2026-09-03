@@ -1,5 +1,5 @@
 [
   {"name":"legacy-v0","sourceVersion":0,"targetVersion":1,"action":"migrate"},
   {"name":"current-v1","sourceVersion":1,"targetVersion":1,"action":"preserve"},
-  {"name":"future-v2","sourceVersion":2,"targetVersion":1,"action":"reject-until-migration-defined"}
+  {"name":"future-v2","sourceVersion":2,"targetVersion":1,"action":"migrate-v1-only"}
 ]

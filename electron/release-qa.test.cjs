@@ -65,5 +65,8 @@ test('release QA schema migration converts legacy reports and rejects future ver
   assert.equal(validateReleaseQaReportSchema(migrated).valid, true);
   assert.equal(verifyReleaseQaReport(migrated).valid, false);
   assert.throws(() => migrateReleaseQaReport({ ...current, schemaVersion: 2 }), /unsupported-release-qa-source-version/);
-  assert.throws(() => migrateReleaseQaReport(current, 2), /unsupported-release-qa-target-version/);
+  const migratedV2 = migrateReleaseQaReport(current, 2);
+  assert.equal(migratedV2.schemaVersion, 2);
+  assert.deepEqual(migratedV2.migration, { sourceSchemaVersion: 1 });
+  assert.throws(() => migrateReleaseQaReport(current, 3), /unsupported-release-qa-target-version/);
 });

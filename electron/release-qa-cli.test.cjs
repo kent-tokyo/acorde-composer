@@ -8,7 +8,7 @@ const { createArtifactManifest, createDistributionQaMatrix } = require('./distri
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { validateReleaseQaReportSchema } = require('./release-qa.cjs');
 const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
-const { resolveInputPath, validateReleaseQaFile } = require('../scripts/validate-release-qa.cjs');
+const { resolveInputPath, validateReleaseQaFile, validateReleaseQaValidationOutput } = require('../scripts/validate-release-qa.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-'));
@@ -77,7 +77,8 @@ test('standalone schema CLI migrates a legacy v0 fixture to v1', () => {
     const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', inputPath, '--output', outputPath, '--migrate'], { encoding: 'utf8' });
     assert.equal(cli.status, 0);
     const output = JSON.parse(cli.stdout);
-    assert.deepEqual(output, { schemaVersion: 1, valid: true, migrated: true, input: path.resolve(inputPath), diagnostics: [] });
+    assert.deepEqual(output, { schemaVersion: 1, valid: true, migrated: true, targetVersion: 1, input: path.resolve(inputPath), diagnostics: [] });
+    assert.deepEqual(validateReleaseQaValidationOutput(output), { valid: true, diagnostics: [] });
     assert.deepEqual(JSON.parse(fs.readFileSync(outputPath, 'utf8')), output);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -100,14 +101,35 @@ test('standalone schema CLI rejects malformed JSON and missing input files', () 
   }
 });
 
-test('v1 to future-version migration fixture keeps the unimplemented v2 policy explicit', () => {
+test('v1 to future-version migration fixture keeps the v2 policy explicit', () => {
   const fixtures = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../qa/release-qa-schema-migration-fixtures.json'), 'utf8'));
   assert.deepEqual(fixtures.map(({ name, action }) => ({ name, action })), [
     { name: 'legacy-v0', action: 'migrate' },
     { name: 'current-v1', action: 'preserve' },
-    { name: 'future-v2', action: 'reject-until-migration-defined' },
+    { name: 'future-v2', action: 'migrate-v1-only' },
   ]);
   assert.throws(() => require('./release-qa.cjs').migrateReleaseQaReport({ schemaVersion: 2 }, 1), /unsupported-release-qa-source-version/);
+});
+
+test('standalone schema CLI migrates a v1 report to v2 and validates its output schema', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-v2-'));
+  try {
+    const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+    const current = require('./release-qa.cjs').createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results: [] });
+    const inputPath = path.join(root, 'v1.json');
+    fs.writeFileSync(inputPath, JSON.stringify(current));
+    const result = validateReleaseQaFile({ inputPath, migrate: true, targetVersion: 2 });
+    assert.equal(result.report.schemaVersion, 2);
+    assert.deepEqual(result.report.migration, { sourceSchemaVersion: 1 });
+    assert.equal(result.validation.valid, true);
+    const cli = spawnSync(process.execPath, [path.resolve(__dirname, '../scripts/validate-release-qa.cjs'), '--input', inputPath, '--migrate', '--target-version', '2'], { encoding: 'utf8' });
+    assert.equal(cli.status, 0);
+    const output = JSON.parse(cli.stdout);
+    assert.equal(output.targetVersion, 2);
+    assert.deepEqual(validateReleaseQaValidationOutput(output), { valid: true, diagnostics: [] });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('standalone schema CLI resolves POSIX and Windows path formats deterministically', () => {
