@@ -70,3 +70,22 @@ test('release QA schema migration converts legacy reports and rejects future ver
   assert.deepEqual(migratedV2.migration, { sourceSchemaVersion: 1 });
   assert.throws(() => migrateReleaseQaReport(current, 3), /unsupported-release-qa-target-version/);
 });
+
+test('v2 report preserves primary fields through serialize and parse', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const results = matrix.flatMap((target) => target.scenarios.map((scenario) => ({ platform: target.platform, arch: target.arch, scenario: scenario.id, status: 'passed' })));
+  const v1 = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results, releaseMetadataDigest: 'metadata-digest' });
+  const v2 = migrateReleaseQaReport(v1, 2);
+  const parsed = JSON.parse(JSON.stringify(v2));
+  assert.equal(parsed.schemaVersion, 2);
+  assert.equal(parsed.product, v1.product);
+  assert.equal(parsed.version, v1.version);
+  assert.equal(parsed.commit, v1.commit);
+  assert.equal(parsed.releaseMetadataDigest, v1.releaseMetadataDigest);
+  assert.deepEqual(parsed.artifactManifest, v1.artifactManifest);
+  assert.deepEqual(parsed.artifactQa, v1.artifactQa);
+  assert.equal(parsed.artifactCommitMatches, v1.artifactCommitMatches);
+  assert.deepEqual(parsed.qa, v1.qa);
+  assert.deepEqual(parsed.migration, { sourceSchemaVersion: 1 });
+  assert.equal(verifyReleaseQaReport(parsed).valid, true);
+});
