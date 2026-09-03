@@ -9,10 +9,22 @@
   </head>
   <body>
     <main class="shell">
-      <header class="hero"><a href="../index.html" class="brand">♫ Acorde <strong>Composer</strong></a><span class="engine-status" id="engine-status">Loading acorde engine…</span><h1>Edit a score in your browser</h1><p>Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.</p></header>
+      <header class="hero"><a href="../index.html" class="brand">♫ Acorde <strong>Composer</strong></a><label class="language-control"><span id="language-label">Language</span><select id="language-select" aria-label="Playground language"><option value="en">English</option><option value="ja">日本語</option><option value="zh">简体中文</option></select></label><span class="engine-status" id="engine-status">Loading acorde engine…</span><h1 id="hero-title">Edit a score in your browser</h1><p id="hero-description">Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.</p></header>
       <section class="workspace" aria-label="Score playground">
-        <section class="score-card"><div class="card-heading"><div><span class="eyebrow">LIVE SCORE</span><h2 id="score-title">ABC fixture</h2></div><div class="actions"><button id="undo-button" disabled>Undo</button><button id="redo-button" disabled>Redo</button><button id="download-button" class="primary" disabled>Download MusicXML</button></div></div><div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div><p id="status" class="status" role="status"></p></section>
-        <aside class="controls"><div class="control-section"><h2>Quick edit</h2><p>These edits are applied through Acorde's <code>ScoreEngine</code>.</p><button id="add-note-button" class="primary wide" disabled>＋ Add C4 quarter note</button><button id="add-rest-button" class="wide" disabled>＋ Add quarter rest</button></div><div class="control-section"><h2>Import ABC</h2><label for="abc-input">ABC notation</label><textarea id="abc-input" spellcheck="false">X:1
+        <section class="score-card"><div class="card-heading"><div><span class="eyebrow" id="live-score-label">LIVE SCORE</span><h2 id="score-title">ABC fixture</h2></div><div class="actions"><button id="undo-button" disabled>Undo</button><button id="redo-button" disabled>Redo</button><button id="download-button" class="primary" disabled>Download MusicXML</button></div></div><div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div><p id="status" class="status" role="status"></p></section>
+T:Playground sketch
+M:4/4
+L:1/4
+K:C
+C D E F | G A B c |
+</textarea><button id="load-abc-button" class="wide" disabled>Load ABC into Acorde</button></div><div class="control-section note"><strong>Local-first demo</strong><span>No score data is uploaded. The browser calls the bundled <code>acorde-wasm</code> module directly.</span></div></aside>
+        <aside class="controls"><div class="control-section"><h2 id="quick-edit-title">Quick edit</h2><p id="quick-edit-description">These edits are applied through Acorde's <code>ScoreEngine</code>.</p><button id="add-note-button" class="primary wide" disabled>＋ Add C4 quarter note</button><button id="add-rest-button" class="wide" disabled>＋ Add quarter rest</button></div><div class="control-section"><h2 id="import-title">Import ABC</h2><label for="abc-input" id="abc-label">ABC notation</label><textarea id="abc-input" spellcheck="false">X:1
+T:Playground sketch
+M:4/4
+L:1/4
+K:C
+C D E F | G A B c |
+</textarea><button id="load-abc-button" class="wide" disabled>Load ABC into Acorde</button></div><div class="control-section note"><strong id="local-demo-title">Local-first demo</strong><span id="local-demo-description">No score data is uploaded. The browser calls the bundled <code>acorde-wasm</code> module directly.</span></div></aside>
 T:Playground sketch
 M:4/4
 L:1/4
