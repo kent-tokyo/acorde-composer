@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.7 — 2026-09-03
+
+acorde v1.0.9同期、エディタUIの操作整理、SoundFont状態表示、Quick startガイドを含むリリースです。
+
+### Added
+
+- Score / Notation / Parts / Layout / Playbackの操作グループ
+- 保存状態、SoundFont状態、初回操作ガイドの表示改善
+- UI契約テストの拡充
+
+### Verification
+
+- Composer Node: 126 passed
+- Composer Rust: `cargo check` passed
+- `npm run check`: passed
+
 ## 0.1.6 — 2026-09-03
 
 acorde v1.0.8同期、SoundFont decode IPC、OMR review queue、複数voice keyboard navigationを含むリリースです。
