@@ -20,6 +20,11 @@ function refreshScore() {
   const score = JSON.parse(scoreJson);
   $('score-title').textContent = score.metadata?.title || 'Untitled score';
   $('score-view').innerHTML = acorde.render_score_svg(scoreJson, JSON.stringify({ width: 900, interactive: true }));
+  $('score-view').querySelectorAll('[data-acorde-kind="note"]').forEach((note) => note.addEventListener('click', () => {
+    $('score-view').querySelectorAll('.selected-note').forEach((item) => item.classList.remove('selected-note'));
+    note.classList.add('selected-note');
+    setStatus(`Selected ${note.dataset.noteAddr || 'note'}. Use Quick edit to change the score.`);
+  }));
   $('download-button').disabled = false;
   $('add-note-button').disabled = false;
   $('add-rest-button').disabled = false;
@@ -30,7 +35,7 @@ function addNote(isRest) {
   try {
     engine.apply(JSON.stringify({
       type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0,
-      position: 0, pitch: { step: 'C', octave: 4, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: isRest,
+      position: 0, pitch: { step: 'C', octave: 4, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: isRest,
     }));
     refreshScore();
     setStatus(isRest ? 'Added a quarter rest.' : 'Added a C4 quarter note.');

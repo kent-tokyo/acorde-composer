@@ -17,5 +17,7 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(script, /render_score_svg/);
   assert.match(script, /serialize_musicxml/);
   assert.match(script, /new acorde\.ScoreEngine/);
+  assert.match(script, /duration: 'Quarter'/);
+  assert.match(script, /data-acorde-kind="note"/);
   assert.doesNotMatch(script, /tone|vexflow|music21/i);
 });
