@@ -8,11 +8,11 @@ Windows / macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML / MIDI / ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは、それぞれ `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは導入しません。Electron側はUI、ファイルダイアログ、IPC、OS固有処理だけを担当します。
 
-現在のComposer engineは、隣接する `acorde` v1.0.8 の5 crateをpath依存かつversion pinして利用します。実 SoundFont のpreset-zone mappingはacorde Issue #15待ちです。
+現在のComposer engineは、隣接する `acorde` v1.0.9 の5 crateをpath依存かつversion pinして利用します。実 SoundFont のpreset-zone mappingはacorde Issue #15待ちです。
 
 必要な音楽機能が不足している場合は、Composer側に独自の音楽ロジックを複製せず、先に `acorde` 側へ実装してテストしたうえで利用します。
 
-## 現在の縦切り（v0.1.6 + acorde v1.0.8）
+## 現在の縦切り（v0.1.6 + acorde v1.0.9）
 
 - Electron + isolated preload によるクロスプラットフォームUI
 - 楽譜キャンバス（実ScoreのSVG表示、選択、範囲選択、再生コントロール、undo/redo）
@@ -31,7 +31,7 @@ Composerの音楽処理は `acorde` を唯一の基盤とします。Scoreモデ
 - offline前提のSoundFont asset profile（provider / license / version / portability）
 - decoderが返すPCMのWeb Audio実sample再生（cache、root note pitch変換、loop、velocity envelope、sustain、release、polyphony制限）とoscillator fallbackの共存
 - decoder → renderer間のPCM format、loop、root note、digest、サイズ上限を検証するsample contract
-- acorde v1.0.8のSF2 PCM / SF3 Vorbis decode結果をengine JSON IPCから受け取るbounded sample API
+- acorde v1.0.9のSF2 PCM / SF3 Vorbis decode結果をengine JSON IPCから受け取るbounded sample API
 - OMR review queueのstatus filter、confidence / bbox表示、accept / reject操作（Scoreへ自動適用しない）
 - OMR review itemのcorrection入力とbbox navigation target通知（proposal状態のみ）
 - sample contractをElectron main/preload IPCへ接続し、decoder出力をrenderer前に検証
@@ -114,7 +114,7 @@ npm run check
 npm start
 ```
 
-`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.8リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
+`npm run start` は依存関係をインストールした後に実行してください。開発時は隣接する `acorde` v1.0.9リポジトリをsidecarのpath dependencyとして参照します。配布用には `ACORDE_ENGINE_BIN` でビルド済みsidecarを指定します。`npm test` にはファイルサイズ境界と新規テンプレート契約のテストが含まれます。
 
 `npm run pack` でmacOS arm64のElectronディレクトリ配布物と、checksum・SBOM・NOTICE・provenanceを束ねた`dist/release-artifact-manifest.json`を生成します。証跡不足またはartifact未生成時はmanifest生成を失敗させます。開発環境ではコード署名とアプリ固有アイコンは未設定です。
 
