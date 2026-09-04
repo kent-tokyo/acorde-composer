@@ -11,6 +11,7 @@ const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
 const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiProvider } = require('./ai-provider-boundary.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
+const { attachResolvedSample } = require('./soundfont-playback.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./support-bundle-path.cjs');
@@ -191,6 +192,7 @@ ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) =
 ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_version: providerVersion, bank, program }) => callEngine({ op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
 ipcMain.handle('engine:decodeSoundfontSample', async (_event, { format, data, startFrame, endFrame, sampleRate, channels }) => callEngine({ op: 'decode_soundfont_sample', format, data, start_frame: startFrame, end_frame: endFrame, sample_rate: sampleRate, channels }));
 ipcMain.handle('soundfont:normalizeDecodedSample', async (_event, sample) => normalizeDecodedSample(sample));
+ipcMain.handle('soundfont:attachResolvedSample', async (_event, { events, zones, samplesById, bank, program } = {}) => attachResolvedSample(events, zones, samplesById, { bank, program }));
 ipcMain.handle('omr:assessProposal', async (_event, proposal) => assessOmrProposal(proposal));
 ipcMain.handle('omr:normalizeRunResult', async (_event, result) => normalizeOmrRunResult(result));
 ipcMain.handle('omr:runExternalProvider', async (_event, { executable, args, request, timeoutMs } = {}) => runExternalOmrProvider({ executable, args, request, timeoutMs }));

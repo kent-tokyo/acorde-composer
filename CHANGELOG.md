@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.9 — 2026-09-05
+
+`acorde` v1.1.0への依存更新と、SoundFont preset-zone接続境界の先行実装を含むリリースです。
+
+### Changed
+
+- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.0へ更新
+- PlaygroundのWASM生成物とGitHub Pages workflowをacorde v1.1.0へ更新
+- resolved preset-zone metadataを受け取るComposer側SoundFont adapterとIPC境界を追加
+- key／velocity範囲、sample、loop、root key、envelopeの決定的選択とmissing sample診断を追加
+- 公開ドキュメントとQA evidenceをComposer v0.1.9／acorde v1.1.0へ同期
+
+### Verification
+
+- Composer Node: 158 passed
+- Composer Rust: 18 passed
+- `npm run check`: passed
+- `cargo check --locked`: passed
+- `git diff --check`: passed
+
 ## 0.1.8 — 2026-09-03
 
 再生・IPC・plugin hostの安定性と、編集時の不要な処理を改善した保守リリースです。依存する音楽処理基盤は `acorde` v1.0.9のままです。

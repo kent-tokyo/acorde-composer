@@ -22,11 +22,11 @@ For comparison criteria, migration steps, and limitations, see the [Choosing and
 
 Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
 
-The current engine pins the five adjacent `acorde` crates at v1.0.9 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+The current engine pins the five adjacent `acorde` crates at v1.1.0 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.8
+## Current release: v0.1.9
 
-The current release uses `acorde` v1.0.9 and includes:
+The current release uses `acorde` v1.1.0 and includes:
 
 - Electron UI with isolated preload and bounded JSON IPC
 - MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
@@ -34,6 +34,7 @@ The current release uses `acorde` v1.0.9 and includes:
 - Note/rest editing, lyrics, chord symbols, dynamics, articulations, grace notes, tuplets, slurs, ties, hairpins, ottava, pedal, arpeggio, trill, fingering, string number, and technique text
 - Multiple part/staff controls, voice selection, keyboard navigation, selection playback, undo/redo, and autosave recovery
 - Mixer controls, oscillator fallback, decoded PCM sample playback, SoundFont status, and bounded sample contracts
+- A resolved SoundFont preset-zone adapter boundary for key/velocity selection, sample metadata, and missing-sample diagnostics
 - AI proposal review, OMR review queue, provider license gates, timeout recovery, and redacted support bundles
 - Artifact manifest generation, release QA reports, schema migration, checksum, SBOM, NOTICE, and provenance checks
 
@@ -85,7 +86,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 152 Node tests and 18 Rust unit tests. These do not replace signed artifacts or macOS/Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.8](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.8).
+The current local verification is 158 Node tests and 18 Rust unit tests. These do not replace signed artifacts or macOS/Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.9](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.9).
 
 ## License and external assets
 

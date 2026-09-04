@@ -34,7 +34,7 @@ Acorde Composerは、DAW、完成された商用記譜ソフト、MuseSoundsそ�
 5. 保存したファイルを再読込し、voice、rest、backup／forward、歌詞、コード、主要記譜情報を確認します。
 6. 印刷や音源が必要な場合は、対象OSと外部assetのlicense・配布条件を確認します。
 
-元ファイルを上書きせず、移行前後のファイルを残す運用を推奨します。現在も完全な複数voice編集、実SoundFont zone materialization、MuseSounds接続、実OMR provider、コード署名済み配布は完了条件から分離されています。
+元ファイルを上書きせず、移行前後のファイルを残す運用を推奨します。Composer側にはresolved SoundFont zoneを受け取るadapterがありますが、acorde側の公開metadata境界（Issue #17）が必要です。完全な複数voice編集、実SoundFont zone materialization、MuseSounds接続、実OMR provider、コード署名済み配布は完了条件から分離されています。
 
 ## FAQ
 

@@ -1,6 +1,6 @@
 # Release QA evidence
 
-対象アプリは Acorde Composer `0.1.8`、engine依存は `acorde` `1.0.9`です。コード上の回帰検証はNode 152件、Rust unit test 18件が成功していますが、これらはmacOS／Windows実機のpackaged-app QAを代替しません。
+対象アプリは Acorde Composer `0.1.9`、engine依存は `acorde` `1.1.0`です。コード上の回帰検証はNode 158件、Rust unit test 18件が成功していますが、これらはmacOS／Windows実機のpackaged-app QAを代替しません。
 
 `release-qa-matrix.json`はmacOS arm64とWindows x64の各10シナリオ、合計20シナリオを定義します。結果は`release-qa-results.json`へ同じ`platform`・`arch`・`scenario`キーで記録します。
 

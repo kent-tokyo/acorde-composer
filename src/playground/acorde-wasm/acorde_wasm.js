@@ -666,6 +666,32 @@ export class ScoreEngine {
         }
     }
     /**
+     * Set or clear the unpitched flag while retaining display placement.
+     * @param {string} addr_json
+     * @param {boolean} is_unpitched
+     * @returns {string}
+     */
+    set_unpitched(addr_json, is_unpitched) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(addr_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_set_unpitched(this.__wbg_ptr, ptr0, len0, is_unpitched);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * Toggle slur between two notes. Returns a [`ChangeHint`] JSON string.
      *
      * `start_json` and `end_json` are JSON-encoded `NoteAddr` objects.
@@ -2111,6 +2137,43 @@ export function score_statistics(score_json) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Select one authored fingering candidate without modifying the score.
+ *
+ * `policy` accepts `source-order`, `lowest`, or `highest`. The result is a
+ * JSON number, or `null` when the addressed note has no fingering candidates.
+ * @param {string} score_json
+ * @param {number} part
+ * @param {number} staff
+ * @param {number} measure
+ * @param {number} voice
+ * @param {number} note
+ * @param {string} policy
+ * @returns {string}
+ */
+export function select_fingering(score_json, part, staff, measure, voice, note, policy) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(policy, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.select_fingering(ptr0, len0, part, staff, measure, voice, note, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
