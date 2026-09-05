@@ -10,6 +10,7 @@ const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
 const { assertCommand } = require('./command-schema.cjs');
 const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
 const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiProvider } = require('./ai-provider-boundary.cjs');
+const { assessProviderConfig, normalizeProviderConfig } = require('./provider-config.cjs');
 const { normalizeDecodedSample } = require('./sample-contract.cjs');
 const { attachResolvedSample } = require('./soundfont-playback.cjs');
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
@@ -202,6 +203,8 @@ ipcMain.handle('omr:findItemAtPoint', async (_event, { proposal, x, y }) => find
 ipcMain.handle('ai:buildRequest', async (_event, payload) => buildAiRequest(payload));
 ipcMain.handle('ai:normalizeResponse', async (_event, { response, expectedContextFingerprint } = {}) => normalizeAiResponse(response, { expectedContextFingerprint }));
 ipcMain.handle('ai:runExternalProvider', async (_event, payload = {}) => runExternalAiProvider({ ...payload, limiter: aiRateLimiter }));
+ipcMain.handle('provider:normalizeConfig', async (_event, { config, kind } = {}) => normalizeProviderConfig(config, kind));
+ipcMain.handle('provider:assessConfig', async (_event, { config, kind } = {}) => assessProviderConfig(config, kind));
 
 app.whenReady().then(() => {
   createWindow();

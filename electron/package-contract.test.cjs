@@ -8,9 +8,9 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 
 const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/\r?\n/);
 const engineSource = fs.readFileSync(path.join(root, 'engine/src/main.rs'), 'utf8');
 
-test('release metadata identifies the Acorde Composer v0.1.9 release', () => {
+test('release metadata identifies the Acorde Composer v0.1.10 release', () => {
   assert.equal(packageJson.name, 'acorde-composer');
-  assert.equal(packageJson.version, '0.1.9');
+  assert.equal(packageJson.version, '0.1.10');
   assert.notEqual(packageJson.private, true);
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
@@ -26,6 +26,7 @@ test('internal roadmap and generated artifacts stay out of the repository', () =
   assert.ok(gitignore.includes('engine/target/'));
   assert.ok(gitignore.includes('node_modules/'));
   assert.ok(fs.existsSync(path.join(root, 'package-lock.json')));
+  assert.ok(fs.existsSync(path.join(root, 'qa', 'notation-coverage-matrix.json')));
 });
 
 test('engine IPC rejects malformed output and isolates the broken child process', () => {
@@ -56,4 +57,11 @@ test('SoundFont playback stays behind an explicit resolved-zone IPC boundary', (
   const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
   assert.match(main, /soundfont:attachResolvedSample/);
   assert.match(preload, /attachResolvedSample/);
+});
+
+test('external provider configuration stays behind a normalized IPC boundary', () => {
+  const main = fs.readFileSync(path.join(root, 'electron/main.cjs'), 'utf8');
+  const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
+  assert.match(main, /provider:assessConfig/);
+  assert.match(preload, /assessProviderConfig/);
 });

@@ -3,7 +3,7 @@ const COMMAND_TYPES = new Set([
   'delete_measure', 'delete_note', 'delete_part', 'delete_staff',
   'set_clef', 'set_duration', 'set_key_signature', 'set_metadata',
   'set_midi_instrument', 'set_part_name', 'set_tempo', 'set_time_signature',
-  'add_hairpin', 'add_pedal', 'set_arpeggio', 'set_barline', 'set_chord_symbol', 'set_cue', 'set_dynamic', 'set_expression_text', 'set_fingering', 'set_grace', 'set_guitar_technique', 'set_lyric', 'set_multi_rest', 'set_navigation_mark', 'set_note_head', 'set_ottava', 'set_page_break', 'set_part_group', 'set_rehearsal_mark', 'set_stem', 'set_string_number', 'set_system_break', 'set_technique_text', 'set_tempo_at_measure', 'set_transpose', 'set_tuplet', 'set_volta', 'toggle_articulation', 'toggle_slur', 'toggle_tie', 'toggle_trill_line',
+  'add_hairpin', 'add_pedal', 'set_arpeggio', 'set_barline', 'set_chord_symbol', 'set_cross_staff', 'set_cue', 'set_dynamic', 'set_expression_text', 'set_fingering', 'set_glissando', 'set_grace', 'set_guitar_technique', 'set_lyric', 'set_multi_rest', 'set_navigation_mark', 'set_note_head', 'set_ottava', 'set_page_break', 'set_part_group', 'set_rehearsal_mark', 'set_stem', 'set_string_number', 'set_system_break', 'set_technique_text', 'set_tempo_at_measure', 'set_transpose', 'set_tuplet', 'set_volta', 'toggle_articulation', 'toggle_slur', 'toggle_tie', 'toggle_trill_line',
 ]);
 
 function assertObject(value, label) {
@@ -54,6 +54,8 @@ function describeCommand(command) {
     add_hairpin: 'Add hairpin',
     add_pedal: 'Add pedal',
     set_arpeggio: 'Set arpeggio',
+    set_glissando: 'Set glissando',
+    set_cross_staff: 'Set cross-staff placement',
     toggle_trill_line: 'Toggle trill line',
     set_barline: 'Set barline',
     set_cue: 'Set cue note',

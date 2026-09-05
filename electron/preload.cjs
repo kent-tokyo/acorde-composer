@@ -44,4 +44,6 @@ contextBridge.exposeInMainWorld('acorde', {
   buildAiRequest: (payload) => ipcRenderer.invoke('ai:buildRequest', payload),
   normalizeAiResponse: (response, expectedContextFingerprint = null) => ipcRenderer.invoke('ai:normalizeResponse', { response, expectedContextFingerprint }),
   runExternalAiProvider: (payload) => ipcRenderer.invoke('ai:runExternalProvider', payload),
+  normalizeProviderConfig: (config, kind) => ipcRenderer.invoke('provider:normalizeConfig', { config, kind }),
+  assessProviderConfig: (config, kind) => ipcRenderer.invoke('provider:assessConfig', { config, kind }),
 });

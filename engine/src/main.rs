@@ -386,6 +386,8 @@ mod tests {
   </measure></part>
 </score-partwise>"#;
 
+    const ADVANCED_NOTATION_FIXTURE: &str = include_str!("../../qa/fixtures/notation-advanced.musicxml");
+
     fn soundfont_fixture(ogg: bool) -> Vec<u8> {
         let mut preset = vec![0u8; 38 * 2];
         preset[..6].copy_from_slice(b"Piano\0");
@@ -727,5 +729,40 @@ mod tests {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());
         assert!(events.iter().any(|event| event.address.as_deref().is_some_and(|address| address.split(':').nth(3).is_some_and(|voice| voice != "0"))));
+    }
+
+    #[test]
+    fn advanced_notation_commands_roundtrip_glissando_and_cross_staff() {
+        let parsed = parse_musicxml_with_report(ADVANCED_NOTATION_FIXTURE).expect("advanced fixture parses");
+        assert!(parsed.diagnostics.is_empty());
+        assert_eq!(parsed.score.parts[0].staves.len(), 1);
+        assert_eq!(parsed.score.parts[0].staves[0].measures[0].voices[1][0].cross_staff.as_ref().map(|value| value.target_staff), Some(1));
+        let mut engine = None;
+        handle(Request::LoadScore { score: parsed.score.clone() }, &mut engine).expect("advanced score loads");
+        let glissando: Command = serde_json::from_value(serde_json::json!({
+            "type": "set_glissando", "part_index": 0, "staff_index": 0, "measure_index": 0,
+            "voice": 0, "note_index": 0, "start": true, "end": false
+        })).expect("glissando command deserializes");
+        handle(Request::ApplyCommand { command: glissando, label: Some("SetGlissando".into()) }, &mut engine).expect("glissando applies");
+        let exported = serialize_musicxml_with_report(&parsed.score).expect("advanced fixture serializes");
+        assert!(exported.output.contains("<glissando"));
+        assert!(exported.output.contains("<staff>2</staff>"));
+        let reparsed = parse_musicxml_with_report(&exported.output).expect("advanced XML reparses");
+        let notes: Vec<_> = reparsed.score.parts.iter().flat_map(|part| part.staves.iter()).flat_map(|staff| staff.measures.iter()).flat_map(|measure| measure.voices.iter()).flat_map(|voice| voice.iter()).collect();
+        assert!(notes.iter().any(|note| note.glissando_start));
+        assert!(notes.iter().any(|note| note.cross_staff.as_ref().map(|value| value.target_staff) == Some(1)));
+    }
+
+    #[test]
+    fn advanced_notation_svg_contains_glissando_and_accessible_geometry() {
+        let parsed = parse_musicxml(ADVANCED_NOTATION_FIXTURE).expect("advanced fixture parses for SVG");
+        let svg = render_svg(&parsed, &SvgRenderOptions { width: 1200.0, ..Default::default() }).expect("advanced SVG renders");
+        assert!(svg.contains("acorde-glissando"));
+        assert!(svg.contains("data-acorde-kind=\"note\""));
+        assert!(svg.contains("viewBox=\""));
+        let layout = compute_layout(&parsed, &LayoutConfig::default());
+        let metadata = render_svg_metadata(&parsed, &layout, &SvgRenderOptions { width: 1200.0, ..Default::default() }).expect("advanced SVG metadata renders");
+        assert!(metadata.note_count >= 3);
+        assert!(!metadata.accessible_text.is_empty());
     }
 }

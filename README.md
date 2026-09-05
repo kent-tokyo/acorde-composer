@@ -22,11 +22,11 @@ For comparison criteria, migration steps, and limitations, see the [Choosing and
 
 Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
 
-The current engine pins the five adjacent `acorde` crates at v1.1.0 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+The current engine pins the five adjacent `acorde` crates at v1.1.1 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.9
+## Current release: v0.1.10
 
-The current release uses `acorde` v1.1.0 and includes:
+The current release uses `acorde` v1.1.1 and includes:
 
 - Electron UI with isolated preload and bounded JSON IPC
 - MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
@@ -86,7 +86,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 158 Node tests and 18 Rust unit tests. These do not replace signed artifacts or macOS/Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.9](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.9).
+The current local verification is 169 Node tests and 20 Rust unit tests. The notation coverage matrix now assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.10](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.10).
 
 ## License and external assets
 

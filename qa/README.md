@@ -1,6 +1,6 @@
 # Release QA evidence
 
-対象アプリは Acorde Composer `0.1.9`、engine依存は `acorde` `1.1.0`です。コード上の回帰検証はNode 158件、Rust unit test 18件が成功していますが、これらはmacOS／Windows実機のpackaged-app QAを代替しません。
+対象アプリは Acorde Composer `0.1.10`、engine依存は `acorde` `1.1.1`です。コード上の回帰検証はNode 169件、Rust unit test 20件が成功していますが、これらはmacOS／Windows実機のpackaged-app QAを代替しません。
 
 `release-qa-matrix.json`はmacOS arm64とWindows x64の各10シナリオ、合計20シナリオを定義します。結果は`release-qa-results.json`へ同じ`platform`・`arch`・`scenario`キーで記録します。
 
@@ -25,4 +25,4 @@ npm run release:qa -- \
 
 ## Current local blocker
 
-2026-09-03時点のmacOS arm64 packaged appは、`Contents/Resources/engine/acorde-composer-engine`を同梱し、New操作から実engineのparse応答まで確認済みです。複数voice fixtureもOpen → title edit → MusicXML save → saved file reloadまで実施し、出力XMLの`voice` 1/2と`backup`を確認しました。ただしUI診断にはacordeのvoice flattening警告が残るため、完全な複数voice表示・編集の完了とは扱いません。Windows実機、クリーンマシン、署名済みinstallerは未検証として記録します。
+2026-09-05時点のmacOS arm64 packaged appは、最新`npm run pack` artifactに`Contents/Resources/engine/acorde-composer-engine`を同梱し、acorde 1.1.1の実engineで複数voice fixtureをOpen → title edit → dirty表示 → MusicXML save → saved file reloadまで確認済みです。保存XMLの`voice` 1/2と`backup`、再Open後のタイトル、voice 1/2 selector切替を確認しました。Score settingsのApply経路も、native dialogのsubmit競合を避ける直接handlerと`type="button"`へ修正し、回帰テスト済みです。外部OMR/AIは実行可能なprovider binary・license・ユーザー同意が必要で、設定readiness境界までをローカル検証済みです。Windows実機、クリーンマシン、署名済みinstaller、実provider品質は未検証として記録します。

@@ -1,8 +1,31 @@
 # Changelog
 
+## 0.1.10 — 2026-09-05
+
+notation coverageの個別fixtureと、複数voice編集のmacOS arm64 packaged E2E検証を追加した保守リリースです。engine依存は `acorde` v1.1.1です。
+
+### Added
+
+- notation coverage 12要素それぞれのMusicXML fixtureとcoverage matrixの`fixturePath`
+- fixtureの存在、`score-partwise`、matrix schemaを検証する独立validatorと回帰テスト
+- 最新macOS arm64 packaged artifactでの複数voice Open → title edit → save → reload検証
+
+### Fixed
+
+- Score settingsのApply操作をnative dialogのsubmit競合から分離し、変更状態とタイトル更新を安定化
+
+### Verification
+
+- Composer Node: 169 passed
+- Composer Rust: 20 passed
+- `npm run check`: passed
+- `npm run check:playground`: passed
+- `cargo clippy --all-targets --all-features --locked`: passed
+- `git diff --check`: passed
+
 ## 0.1.9 — 2026-09-05
 
-`acorde` v1.1.0への依存更新と、SoundFont preset-zone接続境界の先行実装を含むリリースです。
+`acorde` v1.1.1への依存更新と、SoundFont preset-zone接続境界の先行実装を含むリリースです。
 
 ### Changed
 
@@ -10,7 +33,7 @@
 - PlaygroundのWASM生成物とGitHub Pages workflowをacorde v1.1.0へ更新
 - resolved preset-zone metadataを受け取るComposer側SoundFont adapterとIPC境界を追加
 - key／velocity範囲、sample、loop、root key、envelopeの決定的選択とmissing sample診断を追加
-- 公開ドキュメントとQA evidenceをComposer v0.1.9／acorde v1.1.0へ同期
+- 公開ドキュメントとQA evidenceをComposer v0.1.9／acorde v1.1.1へ同期
 
 ### Verification
 

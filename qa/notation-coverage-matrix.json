@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "engine": "acorde@1.1.1",
+  "requiredLayers": ["parser", "model", "command", "layout", "editor", "musicxml", "playback", "fixture"],
+  "elements": [
+    {"id":"note-rest","category":"pitch-rhythm","status":"release-ready","fixturePath":"qa/fixtures/notation/note-rest.musicxml","layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},
+    {"id":"multiple-voices","category":"voices","status":"roundtrip-tested","fixturePath":"qa/fixtures/notation/multiple-voices.musicxml","layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},
+    {"id":"grace-cue","category":"ornament","status":"editable","fixturePath":"qa/fixtures/notation/grace-cue.musicxml","layers":["parser","model","command","layout","editor","musicxml","fixture"]},
+    {"id":"glissando","category":"ornament","status":"editable","fixturePath":"qa/fixtures/notation/glissando.musicxml","layers":["parser","model","command","layout","editor","musicxml","fixture"]},
+    {"id":"trill-tremolo-fermata-breath","category":"ornament","status":"editable","fixturePath":"qa/fixtures/notation/trill-tremolo-fermata-breath.musicxml","layers":["parser","model","command","layout","editor","musicxml","fixture"]},
+    {"id":"arpeggio-pedal-ottava","category":"technique","status":"editable","fixturePath":"qa/fixtures/notation/arpeggio-pedal-ottava.musicxml","layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},
+    {"id":"fingering-string-number","category":"performance","status":"editable","fixturePath":"qa/fixtures/notation/fingering-string-number.musicxml","layers":["parser","model","command","layout","editor","musicxml","fixture"]},
+    {"id":"text-styles","category":"text","status":"preserved","fixturePath":"qa/fixtures/notation/text-styles.musicxml","layers":["parser","model","layout","musicxml","fixture"]},
+    {"id":"repeats-volta-navigation","category":"structure","status":"editable","fixturePath":"qa/fixtures/notation/repeats-volta-navigation.musicxml","layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},
+    {"id":"cross-staff","category":"structure","status":"editable","fixturePath":"qa/fixtures/notation/cross-staff.musicxml","layers":["parser","model","command","layout","editor","musicxml","fixture"]},
+    {"id":"lyrics-chords","category":"text","status":"editable","fixturePath":"qa/fixtures/notation/lyrics-chords.musicxml","layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},
+    {"id":"layout-breaks-multirest","category":"layout","status":"editable","fixturePath":"qa/fixtures/notation/layout-breaks-multirest.musicxml","layers":["model","command","layout","editor","musicxml","fixture"]}
+  ]
+}

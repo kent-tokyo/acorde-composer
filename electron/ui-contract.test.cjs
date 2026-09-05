@@ -9,6 +9,7 @@ const index = fs.readFileSync(path.join(root, 'src/index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8');
 const packageManifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const multiVoiceFixture = fs.readFileSync(path.join(root, 'qa/fixtures/multivoice-ui.musicxml'), 'utf8');
+const advancedNotationFixture = fs.readFileSync(path.join(root, 'qa/fixtures/notation-advanced.musicxml'), 'utf8');
 
 test('editor UI exposes truthful save state and accessible core actions', () => {
   assert.match(index, /id="save-status"/);
@@ -197,6 +198,25 @@ test('multiple-voice UI contract keeps fixture structure and voice-aware control
   assert.equal((multiVoiceFixture.match(/<voice>1<\/voice>/g) || []).length, 2);
   assert.equal((multiVoiceFixture.match(/<voice>2<\/voice>/g) || []).length, 2);
   assert.match(multiVoiceFixture, /<rest\/>/);
+});
+
+test('notation UI exposes advanced spanners and explicit ABC loss diagnostics', () => {
+  const app = fs.readFileSync(path.join(root, 'src', 'app.js'), 'utf8');
+  assert.match(app, /id = 'glissando-button'/);
+  assert.match(app, /id = 'cross-staff-button'/);
+  assert.match(app, /id = 'text-style-button'/);
+  assert.match(app, /composer\.abc-lossy-spanners/);
+  assert.match(app, /composer\.abc-lossy-text-styles/);
+});
+
+test('cross-staff multi-voice workflow keeps address, edit, save, and reload boundaries explicit', () => {
+  assert.match(advancedNotationFixture, /<glissando number="1" type="start">/);
+  assert.match(advancedNotationFixture, /<voice>2<\/voice>/);
+  assert.match(advancedNotationFixture, /<staff>2<\/staff>/);
+  assert.match(app, /type: 'set_cross_staff'/);
+  assert.match(app, /type: 'set_glissando'/);
+  assert.match(app, /markDirty\(\)/);
+  assert.match(app, /serializeMusicxmlReport/);
 });
 
 test('voice counting avoids intermediate arrays on score-change updates', () => {
