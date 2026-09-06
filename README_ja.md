@@ -17,11 +17,11 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-現在は `acorde` v1.1.2の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+現在は `acorde` v1.1.3の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
-**Acorde Composer v0.1.11**（`acorde v1.1.2`）
+**Acorde Composer v0.1.12**（`acorde v1.1.3`）
 
 AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界外で接続します。
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-現在の検証結果はNode 177件、Rust unit test 20件です。notation coverageの12要素に個別MusicXML fixtureを割り当て、100／1,000／10,000小節の性能fixture、cold start、playback、layout、SVG、repeat renderの測定CLIも追加しています。最新macOS arm64 packaged artifactで複数voiceのOpen → edit → save → reloadを確認しています。これは署名済み配布物やWindows実機QAの代替ではありません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.11](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.11)を参照してください。
+現在の検証結果はNode 178件、Rust unit test 20件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。notation coverageの12要素に個別MusicXML fixtureを割り当て、100／1,000／10,000小節の性能fixture、cold start、playback、layout、SVG、repeat renderの測定CLIも追加しています。最新macOS arm64 packaged artifactで複数voiceのOpen → edit → save → reloadを確認しています。これは署名済み配布物やWindows実機QAの代替ではありません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.12](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.12)を参照してください。
 
 ## ライセンスと外部asset
 

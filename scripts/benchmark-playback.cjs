@@ -46,7 +46,7 @@ const summarize = (values) => { const sorted = values.slice().sort((left, right)
     eventCount = Array.isArray(events) ? events.length : 0;
   }
   const rssAfter = process.memoryUsage().rss;
-  const report = { schemaVersion: 1, engine: 'acorde@1.1.2', fixturePath: path.relative(root, inputPath), iterations, eventCount, parse_ms: summarize(parse), playback_ms: summarize(playback), harness_memory: { rss_before_bytes: rssBefore, rss_after_bytes: rssAfter, rss_delta_bytes: rssAfter - rssBefore } };
+  const report = { schemaVersion: 1, engine: 'acorde@1.1.3', fixturePath: path.relative(root, inputPath), iterations, eventCount, parse_ms: summarize(parse), playback_ms: summarize(playback), harness_memory: { rss_before_bytes: rssBefore, rss_after_bytes: rssAfter, rss_delta_bytes: rssAfter - rssBefore } };
   fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);
   process.stdout.write(`${JSON.stringify({ outputPath, iterations, eventCount, parse_ms: report.parse_ms, playback_ms: report.playback_ms, harness_memory: report.harness_memory })}\n`);
   child.stdin.end();

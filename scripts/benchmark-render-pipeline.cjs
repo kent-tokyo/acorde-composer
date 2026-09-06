@@ -49,7 +49,7 @@ const summarize = (values) => { const sorted = values.slice().sort((left, right)
     await call({ op: 'render_svg', score, width: 900, measures_per_system: 4, interactive: true });
     metrics.repeat_render_ms.push(elapsed(start));
   }
-  const report = { schemaVersion: 1, engine: 'acorde@1.1.2', fixturePath: path.relative(root, inputPath), iterations, layout_ms: summarize(metrics.layout_ms), svg_ms: summarize(metrics.svg_ms), svg_metadata_ms: summarize(metrics.svg_metadata_ms), repeat_render_ms: summarize(metrics.repeat_render_ms) };
+  const report = { schemaVersion: 1, engine: 'acorde@1.1.3', fixturePath: path.relative(root, inputPath), iterations, layout_ms: summarize(metrics.layout_ms), svg_ms: summarize(metrics.svg_ms), svg_metadata_ms: summarize(metrics.svg_metadata_ms), repeat_render_ms: summarize(metrics.repeat_render_ms) };
   fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);
   process.stdout.write(`${JSON.stringify({ outputPath, iterations, layout_ms: report.layout_ms, svg_ms: report.svg_ms, svg_metadata_ms: report.svg_metadata_ms, repeat_render_ms: report.repeat_render_ms })}\n`);
   child.stdin.end();

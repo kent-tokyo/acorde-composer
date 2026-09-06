@@ -5,7 +5,7 @@ function validateColdStartResults(inputPath = path.resolve('qa/performance-cold-
   const input = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const errors = [];
   if (input?.schemaVersion !== 1) errors.push('schemaVersion must be 1');
-  if (input?.engine !== 'acorde@1.1.2') errors.push('engine must be pinned to acorde@1.1.2');
+  if (input?.engine !== 'acorde@1.1.3') errors.push('engine must be pinned to acorde@1.1.3');
   if (typeof input?.fixturePath !== 'string' || path.isAbsolute(input.fixturePath)) errors.push('fixturePath must be relative');
   if (!Number.isInteger(input?.iterations) || input.iterations < 3) errors.push('iterations must be at least 3');
   const summary = input?.cold_start_ms;

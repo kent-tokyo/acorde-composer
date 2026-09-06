@@ -17,11 +17,11 @@
 
 音乐处理只使用 `acorde`。Score 模型、MusicXML／MIDI／ABC 输入输出、编辑 command、布局、SVG 渲染和 PlaybackEvent 都通过 `acorde` API 完成。不使用 Tone.js、VexFlow、music21 等其他音乐库。
 
-当前使用 `acorde` v1.1.2 的 5 个 crate，并通过 path dependency 和 version pin 固定。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
+当前使用 `acorde` v1.1.3 的 5 个 crate，并通过 path dependency 和 version pin 固定。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
 
 ## 当前版本
 
-**Acorde Composer v0.1.11**（`acorde v1.1.2`）
+**Acorde Composer v0.1.12**（`acorde v1.1.3`）
 
 AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界之外。
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-当前已验证 Node 177 项、Rust unit test 20 项。notation coverage 的 12 个元素现在各自关联独立 MusicXML fixture，并加入了100／1,000／10,000小节性能fixture、cold start、playback、layout、SVG和repeat render测量CLI。最新 macOS arm64 packaged artifact 已确认多声部 Open → edit → save → reload 流程。这些结果不能替代已签名分发包或 Windows 真机 QA。详情请参阅 [QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md) 和 [GitHub Release v0.1.11](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.11)。
+当前已验证 Node 178 项、Rust unit test 20 项。`npm run check:candidate` 会按固定顺序运行 Node、静态检查、fixture、Playground、Rust test、clippy 和差分检查。notation coverage 的 12 个元素现在各自关联独立 MusicXML fixture，并加入了100／1,000／10,000小节性能fixture、cold start、playback、layout、SVG和repeat render测量CLI。最新 macOS arm64 packaged artifact 已确认多声部 Open → edit → save → reload 流程。这些结果不能替代已签名分发包或 Windows 真机 QA。详情请参阅 [QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md) 和 [GitHub Release v0.1.12](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.12)。
 
 ## 许可证与外部资源
 

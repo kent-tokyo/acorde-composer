@@ -7,7 +7,7 @@ function validatePerformanceResults(inputPath = path.resolve('qa/performance-ben
   const input = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const errors = [];
   if (input?.schemaVersion !== 1) errors.push('schemaVersion must be 1');
-  if (input?.engine !== 'acorde@1.1.2') errors.push('engine must be pinned to acorde@1.1.2');
+  if (input?.engine !== 'acorde@1.1.3') errors.push('engine must be pinned to acorde@1.1.3');
   if (!Array.isArray(input?.profiles) || input.profiles.length === 0) errors.push('profiles must be non-empty');
   const ids = new Set();
   for (const profile of Array.isArray(input?.profiles) ? input.profiles : []) {

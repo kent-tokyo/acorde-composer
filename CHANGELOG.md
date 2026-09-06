@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.12 — 2026-09-06
+
+- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.3へ更新
+- engine表示、QA schema、benchmark metadataをacorde v1.1.3へ同期
+- 次期候補向けにNode／QA／Playground／Rust test／clippy／差分検査を統合する`check:candidate`ゲートを追加
+
+### Verification
+
+- Composer Node: 178 passed
+- Composer Rust: 20 passed
+- `npm run check:candidate`: passed
+- `npm run check:playground`: passed
+- `cargo clippy --all-targets --all-features --locked`: passed
+- `git diff --check`: passed
+
 ## 0.1.11 — 2026-09-06
 
 長大譜面の再現可能な性能測定と、公開前の結果検証を強化したリリースです。engine依存は `acorde` v1.1.2です。

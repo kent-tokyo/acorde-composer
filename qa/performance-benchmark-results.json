@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.2",
+  "engine": "acorde@1.1.3",
   "profiles": [
     {
       "id": "multivoice-smoke",
       "fixturePath": "qa/fixtures/multivoice-ui.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 0.136,
-        "p95": 4.336,
-        "max": 4.336
+        "p50": 0.316,
+        "p95": 272.9,
+        "max": 272.9
       },
       "load_ms": {
-        "p50": 0.143,
-        "p95": 0.485,
-        "max": 0.485
+        "p50": 0.363,
+        "p95": 0.724,
+        "max": 0.724
       },
       "render_ms": {
-        "p50": 0.096,
-        "p95": 0.262,
-        "max": 0.262
+        "p50": 0.276,
+        "p95": 0.43,
+        "max": 0.43
       }
     },
     {
@@ -27,19 +27,19 @@
       "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 1.985,
-        "p95": 3.342,
-        "max": 3.342
+        "p50": 3.942,
+        "p95": 6.76,
+        "max": 6.76
       },
       "load_ms": {
-        "p50": 2.511,
-        "p95": 2.829,
-        "max": 2.829
+        "p50": 4.876,
+        "p95": 5.581,
+        "max": 5.581
       },
       "render_ms": {
-        "p50": 1.27,
-        "p95": 1.342,
-        "max": 1.342
+        "p50": 2.607,
+        "p95": 2.668,
+        "max": 2.668
       }
     },
     {
@@ -47,19 +47,19 @@
       "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 20.13,
-        "p95": 21.749,
-        "max": 21.749
+        "p50": 40.712,
+        "p95": 42.678,
+        "max": 42.678
       },
       "load_ms": {
-        "p50": 26.513,
-        "p95": 27.17,
-        "max": 27.17
+        "p50": 50.958,
+        "p95": 53.064,
+        "max": 53.064
       },
       "render_ms": {
-        "p50": 12.799,
-        "p95": 13.712,
-        "max": 13.712
+        "p50": 26.085,
+        "p95": 27.925,
+        "max": 27.925
       }
     },
     {
@@ -67,19 +67,19 @@
       "fixturePath": "qa/fixtures/performance/10000-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 200.113,
-        "p95": 290.15,
-        "max": 290.15
+        "p50": 430.404,
+        "p95": 500.625,
+        "max": 500.625
       },
       "load_ms": {
-        "p50": 257.488,
-        "p95": 307.299,
-        "max": 307.299
+        "p50": 476.704,
+        "p95": 496.347,
+        "max": 496.347
       },
       "render_ms": {
-        "p50": 152.585,
-        "p95": 156.149,
-        "max": 156.149
+        "p50": 300.884,
+        "p95": 304.463,
+        "max": 304.463
       }
     }
   ]
