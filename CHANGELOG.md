@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.11 — 2026-09-06
+
+長大譜面の再現可能な性能測定と、公開前の結果検証を強化したリリースです。engine依存は `acorde` v1.1.2です。
+
+### Added
+
+- 100／1,000／10,000小節の決定的MusicXML性能fixtureと再生成CLI
+- parse／load／renderの実測結果保存、schema検証、p95退行比較CLI
+- engine cold start、playback event生成、layout、SVG、SVG metadata、repeat renderのbenchmark
+- benchmark結果とharness memory参考値を保存するQA evidence
+
+### Verification
+
+- Composer Node: 177 passed
+- Composer Rust: 20 passed
+- `npm run check`: passed
+- `npm run check:playground`: passed
+- `cargo clippy --all-targets --all-features --locked`: passed
+- `git diff --check`: passed
+
 ## 0.1.10 — 2026-09-05
 
 notation coverageの個別fixtureと、複数voice編集のmacOS arm64 packaged E2E検証を追加した保守リリースです。engine依存は `acorde` v1.1.1です。
@@ -29,8 +49,8 @@ notation coverageの個別fixtureと、複数voice編集のmacOS arm64 packaged 
 
 ### Changed
 
-- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.0へ更新
-- PlaygroundのWASM生成物とGitHub Pages workflowをacorde v1.1.0へ更新
+- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.1へ更新
+- PlaygroundのWASM生成物とGitHub Pages workflowをacorde v1.1.1へ更新
 - resolved preset-zone metadataを受け取るComposer側SoundFont adapterとIPC境界を追加
 - key／velocity範囲、sample、loop、root key、envelopeの決定的選択とmissing sample診断を追加
 - 公開ドキュメントとQA evidenceをComposer v0.1.9／acorde v1.1.1へ同期

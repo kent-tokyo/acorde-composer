@@ -5,7 +5,7 @@ function addComposerImportWarnings(report, xml) {
     next.diagnostics.push({
       code: 'composer.musicxml-multiple-voices',
       severity: 'Warning',
-      loss_reason: 'acorde MusicXML parser currently flattens voice numbers above 1; see acorde issue #2',
+      loss_reason: 'engine did not preserve MusicXML voice numbers above 1',
       source_location: 'MusicXML <voice>',
     });
   }

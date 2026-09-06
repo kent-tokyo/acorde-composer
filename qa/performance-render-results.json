@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "engine": "acorde@1.1.2",
+  "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
+  "iterations": 3,
+  "layout_ms": {
+    "p50": 11.026,
+    "p95": 12.813,
+    "max": 12.813
+  },
+  "svg_ms": {
+    "p50": 24.477,
+    "p95": 24.565,
+    "max": 24.565
+  },
+  "svg_metadata_ms": {
+    "p50": 22.728,
+    "p95": 24.111,
+    "max": 24.111
+  },
+  "repeat_render_ms": {
+    "p50": 23.658,
+    "p95": 24.922,
+    "max": 24.922
+  }
+}

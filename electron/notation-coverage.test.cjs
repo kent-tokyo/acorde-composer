@@ -3,12 +3,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { validateNotationCoverageMatrix } = require('./notation-coverage.cjs');
+const { validateNotationCoverageFile } = require('../scripts/validate-notation-coverage.cjs');
 
 const matrix = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'qa', 'notation-coverage-matrix.json'), 'utf8'));
 
 test('notation coverage matrix has a stable schema and required pipeline layers', () => {
   assert.equal(matrix.schemaVersion, 1);
-  assert.equal(matrix.engine, 'acorde@1.1.1');
+  assert.equal(matrix.engine, 'acorde@1.1.2');
   assert.deepEqual(matrix.requiredLayers, ['parser', 'model', 'command', 'layout', 'editor', 'musicxml', 'playback', 'fixture']);
   assert.ok(matrix.elements.length >= 12);
   const ids = new Set();
@@ -17,7 +18,9 @@ test('notation coverage matrix has a stable schema and required pipeline layers'
     ids.add(element.id);
     assert.match(element.fixturePath, /^qa\/fixtures\/notation\/[^/]+\.musicxml$/);
     assert.ok(fs.existsSync(path.join(__dirname, '..', element.fixturePath)));
-    assert.match(fs.readFileSync(path.join(__dirname, '..', element.fixturePath), 'utf8'), /<score-partwise\b/);
+    const fixture = fs.readFileSync(path.join(__dirname, '..', element.fixturePath), 'utf8');
+    assert.match(fixture, /<score-partwise\b/);
+    for (const marker of element.fixtureMarkers) assert.ok(fixture.includes(marker), `${element.id} fixture is missing marker ${marker}`);
     assert.ok(['missing', 'preserved', 'editable', 'rendered', 'playable', 'roundtrip-tested', 'release-ready'].includes(element.status));
     assert.ok(element.layers.every((layer) => matrix.requiredLayers.includes(layer)));
   }
@@ -40,9 +43,18 @@ test('notation coverage validator rejects duplicate, unknown, and overstated cov
   delete missingFixturePath.elements[0].fixturePath;
   assert.match(validateNotationCoverageMatrix(missingFixturePath).errors.join('\n'), /fixturePath/);
 
+  const missingFixtureMarkers = structuredClone(matrix);
+  delete missingFixtureMarkers.elements[0].fixtureMarkers;
+  assert.match(validateNotationCoverageMatrix(missingFixtureMarkers).errors.join('\n'), /fixtureMarkers/);
+
   const overstated = structuredClone(matrix);
   overstated.elements[2].status = 'release-ready';
   assert.match(validateNotationCoverageMatrix(overstated).errors.join('\n'), /missing required layers/);
+});
+
+test('standalone notation coverage CLI validates every fixture marker', () => {
+  const result = validateNotationCoverageFile(path.join(__dirname, '..', 'qa', 'notation-coverage-matrix.json'), path.join(__dirname, '..'));
+  assert.deepEqual(result, { valid: true, matrixPath: 'qa/notation-coverage-matrix.json', elementCount: 12, errors: [] });
 });
 
 test('glissando and cross-staff are represented in every Composer command and UI contract', () => {

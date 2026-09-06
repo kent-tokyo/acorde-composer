@@ -8,9 +8,9 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 
 const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/\r?\n/);
 const engineSource = fs.readFileSync(path.join(root, 'engine/src/main.rs'), 'utf8');
 
-test('release metadata identifies the Acorde Composer v0.1.10 release', () => {
+test('release metadata identifies the Acorde Composer v0.1.11 release', () => {
   assert.equal(packageJson.name, 'acorde-composer');
-  assert.equal(packageJson.version, '0.1.10');
+  assert.equal(packageJson.version, '0.1.11');
   assert.notEqual(packageJson.private, true);
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
@@ -19,6 +19,17 @@ test('release metadata identifies the Acorde Composer v0.1.10 release', () => {
   assert.ok(packageJson.build.files.includes('README_ja.md'));
   assert.ok(packageJson.build.files.includes('README_zh.md'));
   assert.ok(fs.existsSync(path.join(root, 'NOTICE.md')));
+});
+
+test('standard check includes notation coverage validation', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.match(packageJson.scripts.check, /validate-notation-coverage\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-release-qa-fixtures\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-performance-benchmark\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-performance-results\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-cold-start-results\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-playback-results\.cjs/);
+  assert.match(packageJson.scripts.check, /validate-render-results\.cjs/);
 });
 
 test('internal roadmap and generated artifacts stay out of the repository', () => {

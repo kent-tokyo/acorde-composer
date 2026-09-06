@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "engine": "acorde@1.1.2",
+  "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
+  "iterations": 3,
+  "eventCount": 1000,
+  "parse_ms": {
+    "p50": 20.637,
+    "p95": 21.884,
+    "max": 21.884
+  },
+  "playback_ms": {
+    "p50": 13.682,
+    "p95": 13.869,
+    "max": 13.869
+  },
+  "harness_memory": {
+    "rss_before_bytes": 47316992,
+    "rss_after_bytes": 105447424,
+    "rss_delta_bytes": 58130432
+  }
+}

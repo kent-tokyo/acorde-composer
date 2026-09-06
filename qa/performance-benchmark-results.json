@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "engine": "acorde@1.1.2",
+  "profiles": [
+    {
+      "id": "multivoice-smoke",
+      "fixturePath": "qa/fixtures/multivoice-ui.musicxml",
+      "iterations": 3,
+      "parse_ms": {
+        "p50": 0.136,
+        "p95": 4.336,
+        "max": 4.336
+      },
+      "load_ms": {
+        "p50": 0.143,
+        "p95": 0.485,
+        "max": 0.485
+      },
+      "render_ms": {
+        "p50": 0.096,
+        "p95": 0.262,
+        "max": 0.262
+      }
+    },
+    {
+      "id": "long-100-measures",
+      "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
+      "iterations": 3,
+      "parse_ms": {
+        "p50": 1.985,
+        "p95": 3.342,
+        "max": 3.342
+      },
+      "load_ms": {
+        "p50": 2.511,
+        "p95": 2.829,
+        "max": 2.829
+      },
+      "render_ms": {
+        "p50": 1.27,
+        "p95": 1.342,
+        "max": 1.342
+      }
+    },
+    {
+      "id": "long-1000-measures",
+      "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
+      "iterations": 3,
+      "parse_ms": {
+        "p50": 20.13,
+        "p95": 21.749,
+        "max": 21.749
+      },
+      "load_ms": {
+        "p50": 26.513,
+        "p95": 27.17,
+        "max": 27.17
+      },
+      "render_ms": {
+        "p50": 12.799,
+        "p95": 13.712,
+        "max": 13.712
+      }
+    },
+    {
+      "id": "long-10000-measures",
+      "fixturePath": "qa/fixtures/performance/10000-measures.musicxml",
+      "iterations": 3,
+      "parse_ms": {
+        "p50": 200.113,
+        "p95": 290.15,
+        "max": 290.15
+      },
+      "load_ms": {
+        "p50": 257.488,
+        "p95": 307.299,
+        "max": 307.299
+      },
+      "render_ms": {
+        "p50": 152.585,
+        "p95": 156.149,
+        "max": 156.149
+      }
+    }
+  ]
+}

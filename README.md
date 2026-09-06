@@ -22,11 +22,11 @@ For comparison criteria, migration steps, and limitations, see the [Choosing and
 
 Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
 
-The current engine pins the five adjacent `acorde` crates at v1.1.1 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+The current engine pins the five adjacent `acorde` crates at v1.1.2 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.10
+## Current release: v0.1.11
 
-The current release uses `acorde` v1.1.1 and includes:
+The current release uses `acorde` v1.1.2 and includes:
 
 - Electron UI with isolated preload and bounded JSON IPC
 - MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
@@ -37,6 +37,7 @@ The current release uses `acorde` v1.1.1 and includes:
 - A resolved SoundFont preset-zone adapter boundary for key/velocity selection, sample metadata, and missing-sample diagnostics
 - AI proposal review, OMR review queue, provider license gates, timeout recovery, and redacted support bundles
 - Artifact manifest generation, release QA reports, schema migration, checksum, SBOM, NOTICE, and provenance checks
+- Reproducible long-score benchmarks for 100 / 1,000 / 10,000 measures, cold start, playback, layout, SVG, and repeat render
 
 ## Migration from existing notation software
 
@@ -86,7 +87,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 169 Node tests and 20 Rust unit tests. The notation coverage matrix now assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.10](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.10).
+The current local verification is 177 Node tests and 20 Rust unit tests. The notation coverage matrix now assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.11](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.11).
 
 ## License and external assets
 

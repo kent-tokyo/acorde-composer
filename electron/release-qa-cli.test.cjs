@@ -9,6 +9,7 @@ const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { validateReleaseQaReportSchema } = require('./release-qa.cjs');
 const { runReleaseQa, validateReleaseQaCliOutput } = require('../scripts/run-release-qa.cjs');
 const { resolveInputPath, validateReleaseQaFile, validateReleaseQaValidationOutput } = require('../scripts/validate-release-qa.cjs');
+const { validateReleaseQaFixtures } = require('../scripts/validate-release-qa-fixtures.cjs');
 
 test('release QA CLI binds pack manifest and reports incomplete executable QA', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-'));
@@ -179,6 +180,20 @@ test('release QA CLI consumes the checked-in twenty-scenario fixtures', () => {
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('release QA fixture checker validates all twenty checked-in scenarios without claiming readiness', () => {
+  const result = validateReleaseQaFixtures({
+    matrixPath: path.resolve(__dirname, '../qa/release-qa-matrix.json'),
+    resultsPath: path.resolve(__dirname, '../qa/release-qa-results.json'),
+  });
+  assert.equal(result.valid, true);
+  assert.equal(result.ready, false);
+  assert.equal(result.total, 20);
+  assert.equal(result.passed, 0);
+  assert.equal(result.notRun, 20);
+  assert.equal(result.failed, 0);
+  assert.deepEqual(result.errors, []);
 });
 
 test('release QA CLI rejects duplicate, unknown, and evidence-missing fixture records', () => {

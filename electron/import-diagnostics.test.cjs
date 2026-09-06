@@ -6,6 +6,7 @@ test('adds a visible warning when MusicXML contains a second voice', () => {
   const report = addComposerImportWarnings({ diagnostics: [] }, '<note><voice>2</voice></note>');
   assert.equal(report.diagnostics.length, 1);
   assert.equal(report.diagnostics[0].code, 'composer.musicxml-multiple-voices');
+  assert.equal(report.diagnostics[0].loss_reason, 'engine did not preserve MusicXML voice numbers above 1');
 });
 
 test('does not warn for single-voice MusicXML and preserves existing diagnostics', () => {

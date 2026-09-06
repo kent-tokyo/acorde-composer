@@ -35,6 +35,7 @@ function validateNotationCoverageMatrix(input) {
     else ids.add(element.id);
     if (typeof element.category !== 'string' || !element.category) errors.push(`category is required for ${element.id || 'unknown'}`);
     if (typeof element.fixturePath !== 'string' || !element.fixturePath.endsWith('.musicxml')) errors.push(`fixturePath must be a MusicXML path for ${element.id || 'unknown'}`);
+    if (!Array.isArray(element.fixtureMarkers) || !element.fixtureMarkers.length || element.fixtureMarkers.some((marker) => typeof marker !== 'string' || !marker)) errors.push(`fixtureMarkers must be a non-empty string array for ${element.id || 'unknown'}`);
     if (!VALID_STATUSES.has(element.status)) errors.push(`invalid status for ${element.id || 'unknown'}`);
     if (!Array.isArray(element.layers) || !element.layers.length) {
       errors.push(`layers are required for ${element.id || 'unknown'}`);

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "engine": "acorde@1.1.2",
+  "profiles": [
+    {
+      "id": "multivoice-smoke",
+      "fixturePath": "qa/fixtures/multivoice-ui.musicxml",
+      "expectedMeasures": 1,
+      "minIterations": 3,
+      "maxIterations": 1000,
+      "metrics": ["parse", "load", "render"]
+    },
+    {
+      "id": "long-100-measures",
+      "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
+      "expectedMeasures": 100,
+      "minIterations": 3,
+      "maxIterations": 1000,
+      "metrics": ["parse", "load", "render"]
+    },
+    {
+      "id": "long-1000-measures",
+      "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
+      "expectedMeasures": 1000,
+      "minIterations": 3,
+      "maxIterations": 1000,
+      "metrics": ["parse", "load", "render"]
+    },
+    {
+      "id": "long-10000-measures",
+      "fixturePath": "qa/fixtures/performance/10000-measures.musicxml",
+      "expectedMeasures": 10000,
+      "minIterations": 3,
+      "maxIterations": 1000,
+      "metrics": ["parse", "load", "render"]
+    }
+  ]
+}
