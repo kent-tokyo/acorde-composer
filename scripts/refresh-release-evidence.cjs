@@ -7,9 +7,14 @@ function run(command, args, { runner = spawnSync } = {}) {
   if (result.status !== 0) throw new Error(`${command} ${args.join(' ')} failed with exit code ${result.status}`);
 }
 
-function refreshReleaseEvidence({ root = path.resolve(__dirname, '..'), runner = spawnSync, status = null } = {}) {
+function refreshReleaseEvidence({ root = path.resolve(__dirname, '..'), runner = spawnSync, status = null, publicCommit = null } = {}) {
   const porcelain = status ?? execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' });
   if (porcelain.trim()) throw new Error('refusing to generate release evidence from a dirty worktree');
+  const published = publicCommit ?? (() => {
+    try { execFileSync('git', ['-C', root, 'merge-base', '--is-ancestor', 'HEAD', 'origin/main'], { stdio: 'ignore' }); return true; }
+    catch { return false; }
+  })();
+  if (!published) throw new Error('refusing to generate release evidence from an unpublished commit');
   const dist = path.join(root, 'dist');
   run('npm', ['run', 'pack'], { runner });
   run(process.execPath, [path.join(root, 'scripts/check-release-candidate.cjs'), '--json', '--strict-dependency', '--output', path.join(dist, 'candidate-gate.json')], { runner });

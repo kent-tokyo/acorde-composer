@@ -4,11 +4,12 @@ const { refreshReleaseEvidence } = require('../scripts/refresh-release-evidence.
 
 test('release evidence refresh refuses dirty source and preserves public-commit semantics', () => {
   assert.throws(() => refreshReleaseEvidence({ status: ' M src/app.js\n' }), /dirty worktree/);
+  assert.throws(() => refreshReleaseEvidence({ status: '', publicCommit: false }), /unpublished commit/);
 });
 
 test('release evidence refresh runs pack, strict candidate gate, QA, and consistency validation in order', () => {
   const calls = [];
-  const result = refreshReleaseEvidence({ root: '/repo', status: '', runner: (command, args) => { calls.push([command, args]); return { status: 0 }; } });
+  const result = refreshReleaseEvidence({ root: '/repo', status: '', publicCommit: true, runner: (command, args) => { calls.push([command, args]); return { status: 0 }; } });
   assert.equal(calls.length, 4);
   assert.deepEqual(calls[0], ['npm', ['run', 'pack']]);
   assert.ok(calls[1][1].includes('--strict-dependency'));
