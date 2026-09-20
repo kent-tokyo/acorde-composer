@@ -24,6 +24,8 @@ test('release metadata identifies the Acorde Composer v0.1.13 release', () => {
 test('standard check includes notation coverage validation', () => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   assert.match(packageJson.scripts.check, /validate-notation-coverage\.cjs/);
+  assert.match(packageJson.scripts.check, /verify-notation-roundtrip\.cjs/);
+  assert.equal(packageJson.scripts['check:notation-roundtrip'], 'node scripts/verify-notation-roundtrip.cjs');
   assert.match(packageJson.scripts.check, /validate-release-qa-fixtures\.cjs/);
   assert.match(packageJson.scripts.check, /validate-performance-benchmark\.cjs/);
   assert.match(packageJson.scripts.check, /validate-performance-results\.cjs/);
@@ -70,6 +72,10 @@ test('SoundFont playback stays behind an explicit resolved-zone IPC boundary', (
   assert.match(preload, /attachResolvedSample/);
   assert.match(main, /soundfont:attachResolvedSnapshot/);
   assert.match(preload, /attachResolvedSnapshot/);
+  assert.match(main, /soundfont:attachResolvedLayers/);
+  assert.match(preload, /attachResolvedLayers/);
+  assert.match(main, /engine:prepareSoundfontPlayback/);
+  assert.match(preload, /prepareSoundfontPlayback/);
 });
 
 test('external provider configuration stays behind a normalized IPC boundary', () => {

@@ -8,7 +8,7 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
-use acorde_soundfont::{decode_sf2_pcm16, decode_sf3_vorbis, load as load_soundfont};
+use acorde_soundfont::{decode_sample_region, decode_sf2_pcm16, decode_sf3_vorbis, load as load_soundfont, load_materialized, select_preset_zones};
 #[cfg(test)]
 use acorde_core::PlaybackEvent;
 #[cfg(test)]
@@ -19,6 +19,7 @@ use std::io::{self, BufRead, Write};
 #[derive(Debug, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 enum Request {
+    InspectEngine,
     ParseMusicxml {
         xml: String,
     },
@@ -110,6 +111,14 @@ enum Request {
         sample_rate: u32,
         channels: u8,
     },
+    PrepareSoundfontPlayback {
+        data: Vec<u8>,
+        provider_version: String,
+        bank: u16,
+        program: u16,
+        channels: u8,
+        events: Vec<acorde_core::PlaybackEvent>,
+    },
 }
 
 #[derive(Debug, Serialize)]
@@ -129,6 +138,7 @@ fn current_engine(engine: &Option<ScoreEngine>) -> Result<&ScoreEngine, String> 
 
 fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_json::Value, String> {
     match request {
+        Request::InspectEngine => Ok(serde_json::json!({ "ready": true })),
         Request::ParseMusicxml { xml } => {
             let score = parse_musicxml(&xml).map_err(|error| error.to_string())?;
             serde_json::to_value(score).map_err(|error| error.to_string())
@@ -304,6 +314,69 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 _ => return Err("unsupported SoundFont format".into()),
             }.map_err(|error| error.to_string())?;
             Ok(serde_json::json!({ "sample_rate": sample.sample_rate, "channels": sample.channels, "pcm_i16": sample.pcm_i16 }))
+        }
+        Request::PrepareSoundfontPlayback { data, provider_version, bank, program, channels, events } => {
+            if !(1..=2).contains(&channels) {
+                return Err("SoundFont channel count must be 1 or 2".into());
+            }
+            let materialized = load_materialized(&data, provider_version).map_err(|error| error.to_string())?;
+            let snapshot = materialized.snapshot_for_preset(bank, program).map_err(|error| error.to_string())?;
+            let mut samples = serde_json::Map::new();
+            let mut prepared = Vec::new();
+            let mut diagnostics: Vec<String> = snapshot.diagnostics.iter().map(|diagnostic| format!("{diagnostic:?}")).collect();
+            for event in events {
+                if event.is_metronome {
+                    prepared.push(serde_json::to_value(event).map_err(|error| error.to_string())?);
+                    continue;
+                }
+                let zones = select_preset_zones(materialized.zones(), bank, program, event.pitch_midi, event.velocity);
+                if zones.is_empty() {
+                    diagnostics.push(format!("missing-zone:{}:{}:{}:{}", bank, program, event.pitch_midi, event.velocity));
+                    prepared.push(serde_json::to_value(event).map_err(|error| error.to_string())?);
+                    continue;
+                }
+                let mut prepared_layer = false;
+                for (layer, zone) in zones.into_iter().enumerate() {
+                    let region = &zone.region;
+                    let cache_key = format!("sf:{}:{}:{}:{}:{}", snapshot.checksum, region.sample_id, region.start_frame, region.end_frame, channels);
+                    if !samples.contains_key(&cache_key) {
+                        let decoded = match decode_sample_region(&data, region.clone(), channels) {
+                            Ok(decoded) => decoded,
+                            Err(error) => { diagnostics.push(format!("decode-failed:{}:{}", region.sample_id, error)); continue; }
+                        };
+                        let loop_points = decoded.loop_points.map(|points| serde_json::json!({ "start": points.start_frame, "end": points.end_frame }));
+                        samples.insert(cache_key.clone(), serde_json::json!({
+                            "cacheKey": cache_key,
+                            "sampleRate": decoded.sample.sample_rate,
+                            "channels": decoded.sample.channels,
+                            "pcm": decoded.sample.pcm_i16.into_iter().map(|sample| f32::from(sample) / 32768.0).collect::<Vec<_>>(),
+                            "rootMidi": region.root_key,
+                            "loopStart": loop_points.as_ref().and_then(|points| points.get("start")).and_then(serde_json::Value::as_u64),
+                            "loopEnd": loop_points.as_ref().and_then(|points| points.get("end")).and_then(serde_json::Value::as_u64),
+                        }));
+                    }
+                    let mut prepared_event = serde_json::to_value(&event).map_err(|error| error.to_string())?;
+                    let fields = prepared_event.as_object_mut().ok_or_else(|| "playback event is not an object".to_string())?;
+                    fields.insert("soundfont_sample_key".into(), serde_json::Value::String(cache_key));
+                    fields.insert("soundfont_layer".into(), serde_json::json!(layer));
+                    fields.insert("resolved_zone".into(), serde_json::to_value(zone.resolved_metadata()).map_err(|error| error.to_string())?);
+                    fields.insert("sample_envelope".into(), serde_json::json!({ "attack": region.attack_secs, "decay": region.decay_secs, "sustain": region.sustain_level, "release": region.release_secs }));
+                    fields.insert("sample_gain".into(), serde_json::json!(10f32.powf(-region.attenuation_db / 20.0)));
+                    fields.insert("sample_tuning_cents".into(), serde_json::json!(region.fine_tune_cents));
+                    prepared.push(prepared_event);
+                    prepared_layer = true;
+                }
+                if !prepared_layer {
+                    prepared.push(serde_json::to_value(event).map_err(|error| error.to_string())?);
+                }
+            }
+            Ok(serde_json::json!({
+                "snapshot": snapshot,
+                "events": prepared,
+                "samples": samples,
+                "diagnostics": diagnostics,
+                "channel_layout": "host-supplied",
+            }))
         }
     }
 }
@@ -644,6 +717,37 @@ mod tests {
         assert!(value["pcm_i16"].as_array().is_some_and(|samples| !samples.is_empty()));
     }
 
+    fn soundfont_playback_event(key: u8, velocity: u8) -> PlaybackEvent {
+        PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: Some(1), time_beats: 0.0, time_secs: 0.0, pitch_midi: key, pitch_midi_cents: 0, velocity, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false }
+    }
+
+    #[test]
+    fn materialized_sf2_prepares_real_pcm_for_the_web_audio_boundary() {
+        let data = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../../acorde/tests/fixtures/UprightPianoKW-small-20190703.sf2")).expect("real CC0 SF2 fixture");
+        let materialized = load_materialized(&data, "fixture-provider").expect("real SF2 materializes");
+        let preset = materialized.asset.presets.first().expect("SF2 preset");
+        let zone = materialized.zones().iter().find(|zone| zone.bank == preset.bank && zone.program == preset.program).expect("SF2 zone");
+        let key = zone.region.key_min;
+        let velocity = zone.region.velocity_min.max(1);
+        let value = handle(Request::PrepareSoundfontPlayback { data, provider_version: "fixture-provider".into(), bank: preset.bank, program: preset.program, channels: 1, events: vec![soundfont_playback_event(key, velocity)] }, &mut None).expect("SF2 playback prep");
+        assert_eq!(value["snapshot"]["format"], "Sf2");
+        assert!(value["events"].as_array().is_some_and(|events| !events.is_empty()));
+        assert!(value["events"][0]["soundfont_sample_key"].as_str().is_some());
+        assert!(value["samples"].as_object().is_some_and(|samples| samples.values().any(|sample| sample["pcm"].as_array().is_some_and(|pcm| pcm.iter().any(|value| value.as_f64().is_some_and(|sample| sample != 0.0))))));
+    }
+
+    #[test]
+    fn materialized_sf3_prepares_real_pcm_with_explicit_host_channel_layout() {
+        let data = std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/../../acorde/tests/fixtures/FluidR3Mono_GM.sf3")).expect("real SF3 fixture");
+        let materialized = load_materialized(&data, "fixture-provider").expect("real SF3 materializes");
+        let zone = materialized.zones().first().expect("SF3 zone");
+        let value = handle(Request::PrepareSoundfontPlayback { data, provider_version: "fixture-provider".into(), bank: zone.bank, program: zone.program, channels: 1, events: vec![soundfont_playback_event(zone.region.key_min, zone.region.velocity_min.max(1))] }, &mut None).expect("SF3 playback prep");
+        assert_eq!(value["snapshot"]["format"], "Sf3");
+        assert_eq!(value["channel_layout"], "host-supplied");
+        assert!(value["events"].as_array().is_some_and(|events| !events.is_empty()));
+        assert!(value["samples"].as_object().is_some() || value["diagnostics"].as_array().is_some_and(|diagnostics| diagnostics.iter().any(|diagnostic| diagnostic.as_str().is_some_and(|message| message.starts_with("decode-failed:")))));
+    }
+
     #[test]
     fn svg_render_and_metadata_preserve_geometry_and_accessible_text() {
         let score = parse_musicxml(FIXTURE).expect("fixture parses");
@@ -730,6 +834,30 @@ mod tests {
         let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
         let events = to_playback_events(&parsed.score, &PlaybackOptions::default());
         assert!(events.iter().any(|event| event.address.as_deref().is_some_and(|address| address.split(':').nth(3).is_some_and(|voice| voice != "0"))));
+    }
+
+    #[test]
+    fn multi_voice_edit_keeps_source_voice_numbers_timing_and_playback_identity() {
+        let parsed = parse_musicxml_with_report(MULTI_VOICE_FIXTURE).expect("multi voice fixture parses");
+        let mut engine = None;
+        handle(Request::LoadScore { score: parsed.score }, &mut engine).expect("multi voice score loads");
+        let add_note: Command = serde_json::from_value(serde_json::json!({
+            "type": "add_note", "part_index": 0, "staff_index": 0, "measure_index": 0,
+            "voice": 1, "position": 1, "pitch": { "step": "D", "octave": 3, "alter": 0 },
+            "duration": "Quarter", "dot_count": 0, "is_rest": false, "tuplet": null
+        })).expect("voice two add-note command deserializes");
+        handle(Request::ApplyCommand { command: add_note, label: Some("AddNote".into()) }, &mut engine).expect("voice two note inserts");
+        let exported = handle(Request::SerializeCurrent, &mut engine).expect("edited score serializes");
+        let xml = exported.as_str().expect("MusicXML string");
+        assert!(xml.contains("<voice>1</voice>"));
+        assert!(xml.contains("<voice>2</voice>"));
+        assert!(xml.contains("<backup>"));
+        let reparsed = parse_musicxml_with_report(xml).expect("edited MusicXML reparses");
+        let measure = &reparsed.score.parts[0].staves[0].measures[0];
+        assert_eq!(measure.source_voice_numbers[0], Some(1));
+        assert_eq!(measure.source_voice_numbers[1], Some(2));
+        let events = to_playback_events(&reparsed.score, &PlaybackOptions::default());
+        assert!(events.iter().any(|event| event.source_voice_number == Some(2) && event.source.as_ref().is_some_and(|source| source.voice == 1)));
     }
 
     #[test]

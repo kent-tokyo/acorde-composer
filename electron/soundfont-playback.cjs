@@ -42,12 +42,16 @@ function normalizeResolvedZone(value) {
 }
 
 function selectResolvedZone(zones, { bank = 0, program = 0, pitchMidi = 60, velocity = 100 } = {}) {
-  if (!Number.isInteger(bank) || !Number.isInteger(program) || !Number.isInteger(pitchMidi) || !Number.isInteger(velocity)) return null;
+  return selectResolvedZones(zones, { bank, program, pitchMidi, velocity })[0] || null;
+}
+
+function selectResolvedZones(zones, { bank = 0, program = 0, pitchMidi = 60, velocity = 100 } = {}) {
+  if (!Number.isInteger(bank) || !Number.isInteger(program) || !Number.isInteger(pitchMidi) || !Number.isInteger(velocity)) return [];
   return (Array.isArray(zones) ? zones : [])
     .slice(0, MAX_ZONES)
     .map(normalizeResolvedZone)
     .filter((zone) => zone.valid && zone.bank === bank && zone.program === program && pitchMidi >= zone.keyMin && pitchMidi <= zone.keyMax && velocity >= zone.velocityMin && velocity <= zone.velocityMax)
-    .sort((left, right) => (left.keyMax - left.keyMin) - (right.keyMax - right.keyMin) || (left.velocityMax - left.velocityMin) - (right.velocityMax - right.velocityMin) || left.sampleId - right.sampleId)[0] || null;
+    .sort((left, right) => (left.keyMax - left.keyMin) - (right.keyMax - right.keyMin) || (left.velocityMax - left.velocityMin) - (right.velocityMax - right.velocityMin) || left.sampleId - right.sampleId);
 }
 
 function attachResolvedSample(events, zones, samplesById, selection = {}) {
@@ -92,4 +96,29 @@ function attachResolvedSnapshot(events, snapshot, samplesById, selection = {}) {
   return { ...attached, diagnostics: [...new Set([...providerDiagnostics, ...attached.diagnostics])] };
 }
 
-module.exports = { MAX_ZONES, normalizeResolvedZone, selectResolvedZone, attachResolvedSample, attachResolvedSnapshot };
+// Acorde materializes preset-zone snapshots. This adapter preserves every matching
+// layer for the Web Audio scheduler instead of collapsing layered presets to one zone.
+function attachResolvedLayers(events, zones, samplesById, selection = {}) {
+  const diagnostics = [];
+  const sourceZones = Array.isArray(zones) ? zones : [];
+  if (sourceZones.length > MAX_ZONES) diagnostics.push('zone-list-truncated');
+  const normalizedZones = sourceZones.slice(0, MAX_ZONES).map(normalizeResolvedZone);
+  if (normalizedZones.some((zone) => !zone.valid)) diagnostics.push('invalid-resolved-zone');
+  const output = [];
+  for (const event of Array.isArray(events) ? events : []) {
+    if (!event || event.is_metronome) { output.push(event); continue; }
+    const layers = selectResolvedZones(normalizedZones, { bank: selection.bank ?? 0, program: selection.program ?? 0, pitchMidi: event.pitch_midi, velocity: event.velocity });
+    if (!layers.length) { output.push(event); continue; }
+    for (const [layerIndex, zone] of layers.entries()) {
+      const sample = samplesById && typeof samplesById === 'object' ? samplesById[String(zone.sampleId)] || samplesById[zone.sampleId] : null;
+      if (!sample) { diagnostics.push(`sample-missing:${zone.sampleId}`); continue; }
+      const decodedSample = { ...sample };
+      if (zone.rootMidi !== null) decodedSample.rootMidi = zone.rootMidi;
+      if (zone.loop) { decodedSample.loopStart = zone.loop.start; decodedSample.loopEnd = zone.loop.end; }
+      output.push({ ...event, soundfont_layer: layerIndex, resolved_zone: zone, decoded_sample: decodedSample, sample_envelope: zone.envelope, sample_gain: zone.gain, sample_tuning_cents: zone.tuningCents });
+    }
+  }
+  return { events: output, diagnostics: [...new Set(diagnostics)] };
+}
+
+module.exports = { MAX_ZONES, normalizeResolvedZone, selectResolvedZone, selectResolvedZones, attachResolvedSample, attachResolvedSnapshot, attachResolvedLayers };

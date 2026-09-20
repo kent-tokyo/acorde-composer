@@ -1,6 +1,7 @@
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { verifyEngineIdentity } = require('./engine-identity.cjs');
 
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const cargoCommand = process.platform === 'win32' ? 'cargo.exe' : 'cargo';
@@ -39,15 +40,19 @@ function runCandidateChecks({ json = false, strictDependency = false, runner = r
     const failed = results.find((result) => result.status !== 0);
     const report = {
       schemaVersion: CANDIDATE_REPORT_SCHEMA_VERSION,
+      product: 'Acorde Composer',
+      version: readComposerVersion(),
+      commit: currentCommit(),
       strictDependency,
       valid: !failed,
       failedStep: failed?.label || null,
       exitCode: failed?.status || 0,
       steps: results.map(({ label, status, error, detail }) => ({ label, passed: status === 0, ...(error ? { error } : {}), ...(detail ? { detail } : {}) })),
       dependency: dependencyInspector(),
+      engineIdentity: inspectEngineIdentity(),
     };
-    report.releaseReady = report.valid && (!strictDependency || report.dependency.ready === true);
-    if (strictDependency && !report.dependency.ready) report.exitCode = report.exitCode || 1;
+    report.releaseReady = report.valid && (!strictDependency || (report.dependency.ready === true && report.engineIdentity.ready === true));
+    if (strictDependency && (!report.dependency.ready || !report.engineIdentity.ready)) report.exitCode = report.exitCode || 1;
     return report;
   }
   for (const step of steps) {
@@ -56,6 +61,19 @@ function runCandidateChecks({ json = false, strictDependency = false, runner = r
   }
   process.stdout.write('\n[candidate] all local release-candidate gates passed\n');
   return { valid: true, failedStep: null, exitCode: 0 };
+}
+
+function inspectEngineIdentity({ root = process.cwd() } = {}) {
+  const result = verifyEngineIdentity({ root });
+  return { ready: result.valid, diagnostics: result.diagnostics, ...(result.identity ? { identity: result.identity } : {}) };
+}
+
+function readComposerVersion({ root = process.cwd() } = {}) {
+  return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
+}
+
+function currentCommit({ root = process.cwd() } = {}) {
+  return spawnSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8', shell: false }).stdout.trim();
 }
 
 function inspectAcordeDependency({ root = process.cwd() } = {}) {
@@ -113,7 +131,13 @@ if (require.main === module) {
   const result = runCandidateChecks({ json, strictDependency });
   if (json) {
     const validation = validateCandidateGateReport(result);
-    process.stdout.write(`${JSON.stringify(result)}\n`);
+    const outputIndex = process.argv.indexOf('--output');
+    const outputPath = outputIndex >= 0 ? process.argv[outputIndex + 1] : null;
+    if (outputPath) {
+      fs.mkdirSync(path.dirname(path.resolve(outputPath)), { recursive: true });
+      fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
+    }
+    process.stdout.write(`${JSON.stringify({ ...result, ...(outputPath ? { output: outputPath } : {})})}\n`);
     process.exitCode = validation.valid ? result.exitCode : 1;
   } else {
     process.exitCode = result.exitCode || (strictDependency && !inspectAcordeDependency().ready ? 1 : 0);
@@ -123,6 +147,9 @@ if (require.main === module) {
 function validateCandidateGateReport(report) {
   const diagnostics = [];
   if (!report || report.schemaVersion !== CANDIDATE_REPORT_SCHEMA_VERSION) diagnostics.push('schema-version-invalid');
+  if (report?.product !== 'Acorde Composer') diagnostics.push('product-invalid');
+  if (typeof report?.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(report.version)) diagnostics.push('version-invalid');
+  if (typeof report?.commit !== 'string' || !/^[0-9a-f]{7,64}$/i.test(report.commit)) diagnostics.push('commit-invalid');
   if (typeof report?.valid !== 'boolean') diagnostics.push('valid-invalid');
   if (report?.releaseReady !== undefined && typeof report.releaseReady !== 'boolean') diagnostics.push('release-ready-invalid');
   if (report?.strictDependency !== undefined && typeof report.strictDependency !== 'boolean') diagnostics.push('strict-dependency-invalid');
@@ -141,6 +168,15 @@ function validateCandidateGateReport(report) {
     if (typeof dependency.ready !== 'boolean') diagnostics.push('dependency-ready-invalid');
     if (!Array.isArray(dependency.diagnostics) || dependency.diagnostics.some((diagnostic) => typeof diagnostic !== 'string')) diagnostics.push('dependency-diagnostics-invalid');
   }
+  if (report?.engineIdentity !== undefined) {
+    const engineIdentity = report.engineIdentity;
+    if (!engineIdentity || typeof engineIdentity !== 'object' || Array.isArray(engineIdentity)) diagnostics.push('engine-identity-invalid');
+    else {
+      if (typeof engineIdentity.ready !== 'boolean') diagnostics.push('engine-identity-ready-invalid');
+      if (!Array.isArray(engineIdentity.diagnostics) || engineIdentity.diagnostics.some((diagnostic) => typeof diagnostic !== 'string')) diagnostics.push('engine-identity-diagnostics-invalid');
+      if (engineIdentity.identity !== undefined && (typeof engineIdentity.identity !== 'object' || Array.isArray(engineIdentity.identity))) diagnostics.push('engine-identity-value-invalid');
+    }
+  }
   if (!Array.isArray(report?.steps) || report.steps.length !== steps.length) {
     diagnostics.push('steps-invalid');
   } else {
@@ -154,4 +190,4 @@ function validateCandidateGateReport(report) {
   return { valid: diagnostics.length === 0, diagnostics };
 }
 
-module.exports = { CANDIDATE_REPORT_SCHEMA_VERSION, inspectAcordeDependency, runCandidateChecks, steps, validateCandidateGateReport };
+module.exports = { CANDIDATE_REPORT_SCHEMA_VERSION, currentCommit, inspectAcordeDependency, inspectEngineIdentity, readComposerVersion, runCandidateChecks, steps, validateCandidateGateReport };

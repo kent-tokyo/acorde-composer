@@ -69,7 +69,7 @@ test('release QA report preserves a validated candidate gate report', () => {
     const candidatePath = path.join(root, 'candidate.json');
     const outputPath = path.join(root, 'qa.json');
     const manifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
-    const candidate = { schemaVersion: 1, strictDependency: false, valid: true, failedStep: null, exitCode: 0, steps: ['Node tests', 'static and fixture checks', 'Playground syntax check', 'Rust tests', 'Rust clippy', 'Git whitespace check'].map((label) => ({ label, passed: true })), dependency: { declaredVersion: '1.1.7', declaredCrates: [], lockVersions: {}, checkoutVersion: null, exactTag: null, clean: null, ready: false, diagnostics: [] } };
+    const candidate = { schemaVersion: 1, product: 'Acorde Composer', version: '0.1.6', commit: 'be680d5', strictDependency: false, valid: true, failedStep: null, exitCode: 0, steps: ['Node tests', 'static and fixture checks', 'Playground syntax check', 'Rust tests', 'Rust clippy', 'Git whitespace check'].map((label) => ({ label, passed: true })), dependency: { declaredVersion: '1.1.7', declaredCrates: [], lockVersions: {}, checkoutVersion: null, exactTag: null, clean: null, ready: false, diagnostics: [] } };
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
     fs.writeFileSync(candidatePath, JSON.stringify(candidate));
     const result = runReleaseQa({ manifestPath, candidateGatePath: candidatePath, outputPath, currentCommit: 'be680d5' });

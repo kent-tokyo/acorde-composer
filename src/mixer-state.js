@@ -19,6 +19,7 @@
       presetCount: Number.isSafeInteger(source.presetCount) && source.presetCount >= 0 ? source.presetCount : null,
       preset,
       presets,
+      channels: source.channels === 2 ? 2 : 1,
       offline: source.offline === undefined ? true : Boolean(source.offline),
     };
   };

@@ -3,6 +3,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const readline = require('node:readline');
 const { performance } = require('node:perf_hooks');
+const { verifiedEngineBinary } = require('./engine-identity.cjs');
 
 const root = path.resolve(__dirname, '..');
 const inputPath = path.resolve(process.argv[2] || path.join(root, 'qa/fixtures/multivoice-ui.musicxml'));
@@ -10,9 +11,8 @@ const requestedIterations = Number(process.argv[3] || 20);
 if (!Number.isInteger(requestedIterations) || requestedIterations < 3 || requestedIterations > 1000) throw new Error('iterations must be an integer from 3 to 1000');
 const iterations = requestedIterations;
 const xml = fs.readFileSync(inputPath, 'utf8');
-const packagedEngine = path.join(root, 'build', 'engine', `acorde-composer-engine${process.platform === 'win32' ? '.exe' : ''}`);
-const command = fs.existsSync(packagedEngine) ? packagedEngine : 'cargo';
-const args = fs.existsSync(packagedEngine) ? [] : ['run', '--quiet', '--manifest-path', path.join(root, 'engine', 'Cargo.toml')];
+const { binary: command, identity } = verifiedEngineBinary({ root });
+const args = [];
 const child = spawn(command, args, { cwd: root, stdio: ['pipe', 'pipe', 'inherit'] });
 const pending = [];
 const failPending = (message) => { while (pending.length) pending.shift().reject(new Error(message)); };
@@ -52,6 +52,6 @@ const summarize = (values) => { const sorted = values.slice().sort((left, right)
   }
   const memoryAfter = process.memoryUsage().rss;
   const cpuAfter = process.cpuUsage(cpuBefore);
-  process.stdout.write(JSON.stringify({ input: path.relative(root, inputPath), iterations, parse_ms: summarize(samples.parse), load_ms: summarize(samples.load), render_ms: summarize(samples.render), serialize_ms: summarize(samples.serialize), harness_memory: { rss_before_bytes: memoryBefore, rss_after_bytes: memoryAfter, rss_delta_bytes: memoryAfter - memoryBefore }, harness_cpu: { user_us: cpuAfter.user, system_us: cpuAfter.system } }) + '\n');
+  process.stdout.write(JSON.stringify({ input: path.relative(root, inputPath), iterations, engine_identity: identity, parse_ms: summarize(samples.parse), load_ms: summarize(samples.load), render_ms: summarize(samples.render), serialize_ms: summarize(samples.serialize), harness_memory: { rss_before_bytes: memoryBefore, rss_after_bytes: memoryAfter, rss_delta_bytes: memoryAfter - memoryBefore }, harness_cpu: { user_us: cpuAfter.user, system_us: cpuAfter.system } }) + '\n');
   child.stdin.end();
 })().catch((error) => { process.stderr.write(`benchmark failed: ${error.message}\n`); child.kill(); process.exitCode = 1; });

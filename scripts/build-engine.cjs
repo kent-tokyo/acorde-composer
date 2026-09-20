@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { createEngineIdentity, enginePaths } = require('./engine-identity.cjs');
 
 const root = path.resolve(__dirname, '..');
 const releaseDir = path.join(root, 'engine', 'target', 'release');
@@ -18,4 +19,6 @@ if (!fs.existsSync(source)) throw new Error(`Release engine binary was not produ
 fs.mkdirSync(outputDir, { recursive: true });
 fs.copyFileSync(source, destination);
 if (process.platform !== 'win32') fs.chmodSync(destination, 0o755);
+const { manifest } = enginePaths(root);
+fs.writeFileSync(manifest, `${JSON.stringify(createEngineIdentity({ root, binary: destination }), null, 2)}\n`);
 process.stdout.write(`Prepared packaged acorde engine: ${path.relative(root, destination)}\n`);

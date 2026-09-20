@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { attachResolvedSample, attachResolvedSnapshot, normalizeResolvedZone, selectResolvedZone } = require('./soundfont-playback.cjs');
+const { attachResolvedLayers, attachResolvedSample, attachResolvedSnapshot, normalizeResolvedZone, selectResolvedZone, selectResolvedZones } = require('./soundfont-playback.cjs');
 
 const wide = { bank: 0, program: 0, sample_id: 2, key_min: 0, key_max: 127, velocity_min: 1, velocity_max: 127, sample_rate: 44100, start_frame: 0, end_frame: 100 };
 const narrow = { ...wide, sample_id: 1, key_min: 60, key_max: 60, velocity_min: 80, velocity_max: 127, loop: { start: 10, end: 80 }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } };
@@ -17,6 +17,17 @@ test('zone selection prefers the narrowest key and velocity match deterministica
   assert.equal(selectResolvedZone([wide, narrow], { bank: 0, program: 0, pitchMidi: 60, velocity: 100 }).sampleId, 1);
   assert.equal(selectResolvedZone([wide, narrow], { bank: 0, program: 0, pitchMidi: 61, velocity: 100 }).sampleId, 2);
   assert.equal(selectResolvedZone([wide, narrow], { bank: 1, program: 0, pitchMidi: 60, velocity: 100 }), null);
+});
+
+test('layered preset attachment retains every matching Acorde-resolved zone', () => {
+  const layers = selectResolvedZones([wide, narrow], { bank: 0, program: 0, pitchMidi: 60, velocity: 100 });
+  assert.deepEqual(layers.map((zone) => zone.sampleId), [1, 2]);
+  const attached = attachResolvedLayers([{ pitch_midi: 60, velocity: 100 }], [wide, narrow], {
+    1: { cacheKey: 'sf2:1', channels: 1, sampleRate: 44100, pcm: [0, 1] },
+    2: { cacheKey: 'sf2:2', channels: 1, sampleRate: 44100, pcm: [0, 1] },
+  });
+  assert.deepEqual(attached.events.map((event) => event.decoded_sample.cacheKey), ['sf2:1', 'sf2:2']);
+  assert.deepEqual(attached.events.map((event) => event.soundfont_layer), [0, 1]);
 });
 
 test('sample attachment is lossless and reports missing materialization', () => {

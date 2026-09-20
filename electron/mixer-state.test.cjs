@@ -41,10 +41,11 @@ test('mixer state rejects malformed persisted MIDI input ids', () => {
 test('mixer state normalizes persisted SoundFont profiles', () => {
   const normalize = loadNormalize();
   assert.deepEqual(JSON.parse(JSON.stringify(normalize({ soundfont: { provider: 'unknown', path: 42, version: {}, license: false, offline: 0 } }).soundfont)), {
-    provider: 'oscillator', path: null, version: null, license: null, checksum: null, presetCount: null, preset: null, presets: [], offline: false,
+    provider: 'oscillator', path: null, version: null, license: null, checksum: null, presetCount: null, preset: null, presets: [], channels: 1, offline: false,
   });
   assert.deepEqual(JSON.parse(JSON.stringify(normalize({ soundfont: { provider: 'soundfont', path: '/tmp/piano.sf2', version: '1', license: 'user-supplied', offline: true } }).soundfont)), {
-    provider: 'soundfont', path: '/tmp/piano.sf2', version: '1', license: 'user-supplied', checksum: null, presetCount: null, preset: null, presets: [], offline: true,
+    provider: 'soundfont', path: '/tmp/piano.sf2', version: '1', license: 'user-supplied', checksum: null, presetCount: null, preset: null, presets: [], channels: 1, offline: true,
   });
   assert.deepEqual(JSON.parse(JSON.stringify(normalize({ soundfont: { presets: [{ bank: 0, program: 0, name: 'Piano' }, { bank: 'bad', program: 1 }], preset: { bank: 0, program: 0, name: 'Piano' } } }).soundfont.presets)), [{ bank: 0, program: 0, name: 'Piano' }]);
+  assert.equal(normalize({ soundfont: { channels: 2 } }).soundfont.channels, 2);
 });

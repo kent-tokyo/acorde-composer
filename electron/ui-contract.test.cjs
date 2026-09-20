@@ -245,6 +245,9 @@ test('playback start guards empty or incomplete scores before engine access', ()
   assert.match(app, /const guardedStartPlayback = startPlayback/);
   assert.match(app, /const measures = currentScore\?\.parts\?\.\[0\]\?\.staves\?\.\[0\]\?\.measures/);
   assert.match(app, /if \(!Array\.isArray\(measures\) \|\| measures\.length === 0\) return/);
+  assert.match(app, /prepareSoundfontEvents/);
+  assert.match(app, /prepareSoundfontPlayback/);
+  assert.match(app, /soundfont_sample_key/);
 });
 
 test('playback highlight skips redundant DOM class updates', () => {

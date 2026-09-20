@@ -21,6 +21,10 @@ test('release-candidate gate can emit a machine-readable step report', () => {
     runner: ({ label }) => ({ label, status: label === 'Rust tests' ? 1 : 0 }),
   });
   assert.equal(result.valid, false);
+  assert.equal(result.product, 'Acorde Composer');
+  assert.match(result.version, /^\d+\.\d+\.\d+$/);
+  assert.match(result.commit, /^[0-9a-f]{7,64}$/i);
+  assert.equal(typeof result.engineIdentity.ready, 'boolean');
   assert.equal(result.releaseReady, false);
   assert.equal(result.failedStep, 'Rust tests');
   assert.equal(result.steps.length, steps.length);
