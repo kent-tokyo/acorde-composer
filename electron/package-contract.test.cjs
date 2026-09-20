@@ -8,9 +8,9 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 
 const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8').split(/\r?\n/);
 const engineSource = fs.readFileSync(path.join(root, 'engine/src/main.rs'), 'utf8');
 
-test('release metadata identifies the Acorde Composer v0.1.12 release', () => {
+test('release metadata identifies the Acorde Composer v0.1.13 release', () => {
   assert.equal(packageJson.name, 'acorde-composer');
-  assert.equal(packageJson.version, '0.1.12');
+  assert.equal(packageJson.version, '0.1.13');
   assert.notEqual(packageJson.private, true);
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));
@@ -68,6 +68,8 @@ test('SoundFont playback stays behind an explicit resolved-zone IPC boundary', (
   const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
   assert.match(main, /soundfont:attachResolvedSample/);
   assert.match(preload, /attachResolvedSample/);
+  assert.match(main, /soundfont:attachResolvedSnapshot/);
+  assert.match(preload, /attachResolvedSnapshot/);
 });
 
 test('external provider configuration stays behind a normalized IPC boundary', () => {

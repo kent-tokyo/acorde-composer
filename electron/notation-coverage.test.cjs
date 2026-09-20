@@ -9,7 +9,7 @@ const matrix = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'qa', 'nota
 
 test('notation coverage matrix has a stable schema and required pipeline layers', () => {
   assert.equal(matrix.schemaVersion, 1);
-  assert.equal(matrix.engine, 'acorde@1.1.3');
+  assert.equal(matrix.engine, 'acorde@1.1.7');
   assert.deepEqual(matrix.requiredLayers, ['parser', 'model', 'command', 'layout', 'editor', 'musicxml', 'playback', 'fixture']);
   assert.ok(matrix.elements.length >= 12);
   const ids = new Set();

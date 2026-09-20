@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.3",
+  "engine": "acorde@1.1.7",
   "profiles": [
     {
       "id": "multivoice-smoke",
@@ -8,7 +8,7 @@
       "expectedMeasures": 1,
       "minIterations": 3,
       "maxIterations": 1000,
-      "metrics": ["parse", "load", "render"]
+      "metrics": ["parse", "load", "render", "serialize"]
     },
     {
       "id": "long-100-measures",
@@ -16,7 +16,7 @@
       "expectedMeasures": 100,
       "minIterations": 3,
       "maxIterations": 1000,
-      "metrics": ["parse", "load", "render"]
+      "metrics": ["parse", "load", "render", "serialize"]
     },
     {
       "id": "long-1000-measures",
@@ -24,7 +24,7 @@
       "expectedMeasures": 1000,
       "minIterations": 3,
       "maxIterations": 1000,
-      "metrics": ["parse", "load", "render"]
+      "metrics": ["parse", "load", "render", "serialize"]
     },
     {
       "id": "long-10000-measures",
@@ -32,7 +32,7 @@
       "expectedMeasures": 10000,
       "minIterations": 3,
       "maxIterations": 1000,
-      "metrics": ["parse", "load", "render"]
+      "metrics": ["parse", "load", "render", "serialize"]
     }
   ]
 }

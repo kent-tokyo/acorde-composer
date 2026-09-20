@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.3",
+  "engine": "acorde@1.1.7",
   "requiredLayers": ["parser", "model", "command", "layout", "editor", "musicxml", "playback", "fixture"],
   "elements": [
     {"id":"note-rest","category":"pitch-rhythm","status":"release-ready","fixturePath":"qa/fixtures/notation/note-rest.musicxml","fixtureMarkers":["<pitch>","<rest"],"layers":["parser","model","command","layout","editor","musicxml","playback","fixture"]},

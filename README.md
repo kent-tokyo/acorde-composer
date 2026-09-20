@@ -22,11 +22,11 @@ For comparison criteria, migration steps, and limitations, see the [Choosing and
 
 Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
 
-The current engine pins the five adjacent `acorde` crates at v1.1.3 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+The current engine pins the five adjacent `acorde` crates at v1.1.7 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.12
+## Current release: v0.1.13
 
-The current release uses `acorde` v1.1.3 and includes:
+This release uses `acorde` v1.1.7 and includes:
 
 - Electron UI with isolated preload and bounded JSON IPC
 - MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
@@ -38,6 +38,7 @@ The current release uses `acorde` v1.1.3 and includes:
 - AI proposal review, OMR review queue, provider license gates, timeout recovery, and redacted support bundles
 - Artifact manifest generation, release QA reports, schema migration, checksum, SBOM, NOTICE, and provenance checks
 - Reproducible long-score benchmarks for 100 / 1,000 / 10,000 measures, cold start, playback, layout, SVG, and repeat render
+- Parse → serialize timing plus harness RSS／CPU evidence for each performance profile
 
 ## Migration from existing notation software
 
@@ -87,7 +88,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 178 Node tests and 20 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. The notation coverage matrix assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.12](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.12).
+The current local verification is 197 Node tests and 20 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The notation coverage matrix assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.13](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.13).
 
 ## License and external assets
 

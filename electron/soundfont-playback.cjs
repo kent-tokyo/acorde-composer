@@ -20,16 +20,19 @@ function normalizeResolvedZone(value) {
   const valid = bank !== null && program !== null && sampleId !== null
     && keyMin <= keyMax && velocityMin <= velocityMax
     && sampleRate !== null && endFrame !== null && startFrame < endFrame;
-  const loop = source.loop && typeof source.loop === 'object'
-    ? { start: finiteInt(source.loop.start ?? source.loop.startFrame, null, 0), end: finiteInt(source.loop.end ?? source.loop.endFrame, null, 1) }
+  const loopSource = source.loop_points ?? source.loop;
+  const loop = loopSource && typeof loopSource === 'object'
+    ? { start: finiteInt(loopSource.start ?? loopSource.startFrame ?? loopSource.start_frame, null, 0), end: finiteInt(loopSource.end ?? loopSource.endFrame ?? loopSource.end_frame, null, 1) }
     : null;
-  const envelope = source.envelope && typeof source.envelope === 'object'
-    ? { attack: Number(source.envelope.attack ?? source.envelope.attackSecs) || 0, decay: Number(source.envelope.decay ?? source.envelope.decaySecs) || 0, sustain: Number(source.envelope.sustain ?? source.envelope.sustainLevel) || 1, release: Number(source.envelope.release ?? source.envelope.releaseSecs) || 0 }
+  const envelopeSource = source.envelope && typeof source.envelope === 'object' ? source.envelope : source;
+  const numberOr = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const envelope = envelopeSource
+    ? { attack: numberOr(envelopeSource.attack ?? envelopeSource.attackSecs ?? envelopeSource.attack_secs, 0), decay: numberOr(envelopeSource.decay ?? envelopeSource.decaySecs ?? envelopeSource.decay_secs, 0), sustain: numberOr(envelopeSource.sustain ?? envelopeSource.sustainLevel ?? envelopeSource.sustain_level, 1), release: numberOr(envelopeSource.release ?? envelopeSource.releaseSecs ?? envelopeSource.release_secs, 0) }
     : null;
   return {
     bank, program, sampleId, keyMin, keyMax, velocityMin, velocityMax,
     sampleRate, rootMidi, startFrame, endFrame,
-    tuningCents: Number.isFinite(source.tuningCents ?? source.tuning_cents) ? Number(source.tuningCents ?? source.tuning_cents) : 0,
+    tuningCents: numberOr(source.tuningCents ?? source.tuning_cents ?? source.fineTuneCents ?? source.fine_tune_cents, 0),
     gain: Number.isFinite(source.gain) ? Number(source.gain) : 1,
     loop: loop && loop.start !== null && loop.end !== null && loop.start < loop.end ? loop : null,
     envelope: envelope && envelope.attack >= 0 && envelope.decay >= 0 && envelope.sustain >= 0 && envelope.sustain <= 1 && envelope.release >= 0 ? envelope : null,
@@ -49,15 +52,44 @@ function selectResolvedZone(zones, { bank = 0, program = 0, pitchMidi = 60, velo
 
 function attachResolvedSample(events, zones, samplesById, selection = {}) {
   const diagnostics = [];
+  const sourceZones = Array.isArray(zones) ? zones : [];
+  if (sourceZones.length > MAX_ZONES) diagnostics.push('zone-list-truncated');
+  const normalizedZones = sourceZones.slice(0, MAX_ZONES).map(normalizeResolvedZone);
+  if (normalizedZones.some((zone) => !zone.valid)) diagnostics.push('invalid-resolved-zone');
   const output = (Array.isArray(events) ? events : []).map((event) => {
     if (!event || event.is_metronome) return event;
-    const zone = selectResolvedZone(zones, { bank: selection.bank ?? 0, program: selection.program ?? 0, pitchMidi: event.pitch_midi, velocity: event.velocity });
+    const zone = selectResolvedZone(normalizedZones, { bank: selection.bank ?? 0, program: selection.program ?? 0, pitchMidi: event.pitch_midi, velocity: event.velocity });
     if (!zone) return event;
     const sample = samplesById && typeof samplesById === 'object' ? samplesById[String(zone.sampleId)] || samplesById[zone.sampleId] : null;
     if (!sample) { diagnostics.push(`sample-missing:${zone.sampleId}`); return event; }
-    return { ...event, resolved_zone: zone, decoded_sample: sample };
+    const decodedSample = { ...sample };
+    if (zone.rootMidi !== null) decodedSample.rootMidi = zone.rootMidi;
+    if (zone.loop) { decodedSample.loopStart = zone.loop.start; decodedSample.loopEnd = zone.loop.end; }
+    return { ...event, resolved_zone: zone, decoded_sample: decodedSample, sample_envelope: zone.envelope, sample_gain: zone.gain, sample_tuning_cents: zone.tuningCents };
   });
   return { events: output, diagnostics: [...new Set(diagnostics)] };
 }
 
-module.exports = { MAX_ZONES, normalizeResolvedZone, selectResolvedZone, attachResolvedSample };
+function attachResolvedSnapshot(events, snapshot, samplesById, selection = {}) {
+  if (!snapshot || typeof snapshot !== 'object' || !Array.isArray(snapshot.zones)) {
+    return { events: Array.isArray(events) ? events : [], diagnostics: ['snapshot-missing'] };
+  }
+  const preset = snapshot.preset && typeof snapshot.preset === 'object' ? snapshot.preset : {};
+  const explicitBank = Number.isInteger(selection.bank) ? selection.bank : null;
+  const explicitProgram = Number.isInteger(selection.program) ? selection.program : null;
+  const snapshotBank = Number.isInteger(preset.bank) ? preset.bank : null;
+  const snapshotProgram = Number.isInteger(preset.program) ? preset.program : null;
+  if ((explicitBank === null || explicitProgram === null) && (snapshotBank === null || snapshotProgram === null)) {
+    return { events: Array.isArray(events) ? events : [], diagnostics: ['snapshot-preset-missing'] };
+  }
+  const attached = attachResolvedSample(events, snapshot.zones, samplesById, {
+    bank: explicitBank ?? snapshotBank,
+    program: explicitProgram ?? snapshotProgram,
+  });
+  const providerDiagnostics = Array.isArray(snapshot.diagnostics)
+    ? snapshot.diagnostics.slice(0, 4096).map((diagnostic) => typeof diagnostic === 'string' ? diagnostic : 'provider-zone-diagnostic')
+    : [];
+  return { ...attached, diagnostics: [...new Set([...providerDiagnostics, ...attached.diagnostics])] };
+}
+
+module.exports = { MAX_ZONES, normalizeResolvedZone, selectResolvedZone, attachResolvedSample, attachResolvedSnapshot };

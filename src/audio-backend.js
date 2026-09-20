@@ -38,12 +38,17 @@
       const when = start + Math.max(0, Number(event.time_secs) || 0);
       const duration = Math.max(0.01, Number(event.duration_secs) || frames / sampleRate);
       const velocity = Math.max(0, Math.min(1, (Number(event.velocity) || 0) / 127));
-      const attack = Math.min(0.02, duration / 4); const release = Math.min(0.12, duration / 3);
-      const sustain = Math.max(0.001, velocity * 0.82);
+      const zoneEnvelope = event.sample_envelope && typeof event.sample_envelope === 'object' ? event.sample_envelope : {};
+      const envelopeValue = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+      const attack = Math.min(0.2, Math.max(0, envelopeValue(zoneEnvelope.attack, duration / 4))); const release = Math.min(0.5, Math.max(0, envelopeValue(zoneEnvelope.release, duration / 3)));
+      const sustainLevel = Number.isFinite(Number(zoneEnvelope.sustain)) ? Math.max(0.001, Math.min(1, Number(zoneEnvelope.sustain))) : 0.82;
+      const sampleGain = Number.isFinite(Number(event.sample_gain)) ? Math.max(0, Math.min(2, Number(event.sample_gain))) : 1;
+      const sustain = Math.max(0.001, velocity * sustainLevel * sampleGain);
       source.buffer = buffer; source.loop = Number.isInteger(sample.loopStart) && Number.isInteger(sample.loopEnd) && sample.loopEnd > sample.loopStart;
       if (source.loop) { source.loopStart = sample.loopStart / sampleRate; source.loopEnd = Math.min(frames, sample.loopEnd) / sampleRate; }
       const rootMidi = Number.isFinite(sample.rootMidi) ? sample.rootMidi : null;
-      const pitchRatio = rootMidi !== null && Number.isFinite(event.pitch_midi) ? 2 ** ((event.pitch_midi - rootMidi) / 12) : 1;
+      const tuningCents = Number.isFinite(Number(event.sample_tuning_cents)) ? Number(event.sample_tuning_cents) : 0;
+      const pitchRatio = rootMidi !== null && Number.isFinite(event.pitch_midi) ? 2 ** ((event.pitch_midi - rootMidi) / 12 + tuningCents / 1200) : 1;
       const requestedRate = Number.isFinite(event.playback_rate) && event.playback_rate > 0 ? event.playback_rate : 1;
       source.playbackRate.value = Math.max(0.0625, Math.min(16, pitchRatio * requestedRate));
       gain.gain.setValueAtTime(0.0001, when); gain.gain.linearRampToValueAtTime(Math.max(0.0001, velocity), when + attack);

@@ -1,4 +1,283 @@
 /**
+ * JavaScript-visible bounded cache for deterministic score analysis.
+ */
+export class AnalysisCache {
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        AnalysisCacheFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_analysiscache_free(ptr, 0);
+    }
+    /**
+     * Analyze one score JSON string, reusing a matching cached result.
+     * @param {string} score_json
+     * @returns {string}
+     */
+    analyze(score_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * Reclaim a previous score snapshot and analyze its replacement.
+     * @param {string} previous_json
+     * @param {string} current_json
+     * @returns {string}
+     */
+    analyze_after_edit(previous_json, current_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(previous_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze_after_edit(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
+     * Reclaim a previous snapshot, analyze its replacement, and return changed categories.
+     * @param {string} previous_score_json
+     * @param {string} previous_result_json
+     * @param {string} current_json
+     * @returns {string}
+     */
+    analyze_after_edit_with_diff(previous_score_json, previous_result_json, current_json) {
+        let deferred5_0;
+        let deferred5_1;
+        try {
+            const ptr0 = passStringToWasm0(previous_score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(previous_result_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len2 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze_after_edit_with_diff(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2);
+            var ptr4 = ret[0];
+            var len4 = ret[1];
+            if (ret[3]) {
+                ptr4 = 0; len4 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred5_0 = ptr4;
+            deferred5_1 = len4;
+            return getStringFromWasm0(ptr4, len4);
+        } finally {
+            wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+        }
+    }
+    /**
+     * Apply a serialized ChangeHint and return the edited analysis plus category diff.
+     * @param {string} previous_score_json
+     * @param {string} previous_result_json
+     * @param {string} current_json
+     * @param {string} change_hint_json
+     * @returns {string}
+     */
+    analyze_after_edit_with_hint(previous_score_json, previous_result_json, current_json, change_hint_json) {
+        let deferred6_0;
+        let deferred6_1;
+        try {
+            const ptr0 = passStringToWasm0(previous_score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(previous_result_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len2 = WASM_VECTOR_LEN;
+            const ptr3 = passStringToWasm0(change_hint_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len3 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze_after_edit_with_hint(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+            var ptr5 = ret[0];
+            var len5 = ret[1];
+            if (ret[3]) {
+                ptr5 = 0; len5 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred6_0 = ptr5;
+            deferred6_1 = len5;
+            return getStringFromWasm0(ptr5, len5);
+        } finally {
+            wasm.__wbindgen_free(deferred6_0, deferred6_1, 1);
+        }
+    }
+    /**
+     * Analyze a JSON array of scores, preserving input order and reusing duplicate results.
+     * @param {string} scores_json
+     * @returns {string}
+     */
+    analyze_batch(scores_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(scores_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze_batch(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * Recompute selected analysis categories after an edit and return a complete merged result.
+     * @param {string} previous_score_json
+     * @param {string} previous_result_json
+     * @param {string} current_json
+     * @param {string} categories_json
+     * @returns {string}
+     */
+    analyze_selected_after_edit(previous_score_json, previous_result_json, current_json, categories_json) {
+        let deferred6_0;
+        let deferred6_1;
+        try {
+            const ptr0 = passStringToWasm0(previous_score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(previous_result_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len2 = WASM_VECTOR_LEN;
+            const ptr3 = passStringToWasm0(categories_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len3 = WASM_VECTOR_LEN;
+            const ret = wasm.analysiscache_analyze_selected_after_edit(this.__wbg_ptr, ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+            var ptr5 = ret[0];
+            var len5 = ret[1];
+            if (ret[3]) {
+                ptr5 = 0; len5 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred6_0 = ptr5;
+            deferred6_1 = len5;
+            return getStringFromWasm0(ptr5, len5);
+        } finally {
+            wasm.__wbindgen_free(deferred6_0, deferred6_1, 1);
+        }
+    }
+    /**
+     * Return the configured maximum number of cached results.
+     * @returns {number}
+     */
+    capacity() {
+        const ret = wasm.analysiscache_capacity(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Remove all cached results.
+     */
+    clear() {
+        wasm.analysiscache_clear(this.__wbg_ptr);
+    }
+    /**
+     * Invalidate one score snapshot and return whether it was cached.
+     * @param {string} score_json
+     * @returns {boolean}
+     */
+    invalidate(score_json) {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.analysiscache_invalidate(this.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
+     * Return whether the cache contains no results.
+     * @returns {boolean}
+     */
+    is_empty() {
+        const ret = wasm.analysiscache_is_empty(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Return the number of cached results.
+     * @returns {number}
+     */
+    len() {
+        const ret = wasm.analysiscache_len(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Create an analysis cache with a fixed maximum number of score results.
+     * @param {number} capacity
+     */
+    constructor(capacity) {
+        const ret = wasm.analysiscache_new(capacity);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0];
+        AnalysisCacheFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Reset hit/miss counters without removing cached results.
+     */
+    reset_stats() {
+        wasm.analysiscache_reset_stats(this.__wbg_ptr);
+    }
+    /**
+     * Return hit/miss counters as JSON.
+     * @returns {string}
+     */
+    stats() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.analysiscache_stats(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+}
+if (Symbol.dispose) AnalysisCache.prototype[Symbol.dispose] = AnalysisCache.prototype.free;
+
+/**
  * JavaScript-visible wrapper around `acorde_core::ScoreEngine`.
  *
  * All Score and Command values are passed as JSON strings.
@@ -41,6 +320,20 @@ export class ScoreEngine {
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
+    }
+    /**
+     * Append a remote history when it is a safe extension of the current command log.
+     * @param {string} json
+     * @returns {number}
+     */
+    append_history_extension(json) {
+        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.scoreengine_append_history_extension(this.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] >>> 0;
     }
     /**
      * Apply a command (JSON string). Returns a [`ChangeHint`] JSON string on success.
@@ -134,6 +427,34 @@ export class ScoreEngine {
         const ret = wasm.scoreengine_begin_slur(this.__wbg_ptr, ptr0, len0);
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Compare two exported histories without replaying them.
+     * @param {string} left_json
+     * @param {string} right_json
+     * @returns {string}
+     */
+    static compare_histories(left_json, right_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(left_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(right_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_compare_histories(ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
     /**
@@ -324,6 +645,34 @@ export class ScoreEngine {
     get_version() {
         const ret = wasm.scoreengine_get_version(this.__wbg_ptr);
         return BigInt.asUintN(64, ret);
+    }
+    /**
+     * Return explainable details when two exported histories diverge.
+     * @param {string} left_json
+     * @param {string} right_json
+     * @returns {string}
+     */
+    static history_conflict(left_json, right_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(left_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(right_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_history_conflict(ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
     }
     /**
      * Create a new engine with a default score.
@@ -573,6 +922,38 @@ export class ScoreEngine {
         }
     }
     /**
+     * Set or clear a chord-symbol harmony range from typed `NoteAddr` JSON values.
+     *
+     * `start_json` identifies the note carrying the chord symbol. `end_json` is either a
+     * `NoteAddr` object or JSON `null` to clear the range. The operation is undoable and is
+     * equivalent to applying the `SetHarmonyRange` command directly.
+     * @param {string} start_json
+     * @param {string} end_json
+     * @returns {string}
+     */
+    set_harmony_range(start_json, end_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(start_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(end_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_set_harmony_range(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * Set the note head shape on a note.
      *
      * `addr_json`: JSON-encoded `NoteAddr`.
@@ -604,6 +985,35 @@ export class ScoreEngine {
         }
     }
     /**
+     * Set or clear MusicXML-compatible note placement offsets in tenths.
+     * @param {string} note_json
+     * @param {number | null} [offset_x]
+     * @param {number | null} [offset_y]
+     * @param {number | null} [relative_x]
+     * @param {number | null} [relative_y]
+     * @returns {string}
+     */
+    set_note_placement(note_json, offset_x, offset_y, relative_x, relative_y) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(note_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_set_note_placement(this.__wbg_ptr, ptr0, len0, !isLikeNone(offset_x), isLikeNone(offset_x) ? 0 : offset_x, !isLikeNone(offset_y), isLikeNone(offset_y) ? 0 : offset_y, !isLikeNone(relative_x), isLikeNone(relative_x) ? 0 : relative_x, !isLikeNone(relative_y), isLikeNone(relative_y) ? 0 : relative_y);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * Set or clear the stem direction on a note (undo-able). Returns a [`ChangeHint`] JSON string.
      *
      * `addr_json`: JSON-encoded `NoteAddr`.
@@ -632,6 +1042,36 @@ export class ScoreEngine {
             return getStringFromWasm0(ptr3, len3);
         } finally {
             wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
+     * Set or clear a staff's tablature configuration from typed JSON.
+     *
+     * `config_json` is either a [`TablatureConfig`] object or JSON `null`. The operation is
+     * undoable and is equivalent to applying the `SetTablatureConfig` command directly.
+     * @param {number} part_index
+     * @param {number} staff_index
+     * @param {string} config_json
+     * @returns {string}
+     */
+    set_tablature_config(part_index, staff_index, config_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_set_tablature_config(this.__wbg_ptr, part_index, staff_index, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -777,6 +1217,32 @@ export class ScoreEngine {
 if (Symbol.dispose) ScoreEngine.prototype[Symbol.dispose] = ScoreEngine.prototype.free;
 
 /**
+ * Return conservative analysis categories affected by a serialized engine change hint.
+ * @param {string} change_hint_json
+ * @returns {string}
+ */
+export function affected_analysis_categories(change_hint_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(change_hint_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.affected_analysis_categories(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
  * Return the schema-versioned analysis cache key for a score JSON string.
  * @param {string} score_json
  * @returns {string}
@@ -788,6 +1254,61 @@ export function analysis_cache_key(score_json) {
         const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.analysis_cache_key(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Return deterministic analysis explanations whose evidence contains a NoteAddr JSON object.
+ * @param {string} analysis_json
+ * @param {string} address_json
+ * @returns {string}
+ */
+export function analysis_provenance(analysis_json, address_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(analysis_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(address_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.analysis_provenance(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Return a dependency-aware refresh plan for a serialized engine change hint.
+ * @param {string} change_hint_json
+ * @returns {string}
+ */
+export function analysis_refresh_plan(change_hint_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(change_hint_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.analysis_refresh_plan(ptr0, len0);
         var ptr2 = ret[0];
         var len2 = ret[1];
         if (ret[3]) {
@@ -857,6 +1378,41 @@ export function analyze_score(score_json) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Apply one JSON-encoded core command to a validated score without mutating the input.
+ *
+ * The result is `{ "score": <score>, "hint": <change hint> }`, allowing stateless browser
+ * adapters to keep their own snapshot/history boundary while reusing the same checked command
+ * engine as the stateful [`ScoreEngine`] class. This is intentionally a single-command boundary;
+ * callers needing one undo entry for several edits should use the stateful class or a core batch
+ * command.
+ * @param {string} score_json
+ * @param {string} command_json
+ * @returns {string}
+ */
+export function apply_score_command(score_json, command_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(command_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.apply_score_command(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1031,6 +1587,74 @@ export function command_key_from_json(cmd_json) {
 }
 
 /**
+ * Compare a host/backend playback event trace with an expected trace.
+ *
+ * `expected_json` is normally produced by `to_playback_events_ex`; `actual_json` is supplied
+ * by the browser host after scheduling. The result compares event identity and timing only;
+ * Web Audio/device latency and rendered audio remain outside the WASM contract.
+ * @param {string} expected_json
+ * @param {string} actual_json
+ * @param {string} tolerance_json
+ * @returns {string}
+ */
+export function compare_playback_timing(expected_json, actual_json, tolerance_json) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(expected_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(actual_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(tolerance_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.compare_playback_timing(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
+ * Compare two canonical score JSON values and return score and analysis gate status.
+ *
+ * This is intentionally limited to canonical score inputs. Import/export diagnostics belong
+ * to the format-specific `*_report` APIs and are not inferred here.
+ * @param {string} score_a_json
+ * @param {string} score_b_json
+ * @returns {string}
+ */
+export function compatibility_report(score_a_json, score_b_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_a_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(score_b_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.compatibility_report(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Compute recommended `BeamState` values for a voice's notes.
  *
  * Groups beamable notes (eighth or shorter, non-rest) within beat boundaries
@@ -1162,6 +1786,39 @@ export function compute_playback_position(score_json, options_json, elapsed_secs
 }
 
 /**
+ * Compute the host-neutral physical print layout for a score.
+ *
+ * `config_json` is a serialized [`acorde_layout::PrintConfig`]. The returned
+ * [`acorde_layout::PrintLayoutResult`] contains millimetre page/system geometry and metadata;
+ * it does not emit PDF, load fonts, or access printer APIs.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @returns {string}
+ */
+export function compute_print_layout(score_json, config_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.compute_print_layout(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Detect the chord name from a JSON array of `Pitch` objects.
  *
  * Returns a `ChordSymbol` JSON object, or JSON `null` if fewer than 2 pitches are
@@ -1188,6 +1845,35 @@ export function detect_chord(pitches_json) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Compare two serialized analysis results and return a deterministic category-level diff.
+ * @param {string} previous_json
+ * @param {string} current_json
+ * @returns {string}
+ */
+export function diff_analysis(previous_json, current_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(previous_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.diff_analysis(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1221,6 +1907,38 @@ export function diff_scores(score_a_json, score_b_json) {
 }
 
 /**
+ * Compare two analysis results and return the category diff plus before/after explanations.
+ * @param {string} previous_json
+ * @param {string} current_json
+ * @param {string} address_json
+ * @returns {string}
+ */
+export function explain_analysis_change(previous_json, current_json, address_json) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(previous_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(address_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.explain_analysis_change(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Extract a single part (0-based) from a score.
  * @param {string} score_json
  * @param {number} part_index
@@ -1245,6 +1963,15 @@ export function extract_part(score_json, part_index) {
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
+}
+
+/**
+ * Return the version of the host-neutral glyph resource descriptor contract.
+ * @returns {number}
+ */
+export function glyph_resource_contract_version() {
+    const ret = wasm.glyph_resource_contract_version();
+    return ret >>> 0;
 }
 
 /**
@@ -1459,6 +2186,38 @@ export function parse_abc(text) {
 }
 
 /**
+ * Parse ABC Notation and render the canonical score directly to SVG.
+ *
+ * This convenience path reuses the documented ABC parser and the same SVG renderer as native
+ * callers; use `parse_abc_report` when source-located import diagnostics are required.
+ * @param {string} text
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_abc_render_svg(text, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_abc_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Parse ABC Notation and return an ImportReport JSON string.
  * @param {string} text
  * @returns {string}
@@ -1507,6 +2266,38 @@ export function parse_mei(xml) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Parse the documented MEI subset and render the canonical score directly to SVG.
+ *
+ * This convenience path is equivalent to `parse_mei` followed by `render_score_svg`; it does
+ * not broaden MEI support or hide source diagnostics from `parse_mei_report`.
+ * @param {string} xml
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_mei_render_svg(xml, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(xml, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_mei_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1563,6 +2354,39 @@ export function parse_midi(data) {
 }
 
 /**
+ * Parse MIDI bytes and render the canonical score directly to SVG.
+ *
+ * MIDI notation is necessarily a bounded projection of performance events; this helper does
+ * not invent notation semantics that are absent from the MIDI input. Use `parse_midi_report`
+ * for source-located conversion diagnostics.
+ * @param {Uint8Array} data
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_midi_render_svg(data, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_midi_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Parse MIDI and return an ImportReport JSON string.
  * @param {Uint8Array} data
  * @returns {string}
@@ -1611,6 +2435,35 @@ export function parse_mscx(xml) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Parse a MuseScore .mscx XML document and render its bounded canonical score directly to SVG.
+ * @param {string} xml
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_mscx_render_svg(xml, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(xml, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_mscx_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1667,6 +2520,35 @@ export function parse_mscz(data) {
 }
 
 /**
+ * Parse a MuseScore .mscz archive and render its bounded canonical score directly to SVG.
+ * @param {Uint8Array} data
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_mscz_render_svg(data, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_mscz_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Parse a MuseScore .mscz archive and return an ImportReport JSON string.
  * @param {Uint8Array} data
  * @returns {string}
@@ -1715,6 +2597,38 @@ export function parse_musicxml(xml) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Parse MusicXML and render the canonical score directly to SVG.
+ *
+ * This convenience path reuses the documented MusicXML parser and the same SVG renderer as
+ * native callers; use `parse_musicxml_report` when source-located import diagnostics are needed.
+ * @param {string} xml
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_musicxml_render_svg(xml, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(xml, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_musicxml_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1771,6 +2685,61 @@ export function parse_mxl(data) {
 }
 
 /**
+ * Parse a compressed MusicXML (MXL) archive and render its canonical score directly to SVG.
+ * @param {Uint8Array} data
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function parse_mxl_render_svg(data, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_mxl_render_svg(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Parse a compressed MusicXML (MXL) archive and return an ImportReport JSON string.
+ * @param {Uint8Array} data
+ * @returns {string}
+ */
+export function parse_mxl_report(data) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_mxl_report(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
  * Convert a MIDI note number (0–127) to a `Pitch` JSON object.
  *
  * `prefer_flat`: `true` = Db/Eb/Gb/Ab/Bb spelling; `false` = C#/D#/F#/G#/A#.
@@ -1811,6 +2780,66 @@ export function pitch_from_str(s) {
         const ptr0 = passStringToWasm0(s, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.pitch_from_str(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Project scheduled playback events onto authored tablature positions.
+ *
+ * The result contains string/fret assignments and explicit diagnostics for missing positions,
+ * invalid strings, unavailable tuning, or pitch mismatches. No position is invented here.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function project_tablature_performance(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.project_tablature_performance(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Inspect SVG renderer capability boundaries and return source-located issues as JSON.
+ *
+ * Browser hosts can call this before requesting SVG to present unsupported notation clearly.
+ * @param {string} score_json
+ * @returns {string}
+ */
+export function render_preflight(score_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.render_preflight(ptr0, len0);
         var ptr2 = ret[0];
         var len2 = ret[1];
         if (ret[3]) {
@@ -2347,6 +3376,101 @@ export function serialize_midi_report(score_json) {
 }
 
 /**
+ * Serialize a score to the deterministic canonical MuseScore MSCX subset.
+ * @param {string} score_json
+ * @returns {string}
+ */
+export function serialize_mscx(score_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.serialize_mscx(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Serialize a score to MSCX and return structured export diagnostics.
+ * @param {string} score_json
+ * @returns {string}
+ */
+export function serialize_mscx_report(score_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.serialize_mscx_report(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Serialize a score to a deterministic canonical MuseScore MSCZ archive.
+ * @param {string} score_json
+ * @returns {Uint8Array}
+ */
+export function serialize_mscz(score_json) {
+    const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.serialize_mscz(ptr0, len0);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+
+/**
+ * Serialize a score to MSCZ and return structured export diagnostics.
+ * @param {string} score_json
+ * @returns {string}
+ */
+export function serialize_mscz_report(score_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.serialize_mscz_report(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
  * Serialize a score (JSON string) to MusicXML.
  * @param {string} score_json
  * @returns {string}
@@ -2399,6 +3523,40 @@ export function serialize_musicxml_report(score_json) {
 }
 
 /**
+ * Load a bounded SF2/SF3 asset and return one deterministic preset-zone snapshot as JSON.
+ *
+ * Zone metadata is provider-neutral; decoding, synthesis, and licensed sample ownership stay
+ * with the host. `bank` and `program` select the preset whose materialized zones are returned.
+ * @param {Uint8Array} data
+ * @param {string} provider_version
+ * @param {number} bank
+ * @param {number} program
+ * @returns {string}
+ */
+export function soundfont_preset_snapshot(data, provider_version, bank, program) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(provider_version, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.soundfont_preset_snapshot(ptr0, len0, ptr1, len1, bank, program);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Suggest stem direction for a set of pitches in a given clef.
  *
  * Returns `true` if the stem should point up (average MIDI < middle line),
@@ -2420,6 +3578,41 @@ export function suggested_stem_up(pitches_json, clef_json) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return ret[0] !== 0;
+}
+
+/**
+ * Return the version of the browser-facing SVG metadata contract.
+ * @returns {number}
+ */
+export function svg_contract_version() {
+    const ret = wasm.svg_contract_version();
+    return ret >>> 0;
+}
+
+/**
+ * Verify authored tablature through the canonical score JSON round-trip.
+ * @param {string} score_json
+ * @returns {string}
+ */
+export function tablature_round_trip_report(score_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.tablature_round_trip_report(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
 }
 
 /**
@@ -2521,6 +3714,35 @@ export function transpose_score(score_json, semitones) {
 }
 
 /**
+ * Validate and return a host-provided glyph resource descriptor JSON object.
+ *
+ * This checks metadata only; font loading, licensing verification, and embedding remain
+ * responsibilities of the consuming host.
+ * @param {string} descriptor_json
+ * @returns {string}
+ */
+export function validate_glyph_resource_descriptor(descriptor_json) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(descriptor_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.validate_glyph_resource_descriptor(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
  * Validate a score. Returns a JSON `ValidationReport` with `errors` and `warnings` arrays.
  * @param {string} score_json
  * @returns {string}
@@ -2575,6 +3797,9 @@ function __wbg_get_imports() {
     };
 }
 
+const AnalysisCacheFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_analysiscache_free(ptr, 1));
 const ScoreEngineFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_scoreengine_free(ptr, 1));
@@ -2609,6 +3834,10 @@ function handleError(f, args) {
         const idx = addToExternrefTable0(e);
         wasm.__wbindgen_exn_store(idx);
     }
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
 }
 
 function passArray8ToWasm0(arg, malloc) {

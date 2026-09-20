@@ -33,7 +33,9 @@ const elapsed = (start) => performance.now() - start;
 const summarize = (values) => { const sorted = values.slice().sort((left, right) => left - right); return { p50: Number(percentile(sorted, 0.5).toFixed(3)), p95: Number(percentile(sorted, 0.95).toFixed(3)), max: Number(sorted.at(-1).toFixed(3)) }; };
 
 (async () => {
-  const samples = { parse: [], load: [], render: [] };
+  const samples = { parse: [], load: [], render: [], serialize: [] };
+  const memoryBefore = process.memoryUsage().rss;
+  const cpuBefore = process.cpuUsage();
   for (let index = 0; index < iterations; index += 1) {
     let start = performance.now();
     const parsed = await call({ op: 'parse_musicxml_report', xml });
@@ -44,7 +46,12 @@ const summarize = (values) => { const sorted = values.slice().sort((left, right)
     start = performance.now();
     await call({ op: 'render_current', width: 900 });
     samples.render.push(elapsed(start));
+    start = performance.now();
+    await call({ op: 'serialize_musicxml', score: parsed.score });
+    samples.serialize.push(elapsed(start));
   }
-  process.stdout.write(JSON.stringify({ input: path.relative(root, inputPath), iterations, parse_ms: summarize(samples.parse), load_ms: summarize(samples.load), render_ms: summarize(samples.render) }) + '\n');
+  const memoryAfter = process.memoryUsage().rss;
+  const cpuAfter = process.cpuUsage(cpuBefore);
+  process.stdout.write(JSON.stringify({ input: path.relative(root, inputPath), iterations, parse_ms: summarize(samples.parse), load_ms: summarize(samples.load), render_ms: summarize(samples.render), serialize_ms: summarize(samples.serialize), harness_memory: { rss_before_bytes: memoryBefore, rss_after_bytes: memoryAfter, rss_delta_bytes: memoryAfter - memoryBefore }, harness_cpu: { user_us: cpuAfter.user, system_us: cpuAfter.system } }) + '\n');
   child.stdin.end();
 })().catch((error) => { process.stderr.write(`benchmark failed: ${error.message}\n`); child.kill(); process.exitCode = 1; });

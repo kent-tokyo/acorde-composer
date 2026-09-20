@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.13 — 2026-09-20
+
+### Changed
+
+- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.7へ更新し、engine表示、SoundFont provider identity、QA／benchmark設定、Playground WASMを同期
+- Text style editorをAcordeの`SetMeasureText`へ接続し、Generic styled textの追加・編集・削除を有効化
+- SoundFont materialized zoneのroot note、loop、envelope、gain、tuningをsample再生へ引き渡し、cache元sampleを変更しないvoice境界を追加
+
+### Added
+
+- `check:candidate:json`と`check:candidate:strict`を追加し、6段階のローカル検証とAcorde依存provenanceを機械可読化
+- release QA reportへcandidate gateをschema検証付きで統合し、`releaseReady`と`candidateReady`でローカル検証と正式候補可否を分離
+- parse → serialize測定、harness RSS／CPU証跡、performance schema検証を追加
+
+### Fixed
+
+- SoundFont zoneの明示的な0秒attack／releaseを既定値へ誤変換しないよう修正
+- 複数voice MusicXML fixtureにrest paddingを表す`forward`を明示し、厳格なbackup cursor検証に適合
+
+### Verification
+
+- Composer Node: 197 passed
+- Composer Rust: 20 passed
+- `npm run check:candidate:strict`: `releaseReady: true`
+
 ## 0.1.12 — 2026-09-06
 
 - `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.1.3へ更新

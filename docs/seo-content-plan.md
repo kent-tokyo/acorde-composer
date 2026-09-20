@@ -41,9 +41,9 @@
 
 ## 次に作ると効果が高いページ
 
-1. MusicXML移行の実例（single voice／multiple voice／loss diagnostics）
-2. ABC notationとMusicXMLの使い分けガイド
-3. AI提案をレビューして適用する安全設計の解説
-4. SoundFont／外部音源のlicense確認チェックリスト
+1. [MusicXML移行の確認手順](musicxml-migration-example.md) — 作成済み
+2. [ABC notationとMusicXMLの使い分け](abc-and-musicxml.md) — 作成済み
+3. [AI提案をレビューして適用する安全設計](ai-proposal-safety.md) — 作成済み
+4. [SoundFont・外部音源のlicense確認チェックリスト](soundfont-license-checklist.md) — 作成済み
 
 各ページは、実装またはfixtureで確認できる範囲から作成し、未検証の検索需要や競合優位性を推測で補わない。

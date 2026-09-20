@@ -7,6 +7,7 @@
     <direction><direction-type><words>dolce</words></direction-type></direction>
     <note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><glissando number="1" type="start">gliss.</glissando></notations></note>
     <note><pitch><step>G</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><glissando number="1" type="stop"/></notations></note>
+    <forward><duration>960</duration><voice>1</voice><staff>1</staff></forward>
     <backup><duration>1920</duration></backup>
     <note><pitch><step>C</step><octave>3</octave></pitch><duration>1920</duration><voice>2</voice><type>whole</type><staff>2</staff></note>
   </measure></part>

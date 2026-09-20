@@ -14,6 +14,10 @@ test('accepts supported nested command batches and describes operations', () => 
 test('rejects unknown operations, invalid indexes, and empty batches', () => {
   assert.throws(() => assertCommand({ type: 'delete_everything' }), /not supported/);
   assert.throws(() => assertCommand({ type: 'add_note', measure_index: -1 }), /non-negative integer/);
+  assert.throws(() => assertCommand({ type: 'set_measure_text', part_index: 0, staff_index: 0, measure_index: 0, text_index: -1, text: null }), /non-negative integer/);
+  assert.throws(() => assertCommand({ type: 'set_measure_text', part_index: 0, staff_index: 0, measure_index: 0, text_index: 0, text: { style: 'Unknown', text: 'x' } }), /not supported/);
+  assert.throws(() => assertCommand({ type: 'set_measure_text', part_index: 0, staff_index: 0, measure_index: 0, text_index: 0 }), /text is required/);
+  assert.throws(() => assertCommand({ type: 'set_measure_text', part_index: 0, staff_index: 0, measure_index: 0, text_index: 0, text: { style: 'Generic', text: 'x'.repeat(4097) } }), /invalid or too long/);
   assert.throws(() => assertCommand({ type: 'batch', commands: [] }), /must not be empty/);
 });
 
@@ -36,6 +40,7 @@ test('accepts notation annotation commands used by the editor', () => {
   assert.doesNotThrow(() => assertCommand({ type: 'set_navigation_mark', measure_index: 0, mark: 'Segno' }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_volta', measure_index: 0, volta: { number: 1, kind: 'begin_end' } }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_expression_text', measure_index: 0, text: 'dolce' }));
+  assert.doesNotThrow(() => assertCommand({ type: 'set_measure_text', part_index: 0, staff_index: 0, measure_index: 0, text_index: 0, text: { style: 'Generic', text: 'rit.' } }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_cue', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, note_index: 0, is_cue: true }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_note_head', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, note_index: 0, note_head: 'Diamond' }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_fingering', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, note_index: 0, fingering: 3 }));

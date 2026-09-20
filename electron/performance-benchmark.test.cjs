@@ -42,3 +42,22 @@ test('performance results schema validates and detects p95 regressions', () => {
   assert.equal(comparison.valid, false);
   assert.equal(comparison.regressions[0].id, candidate.profiles[0].id);
 });
+
+test('performance result profiles retain bounded harness memory and CPU evidence', () => {
+  const input = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../qa/performance-benchmark-results.json'), 'utf8'));
+  for (const profile of input.profiles) {
+    assert.ok(Number.isInteger(profile.harness_memory.rss_before_bytes));
+    assert.ok(Number.isInteger(profile.harness_memory.rss_after_bytes));
+    assert.ok(Number.isInteger(profile.harness_cpu.user_us));
+    assert.ok(Number.isInteger(profile.harness_cpu.system_us));
+  }
+});
+
+test('performance result profiles retain MusicXML serialization evidence', () => {
+  const input = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../qa/performance-benchmark-results.json'), 'utf8'));
+  for (const profile of input.profiles) {
+    assert.ok(Number.isFinite(profile.serialize_ms.p50));
+    assert.ok(Number.isFinite(profile.serialize_ms.p95));
+    assert.ok(Number.isFinite(profile.serialize_ms.max));
+  }
+});

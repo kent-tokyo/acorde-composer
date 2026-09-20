@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld('acorde', {
   decodeSoundfontSample: (payload) => ipcRenderer.invoke('engine:decodeSoundfontSample', payload),
   normalizeDecodedSample: (sample) => ipcRenderer.invoke('soundfont:normalizeDecodedSample', sample),
   attachResolvedSample: (payload) => ipcRenderer.invoke('soundfont:attachResolvedSample', payload),
+  attachResolvedSnapshot: (payload) => ipcRenderer.invoke('soundfont:attachResolvedSnapshot', payload),
   assessOmrProposal: (proposal) => ipcRenderer.invoke('omr:assessProposal', proposal),
   normalizeOmrRunResult: (result) => ipcRenderer.invoke('omr:normalizeRunResult', result),
   runExternalOmrProvider: (payload) => ipcRenderer.invoke('omr:runExternalProvider', payload),

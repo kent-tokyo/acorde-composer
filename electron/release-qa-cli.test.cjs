@@ -55,10 +55,47 @@ test('release QA CLI output crosses the support bundle boundary with redaction i
 });
 
 test('release QA CLI output schema rejects malformed summaries', () => {
-  assert.deepEqual(validateReleaseQaCliOutput({ schemaVersion: 1, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }), { valid: true, diagnostics: [] });
-  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 2, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
-  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 1, valid: 'false', ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
+  assert.deepEqual(validateReleaseQaCliOutput({ schemaVersion: 1, valid: false, ready: false, artifactReady: true, candidateReady: false, output: '/tmp/qa.json' }), { valid: true, diagnostics: [] });
+  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 2, valid: false, ready: false, artifactReady: true, candidateReady: false, output: '/tmp/qa.json' }).valid, false);
+  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 1, valid: 'false', ready: false, artifactReady: true, candidateReady: false, output: '/tmp/qa.json' }).valid, false);
+  assert.equal(validateReleaseQaCliOutput({ schemaVersion: 1, valid: false, ready: false, artifactReady: true, output: '/tmp/qa.json' }).valid, false);
   assert.equal(validateReleaseQaCliOutput(null).valid, false);
+});
+
+test('release QA report preserves a validated candidate gate report', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-qa-candidate-'));
+  try {
+    const manifestPath = path.join(root, 'manifest.json');
+    const candidatePath = path.join(root, 'candidate.json');
+    const outputPath = path.join(root, 'qa.json');
+    const manifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
+    const candidate = { schemaVersion: 1, strictDependency: false, valid: true, failedStep: null, exitCode: 0, steps: ['Node tests', 'static and fixture checks', 'Playground syntax check', 'Rust tests', 'Rust clippy', 'Git whitespace check'].map((label) => ({ label, passed: true })), dependency: { declaredVersion: '1.1.7', declaredCrates: [], lockVersions: {}, checkoutVersion: null, exactTag: null, clean: null, ready: false, diagnostics: [] } };
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+    fs.writeFileSync(candidatePath, JSON.stringify(candidate));
+    const result = runReleaseQa({ manifestPath, candidateGatePath: candidatePath, outputPath, currentCommit: 'be680d5' });
+    assert.deepEqual(result.report.candidateGate, candidate);
+    assert.equal(validateReleaseQaReportSchema(result.report).valid, true);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('release QA schema rejects a tampered candidate gate report', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const report = require('./release-qa.cjs').createReleaseQaReport({ version: '0.1.12', commit: 'be680d5', matrix, results: [], candidateGate: { schemaVersion: 1 } });
+  assert.equal(validateReleaseQaReportSchema(report).valid, false);
+});
+
+test('release QA verification rejects a non-strict candidate gate', () => {
+  const matrix = createDistributionQaMatrix({ platforms: ['mac'], architectures: { mac: ['arm64'] } });
+  const result = require('./release-qa.cjs').createReleaseQaReport({ version: '0.1.12', commit: 'be680d5', matrix, results: [], candidateGate: { schemaVersion: 1, strictDependency: false, valid: true, failedStep: null, exitCode: 0, steps: ['Node tests', 'static and fixture checks', 'Playground syntax check', 'Rust tests', 'Rust clippy', 'Git whitespace check'].map((label) => ({ label, passed: true })), dependency: { ready: false } } });
+  assert.equal(require('./release-qa.cjs').verifyReleaseQaReport(result).valid, false);
+});
+
+test('release QA verification rejects a strict gate without formal release readiness', () => {
+  const candidateGate = { schemaVersion: 1, strictDependency: true, valid: true, releaseReady: false, failedStep: null, exitCode: 1, steps: ['Node tests', 'static and fixture checks', 'Playground syntax check', 'Rust tests', 'Rust clippy', 'Git whitespace check'].map((label) => ({ label, passed: true })), dependency: { declaredVersion: '1.1.7', declaredCrates: [], lockVersions: {}, checkoutVersion: '1.1.7', exactTag: 'v1.1.7', clean: true, ready: true, diagnostics: [] } };
+  const result = require('./release-qa.cjs').createReleaseQaReport({ version: '0.1.12', commit: 'be680d5', matrix: [], results: [], candidateGate });
+  assert.equal(require('./release-qa.cjs').verifyReleaseQaReport(result).valid, false);
 });
 
 test('standalone schema CLI migrates a legacy v0 fixture to v1', () => {

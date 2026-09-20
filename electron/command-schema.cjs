@@ -1,10 +1,12 @@
 const COMMAND_TYPES = new Set([
   'add_measure', 'add_note', 'add_part', 'add_pitch', 'add_staff',
   'delete_measure', 'delete_note', 'delete_part', 'delete_staff',
-  'set_clef', 'set_duration', 'set_key_signature', 'set_metadata',
+  'set_clef', 'set_duration', 'set_key_signature', 'set_measure_text', 'set_metadata',
   'set_midi_instrument', 'set_part_name', 'set_tempo', 'set_time_signature',
   'add_hairpin', 'add_pedal', 'set_arpeggio', 'set_barline', 'set_chord_symbol', 'set_cross_staff', 'set_cue', 'set_dynamic', 'set_expression_text', 'set_fingering', 'set_glissando', 'set_grace', 'set_guitar_technique', 'set_lyric', 'set_multi_rest', 'set_navigation_mark', 'set_note_head', 'set_ottava', 'set_page_break', 'set_part_group', 'set_rehearsal_mark', 'set_stem', 'set_string_number', 'set_system_break', 'set_technique_text', 'set_tempo_at_measure', 'set_transpose', 'set_tuplet', 'set_volta', 'toggle_articulation', 'toggle_slur', 'toggle_tie', 'toggle_trill_line',
 ]);
+const TEXT_STYLES = new Set(['Expression', 'Technique', 'Lyrics', 'ChordSymbol', 'FiguredBass', 'RehearsalMark', 'Generic']);
+const MAX_STYLED_TEXT_LENGTH = 4096;
 
 function assertObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label} must be an object`);
@@ -12,6 +14,13 @@ function assertObject(value, label) {
 
 function assertNonNegativeInteger(value, label) {
   if (!Number.isSafeInteger(value) || value < 0) throw new Error(`${label} must be a non-negative integer`);
+}
+
+function assertStyledText(value, path) {
+  if (value === null) return;
+  assertObject(value, path);
+  if (!TEXT_STYLES.has(value.style)) throw new Error(`${path}.style is not supported`);
+  if (typeof value.text !== 'string' || value.text.length > MAX_STYLED_TEXT_LENGTH) throw new Error(`${path}.text is invalid or too long`);
 }
 
 function assertCommand(command, path = 'command') {
@@ -24,8 +33,12 @@ function assertCommand(command, path = 'command') {
     return command;
   }
   if (typeof command.type !== 'string' || !COMMAND_TYPES.has(command.type)) throw new Error(`${path}.type is not supported`);
-  for (const key of ['part_index', 'staff_index', 'measure_index', 'voice', 'voice_index', 'note_index', 'position', 'after_index']) {
+  for (const key of ['part_index', 'staff_index', 'measure_index', 'text_index', 'voice', 'voice_index', 'note_index', 'position', 'after_index']) {
     if (command[key] !== undefined) assertNonNegativeInteger(command[key], `${path}.${key}`);
+  }
+  if (command.type === 'set_measure_text') {
+    if (!Object.hasOwn(command, 'text')) throw new Error(`${path}.text is required`);
+    assertStyledText(command.text, `${path}.text`);
   }
   return command;
 }
@@ -60,6 +73,7 @@ function describeCommand(command) {
     set_barline: 'Set barline',
     set_cue: 'Set cue note',
     set_expression_text: 'Set expression text',
+    set_measure_text: 'Set styled measure text',
     set_fingering: 'Set fingering',
     set_note_head: 'Set notehead',
     set_ottava: 'Set ottava',

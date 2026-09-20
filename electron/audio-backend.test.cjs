@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 class FakeNode {
-  constructor() { this.disconnected = 0; this.stopped = 0; this.listeners = {}; this.gain = { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {}, exponentialRampToValueAtTime() {} }; this.pan = { value: 0 }; this.frequency = { value: 0 }; this.playbackRate = { value: 1 }; this.loop = false; }
+  constructor() { this.disconnected = 0; this.stopped = 0; this.listeners = {}; this.gainEvents = []; this.gain = { value: 0, setValueAtTime: (value, time) => this.gainEvents.push(['set', value, time]), linearRampToValueAtTime: (value, time) => this.gainEvents.push(['linear', value, time]), exponentialRampToValueAtTime: (value, time) => this.gainEvents.push(['exponential', value, time]) }; this.pan = { value: 0 }; this.frequency = { value: 0 }; this.playbackRate = { value: 1 }; this.loop = false; }
   connect(node) { this.destination = node; return node; }
   disconnect() { this.disconnected += 1; }
   addEventListener(name, callback) { this.listeners[name] = callback; }
@@ -62,6 +62,18 @@ test('audio backend renders decoded PCM samples with loop, velocity, and release
   assert.equal(second.playbackRate.value, 2);
   backend.stopAll();
   assert.equal(backend.nodes.size, 0);
+});
+
+test('audio backend preserves explicit zero attack and release from a resolved zone', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  const source = backend.scheduleDecodedSample({ sampleRate: 8000, channels: 1, pcm: [0.25, -0.5], cacheKey: 'zero-envelope' }, { time_secs: 0, duration_secs: 0.2, velocity: 100, sample_envelope: { attack: 0, release: 0, sustain: 0.5 } }, audioContext.currentTime);
+  assert.ok(source);
+  assert.equal(source.destination.gainEvents[1][0], 'linear');
+  assert.equal(source.destination.gainEvents[1][2], audioContext.currentTime);
+  assert.equal(source.destination.gainEvents.at(-1)[0], 'exponential');
+  assert.equal(source.destination.gainEvents.at(-1)[2], audioContext.currentTime + 0.2);
+  await backend.dispose();
 });
 
 test('audio backend holds sustained sample voices until pedal release', async () => {

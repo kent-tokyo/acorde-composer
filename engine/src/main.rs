@@ -380,6 +380,7 @@ mod tests {
     <attributes><divisions>480</divisions><key><fifths>0</fifths><mode>major</mode></key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>
     <note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
     <note><pitch><step>E</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
+    <forward><duration>960</duration><voice>1</voice></forward>
     <backup><duration>1920</duration></backup>
     <note><pitch><step>G</step><octave>3</octave></pitch><duration>480</duration><voice>2</voice><type>quarter</type></note>
     <note><rest/><duration>1440</duration><voice>2</voice><type>half</type><dot/></note>
@@ -585,7 +586,7 @@ mod tests {
             }
         }
         let region = SampleRegion { sample_id: 7, start_frame: 0, end_frame: 4, key_min: 60, key_max: 60, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 44_100, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.1 };
-        let event = PlaybackEvent { address: Some("0:0:0:0:0".into()), time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 100, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 100, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
         let action = schedule_sample_note_on(3, event, &region, 1.0).expect("fixture region schedules");
         let sample = FixtureDecoder.decode(&region).expect("fixture decoder returns bounded PCM");
         let mut renderer = FixtureRenderer { rendered: Vec::new() };
@@ -597,7 +598,7 @@ mod tests {
     fn acorde_v1_1_0_preset_zone_mapping_preserves_playback_address() {
         let region = SampleRegion { sample_id: 11, start_frame: 0, end_frame: 4, key_min: 60, key_max: 72, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 44_100, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.1 };
         let zone = SoundFontPresetZone::new(0, 0, region).expect("valid preset zone");
-        let event = PlaybackEvent { address: Some("0:0:1:1:0".into()), time_beats: 0.0, time_secs: 0.0, pitch_midi: 64, pitch_midi_cents: 0, velocity: 96, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:1:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 64, pitch_midi_cents: 0, velocity: 96, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
         let action = schedule_preset_note_on(7, event, &[zone], 0, 0, 1.0).expect("preset zone schedules");
         match action { SampleAction::Start { voice_id, sample_id, event, .. } => { assert_eq!(voice_id, 7); assert_eq!(sample_id, 11); assert_eq!(event.address.as_deref(), Some("0:0:1:1:0")); }, _ => panic!("expected start action") }
     }
@@ -613,7 +614,7 @@ mod tests {
         for value in [1000i16, -1000, 2000, -2000] { sf2.extend(value.to_le_bytes()); }
         let sample = decode_sf2_pcm16(&sf2, 0, 4, 2, 1).expect("acorde decodes SF2 PCM");
         let region = SampleRegion { sample_id: 9, start_frame: 0, end_frame: 4, key_min: 60, key_max: 60, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 2, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.0 };
-        let event = PlaybackEvent { address: Some("0:0:0:1:0".into()), time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 127, duration_beats: 1.0, duration_secs: 1.0, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:0:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 127, duration_beats: 1.0, duration_secs: 1.0, pedal: false, part_index: 0, channel: 0, is_metronome: false };
         let action = schedule_sample_note_on(4, event, &region, 1.0).expect("acorde schedules sample action");
         let rendered = render_sample_action(&sample, &action, 2).expect("acorde renders sample action");
         assert_eq!(rendered, vec![1000, -1000]);

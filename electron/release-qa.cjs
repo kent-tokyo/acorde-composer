@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const { assessArtifactEvidence, assessDistributionQa, verifyArtifactManifest } = require('./distribution-readiness.cjs');
+const { validateCandidateGateReport } = require('../scripts/check-release-candidate.cjs');
 const RELEASE_QA_SCHEMA_VERSION = 1;
 const LEGACY_RELEASE_QA_SCHEMA_VERSION = 0;
 const FUTURE_RELEASE_QA_SCHEMA_VERSION = 2;
@@ -15,7 +16,8 @@ function validateReleaseQaReportSchema(value) {
   const validQa = qa && typeof qa === 'object' && typeof qa.ready === 'boolean' && Number.isInteger(qa.total) && Number.isInteger(qa.passed) && arrays.every((key) => Array.isArray(qa[key]));
   const schemaVersion = report?.schemaVersion ?? LEGACY_RELEASE_QA_SCHEMA_VERSION;
   const migrationValid = schemaVersion !== FUTURE_RELEASE_QA_SCHEMA_VERSION || (report?.migration?.sourceSchemaVersion === RELEASE_QA_SCHEMA_VERSION);
-  const valid = (schemaVersion === LEGACY_RELEASE_QA_SCHEMA_VERSION || schemaVersion === RELEASE_QA_SCHEMA_VERSION || schemaVersion === FUTURE_RELEASE_QA_SCHEMA_VERSION) && migrationValid && report?.product === 'Acorde Composer' && typeof report?.version === 'string' && typeof report?.commit === 'string' && (report?.releaseMetadataDigest === null || report?.releaseMetadataDigest === undefined || typeof report?.releaseMetadataDigest === 'string') && (report?.artifactManifest === null || report?.artifactManifest === undefined || typeof report?.artifactManifest === 'object') && (report?.artifactQa === null || report?.artifactQa === undefined || typeof report?.artifactQa === 'object') && (report?.artifactCommitMatches === null || report?.artifactCommitMatches === undefined || typeof report?.artifactCommitMatches === 'boolean') && validQa && typeof report?.reportDigest === 'string' && /^[a-f0-9]{64}$/i.test(report.reportDigest);
+  const candidateGateValid = report?.candidateGate === null || report?.candidateGate === undefined || validateCandidateGateReport(report.candidateGate).valid;
+  const valid = (schemaVersion === LEGACY_RELEASE_QA_SCHEMA_VERSION || schemaVersion === RELEASE_QA_SCHEMA_VERSION || schemaVersion === FUTURE_RELEASE_QA_SCHEMA_VERSION) && migrationValid && candidateGateValid && report?.product === 'Acorde Composer' && typeof report?.version === 'string' && typeof report?.commit === 'string' && (report?.releaseMetadataDigest === null || report?.releaseMetadataDigest === undefined || typeof report?.releaseMetadataDigest === 'string') && (report?.artifactManifest === null || report?.artifactManifest === undefined || typeof report?.artifactManifest === 'object') && (report?.artifactQa === null || report?.artifactQa === undefined || typeof report?.artifactQa === 'object') && (report?.artifactCommitMatches === null || report?.artifactCommitMatches === undefined || typeof report?.artifactCommitMatches === 'boolean') && validQa && typeof report?.reportDigest === 'string' && /^[a-f0-9]{64}$/i.test(report.reportDigest);
   return { valid, diagnostics: valid ? [] : ['release-qa-schema-invalid'] };
 }
 
@@ -34,7 +36,7 @@ function migrateReleaseQaReport(value, targetVersion = RELEASE_QA_SCHEMA_VERSION
   return withReportDigest(migrated);
 }
 
-function createReleaseQaReport({ version, commit, matrix = [], results = [], releaseMetadataDigest = null, artifactManifest = null, artifactCommitMatches = null, requireEvidence = false } = {}) {
+function createReleaseQaReport({ version, commit, matrix = [], results = [], releaseMetadataDigest = null, artifactManifest = null, artifactCommitMatches = null, candidateGate = null, requireEvidence = false } = {}) {
   const qa = assessDistributionQa(matrix, results, { requireEvidence });
   const artifactQa = artifactManifest ? { ...assessArtifactEvidence(artifactManifest.artifacts), manifestValid: verifyArtifactManifest(artifactManifest).valid } : null;
   const report = {
@@ -45,6 +47,7 @@ function createReleaseQaReport({ version, commit, matrix = [], results = [], rel
     artifactManifest: artifactManifest || null,
     artifactQa,
     artifactCommitMatches,
+    candidateGate: candidateGate || null,
     qa,
   };
   return withReportDigest(report);
@@ -56,7 +59,9 @@ function verifyReleaseQaReport(value) {
   const schema = validateReleaseQaReportSchema(source);
   const digest = crypto.createHash('sha256').update(JSON.stringify(report)).digest('hex');
   const artifactValid = report.artifactManifest === null || (report.artifactQa?.ready === true && report.artifactQa?.manifestValid === true && report.artifactCommitMatches !== false && verifyArtifactManifest(report.artifactManifest).valid);
-  const valid = schema.valid && report.qa.ready === true && artifactValid && reportDigest === digest;
+  const candidateGateReady = report.candidateGate === null || report.candidateGate === undefined
+    || (report.candidateGate.strictDependency === true && report.candidateGate.valid === true && report.candidateGate.releaseReady === true && report.candidateGate.dependency?.ready === true);
+  const valid = schema.valid && report.qa.ready === true && artifactValid && candidateGateReady && reportDigest === digest;
   return { valid, diagnostics: valid ? [] : [schema.valid ? 'release-qa-invalid-or-tampered' : 'release-qa-schema-invalid'] };
 }
 

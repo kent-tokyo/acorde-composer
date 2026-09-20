@@ -6,6 +6,7 @@
     <attributes><divisions>480</divisions><key><fifths>0</fifths><mode>major</mode></key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>
     <note><pitch><step>C</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
     <note><pitch><step>E</step><octave>4</octave></pitch><duration>480</duration><voice>1</voice><type>quarter</type></note>
+    <forward><duration>960</duration><voice>1</voice></forward>
     <backup><duration>1920</duration></backup>
     <note><pitch><step>G</step><octave>3</octave></pitch><duration>480</duration><voice>2</voice><type>quarter</type></note>
     <note><rest/><duration>1440</duration><voice>2</voice><type>half</type><dot/></note>

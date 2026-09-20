@@ -1,25 +1,39 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.3",
+  "engine": "acorde@1.1.7",
   "profiles": [
     {
       "id": "multivoice-smoke",
       "fixturePath": "qa/fixtures/multivoice-ui.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 0.316,
-        "p95": 272.9,
-        "max": 272.9
+        "p50": 0.158,
+        "p95": 347.369,
+        "max": 347.369
       },
       "load_ms": {
-        "p50": 0.363,
-        "p95": 0.724,
-        "max": 0.724
+        "p50": 0.296,
+        "p95": 0.304,
+        "max": 0.304
       },
       "render_ms": {
-        "p50": 0.276,
-        "p95": 0.43,
-        "max": 0.43
+        "p50": 0.122,
+        "p95": 0.232,
+        "max": 0.232
+      },
+      "serialize_ms": {
+        "p50": 0.117,
+        "p95": 0.137,
+        "max": 0.137
+      },
+      "harness_memory": {
+        "rss_before_bytes": 46366720,
+        "rss_after_bytes": 47792128,
+        "rss_delta_bytes": 1425408
+      },
+      "harness_cpu": {
+        "user_us": 2139,
+        "system_us": 299
       }
     },
     {
@@ -27,19 +41,33 @@
       "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 3.942,
-        "p95": 6.76,
-        "max": 6.76
+        "p50": 1.996,
+        "p95": 3.25,
+        "max": 3.25
       },
       "load_ms": {
-        "p50": 4.876,
-        "p95": 5.581,
-        "max": 5.581
+        "p50": 2.499,
+        "p95": 2.808,
+        "max": 2.808
       },
       "render_ms": {
-        "p50": 2.607,
-        "p95": 2.668,
-        "max": 2.668
+        "p50": 1.276,
+        "p95": 1.368,
+        "max": 1.368
+      },
+      "serialize_ms": {
+        "p50": 1.233,
+        "p95": 1.265,
+        "max": 1.265
+      },
+      "harness_memory": {
+        "rss_before_bytes": 46579712,
+        "rss_after_bytes": 54919168,
+        "rss_delta_bytes": 8339456
+      },
+      "harness_cpu": {
+        "user_us": 9324,
+        "system_us": 1297
       }
     },
     {
@@ -47,19 +75,33 @@
       "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 40.712,
-        "p95": 42.678,
-        "max": 42.678
+        "p50": 20.617,
+        "p95": 22.193,
+        "max": 22.193
       },
       "load_ms": {
-        "p50": 50.958,
-        "p95": 53.064,
-        "max": 53.064
+        "p50": 26.812,
+        "p95": 26.975,
+        "max": 26.975
       },
       "render_ms": {
-        "p50": 26.085,
-        "p95": 27.925,
-        "max": 27.925
+        "p50": 13.538,
+        "p95": 14.384,
+        "max": 14.384
+      },
+      "serialize_ms": {
+        "p50": 12.05,
+        "p95": 12.857,
+        "max": 12.857
+      },
+      "harness_memory": {
+        "rss_before_bytes": 47267840,
+        "rss_after_bytes": 123813888,
+        "rss_delta_bytes": 76546048
+      },
+      "harness_cpu": {
+        "user_us": 88467,
+        "system_us": 15728
       }
     },
     {
@@ -67,19 +109,33 @@
       "fixturePath": "qa/fixtures/performance/10000-measures.musicxml",
       "iterations": 3,
       "parse_ms": {
-        "p50": 430.404,
-        "p95": 500.625,
-        "max": 500.625
+        "p50": 199.809,
+        "p95": 220.598,
+        "max": 220.598
       },
       "load_ms": {
-        "p50": 476.704,
-        "p95": 496.347,
-        "max": 496.347
+        "p50": 262.794,
+        "p95": 272.437,
+        "max": 272.437
       },
       "render_ms": {
-        "p50": 300.884,
-        "p95": 304.463,
-        "max": 304.463
+        "p50": 155.47,
+        "p95": 159.422,
+        "max": 159.422
+      },
+      "serialize_ms": {
+        "p50": 135.303,
+        "p95": 137.453,
+        "max": 137.453
+      },
+      "harness_memory": {
+        "rss_before_bytes": 55394304,
+        "rss_after_bytes": 410157056,
+        "rss_delta_bytes": 354762752
+      },
+      "harness_cpu": {
+        "user_us": 828042,
+        "system_us": 142774
       }
     }
   ]

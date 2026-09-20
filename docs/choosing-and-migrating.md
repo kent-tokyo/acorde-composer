@@ -34,7 +34,7 @@ Acorde Composerは、DAW、完成された商用記譜ソフト、MuseSoundsそ�
 5. 保存したファイルを再読込し、voice、rest、backup／forward、歌詞、コード、主要記譜情報を確認します。
 6. 印刷や音源が必要な場合は、対象OSと外部assetのlicense・配布条件を確認します。
 
-元ファイルを上書きせず、移行前後のファイルを残す運用を推奨します。Composer側にはacorde v1.1.3のresolved preset-zoneを受け取るadapterがありますが、実SoundFont assetのzone materializationとproduction audio wiringは未完了です。完全な複数voice編集、MuseSounds接続、実OMR provider、コード署名済み配布も完了条件から分離されています。
+元ファイルを上書きせず、移行前後のファイルを残す運用を推奨します。Composer側にはacorde v1.1.7のresolved preset-zoneを受け取るadapterがありますが、実SoundFont assetのzone materializationとproduction audio wiringは未完了です。完全な複数voice編集、MuseSounds接続、実OMR provider、コード署名済み配布も完了条件から分離されています。
 
 ## FAQ
 
@@ -59,3 +59,7 @@ Acorde Composerは、DAW、完成された商用記譜ソフト、MuseSoundsそ�
 - [README](../README.md)
 - [変更履歴](../CHANGELOG.md)
 - [Release QA evidence](../qa/README.md)
+- [MusicXML移行の確認手順](musicxml-migration-example.md)
+- [ABC notationとMusicXMLの使い分け](abc-and-musicxml.md)
+- [AI提案の安全設計](ai-proposal-safety.md)
+- [SoundFont・外部音源チェックリスト](soundfont-license-checklist.md)

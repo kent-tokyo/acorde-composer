@@ -195,8 +195,10 @@ test('multiple-voice UI contract keeps fixture structure and voice-aware control
   assert.match(app, /voice: voiceIndex/);
   assert.match(app, /key === '\[' \|\| key === '\]'/);
   assert.match(multiVoiceFixture, /<backup><duration>1920<\/duration><\/backup>/);
-  assert.equal((multiVoiceFixture.match(/<voice>1<\/voice>/g) || []).length, 2);
-  assert.equal((multiVoiceFixture.match(/<voice>2<\/voice>/g) || []).length, 2);
+  assert.match(multiVoiceFixture, /<forward><duration>960<\/duration><voice>1<\/voice><\/forward>/);
+  const notes = multiVoiceFixture.match(/<note>[\s\S]*?<\/note>/g) || [];
+  assert.equal(notes.filter((note) => /<voice>1<\/voice>/.test(note)).length, 2);
+  assert.equal(notes.filter((note) => /<voice>2<\/voice>/.test(note)).length, 2);
   assert.match(multiVoiceFixture, /<rest\/>/);
 });
 
@@ -207,6 +209,7 @@ test('notation UI exposes advanced spanners and explicit ABC loss diagnostics', 
   assert.match(app, /id = 'text-style-button'/);
   assert.match(app, /composer\.abc-lossy-spanners/);
   assert.match(app, /composer\.abc-lossy-text-styles/);
+  assert.match(app, /type: 'set_measure_text'/);
 });
 
 test('cross-staff multi-voice workflow keeps address, edit, save, and reload boundaries explicit', () => {
