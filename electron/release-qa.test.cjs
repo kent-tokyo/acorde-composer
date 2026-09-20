@@ -28,6 +28,7 @@ test('release QA report binds an artifact manifest and rejects manifest tamperin
   const artifactManifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
   const report = createReleaseQaReport({ version: '0.1.6', commit: 'be680d5', matrix, results, artifactManifest });
   assert.equal(report.artifactQa.ready, true);
+  assert.equal(report.artifactManifest.digest, artifactManifest.digest);
   assert.equal(verifyReleaseQaReport(report).valid, true);
   assert.equal(verifyReleaseQaReport({ ...report, artifactManifest: { ...artifactManifest, artifacts: [] } }).valid, false);
 });

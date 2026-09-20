@@ -30,7 +30,7 @@ function validateReleaseEvidence({ manifestPath, candidateGatePath, reportPath, 
   if (manifest.version !== version) diagnostics.push('artifact-manifest-stale-version');
   if (candidate.version !== version) diagnostics.push('candidate-gate-stale-version');
   if (report.version !== version) diagnostics.push('release-qa-report-stale-version');
-  if (report.artifactQa?.manifestDigest !== manifest.digest) diagnostics.push('release-qa-manifest-mismatch');
+  if (report.artifactManifest?.digest !== manifest.digest) diagnostics.push('release-qa-manifest-mismatch');
   if (report.candidateGate?.commit !== candidate.commit || report.candidateGate?.version !== candidate.version) diagnostics.push('release-qa-candidate-mismatch');
   const releaseReadiness = verifyReleaseQaReport(report);
   return { schemaVersion: RELEASE_EVIDENCE_SCHEMA_VERSION, valid: diagnostics.length === 0, ready: releaseReadiness.valid, version, commit, manifestDigest: manifest.digest, candidateDigest: digest(candidate), reportDigest: digest(report), diagnostics };
