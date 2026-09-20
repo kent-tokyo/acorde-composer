@@ -8,7 +8,7 @@ use acorde_io::{
 };
 use acorde_layout::{LayoutConfig, compute_layout};
 use acorde_render_svg::{SvgRenderOptions, render_svg, render_svg_metadata};
-use acorde_soundfont::{decode_sample_region, decode_sf2_pcm16, decode_sf3_vorbis, load as load_soundfont, load_materialized, select_preset_zones};
+use acorde_soundfont::{decode_sf2_pcm16, decode_sf3_vorbis, load as load_soundfont, load_materialized, select_preset_zones};
 #[cfg(test)]
 use acorde_core::PlaybackEvent;
 #[cfg(test)]
@@ -338,9 +338,10 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 let mut prepared_layer = false;
                 for (layer, zone) in zones.into_iter().enumerate() {
                     let region = &zone.region;
-                    let cache_key = format!("sf:{}:{}:{}:{}:{}", snapshot.checksum, region.sample_id, region.start_frame, region.end_frame, channels);
+                    let metadata = zone.resolved_metadata();
+                    let cache_key = format!("sf:{}:{}:{}:{}:{}", snapshot.checksum, region.sample_id, region.start_frame, region.end_frame, metadata.decode_channels);
                     if !samples.contains_key(&cache_key) {
-                        let decoded = match decode_sample_region(&data, region.clone(), channels) {
+                        let decoded = match metadata.decode_sample_region(&data) {
                             Ok(decoded) => decoded,
                             Err(error) => { diagnostics.push(format!("decode-failed:{}:{}", region.sample_id, error)); continue; }
                         };
@@ -745,7 +746,8 @@ mod tests {
         assert_eq!(value["snapshot"]["format"], "Sf3");
         assert_eq!(value["channel_layout"], "host-supplied");
         assert!(value["events"].as_array().is_some_and(|events| !events.is_empty()));
-        assert!(value["samples"].as_object().is_some() || value["diagnostics"].as_array().is_some_and(|diagnostics| diagnostics.iter().any(|diagnostic| diagnostic.as_str().is_some_and(|message| message.starts_with("decode-failed:")))));
+        assert!(value["events"][0]["soundfont_sample_key"].as_str().is_some());
+        assert!(value["samples"].as_object().is_some_and(|samples| samples.values().any(|sample| sample["pcm"].as_array().is_some_and(|pcm| pcm.iter().any(|value| value.as_f64().is_some_and(|sample| sample != 0.0))))));
     }
 
     #[test]
