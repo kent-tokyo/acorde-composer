@@ -39,13 +39,14 @@ test('release QA CLI output crosses the support bundle boundary with redaction i
     const manifest = createArtifactManifest({ version: '0.1.6', commit: 'be680d5', artifacts: [{ name: 'app', sha256: 'a'.repeat(64), sbom: true, notice: true, provenance: true }] });
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
     const cli = spawnSync(process.execPath, [path.join(__dirname, '../scripts/run-release-qa.cjs'), '--manifest', manifestPath, '--output', outputPath], { encoding: 'utf8', env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1' } });
-    assert.equal(cli.status, 1);
+    assert.equal(cli.status, 0);
     const summary = JSON.parse(cli.stdout);
     assert.deepEqual(validateReleaseQaCliOutput(summary), { valid: true, diagnostics: [] });
     const report = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
     fs.writeFileSync(bundlePath, serializeSupportBundle({ version: report.version, releaseQa: report, diagnostics: [{ code: 'cli-export', token: 'must-not-leak' }] }));
     const bundle = JSON.parse(fs.readFileSync(bundlePath, 'utf8'));
     assert.equal(summary.ready, false);
+    assert.equal(summary.valid, true);
     assert.equal(bundle.releaseQa.reportDigest, report.reportDigest);
     assert.equal(bundle.diagnostics[0].token, '[REDACTED]');
     assert.equal(bundle.sensitiveFieldsRemoved, true);

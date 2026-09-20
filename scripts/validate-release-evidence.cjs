@@ -4,10 +4,14 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { validateCandidateGateReport } = require('./check-release-candidate.cjs');
 const { verifyArtifactManifest } = require('../electron/distribution-readiness.cjs');
-const { verifyReleaseQaReport } = require('../electron/release-qa.cjs');
+const { validateReleaseQaReportSchema, verifyReleaseQaReport } = require('../electron/release-qa.cjs');
 
 const RELEASE_EVIDENCE_SCHEMA_VERSION = 1;
 function digest(value) { return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
+function verifyReportDigest(report) {
+  const { reportDigest, ...body } = report && typeof report === 'object' ? report : {};
+  return typeof reportDigest === 'string' && reportDigest === digest(body);
+}
 function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 
 function validateReleaseEvidence({ manifestPath, candidateGatePath, reportPath, currentCommit = null, currentVersion = null } = {}) {
@@ -19,7 +23,7 @@ function validateReleaseEvidence({ manifestPath, candidateGatePath, reportPath, 
   const version = currentVersion || readJson(path.resolve('package.json')).version;
   if (!verifyArtifactManifest(manifest).valid) diagnostics.push('artifact-manifest-invalid');
   if (!validateCandidateGateReport(candidate).valid) diagnostics.push('candidate-gate-invalid');
-  if (!verifyReleaseQaReport(report).valid) diagnostics.push('release-qa-report-invalid');
+  if (!validateReleaseQaReportSchema(report).valid || !verifyReportDigest(report)) diagnostics.push('release-qa-report-invalid');
   if (manifest.commit !== commit) diagnostics.push('artifact-manifest-stale-commit');
   if (candidate.commit !== commit) diagnostics.push('candidate-gate-stale-commit');
   if (report.commit !== commit) diagnostics.push('release-qa-report-stale-commit');
@@ -28,7 +32,8 @@ function validateReleaseEvidence({ manifestPath, candidateGatePath, reportPath, 
   if (report.version !== version) diagnostics.push('release-qa-report-stale-version');
   if (report.artifactQa?.manifestDigest !== manifest.digest) diagnostics.push('release-qa-manifest-mismatch');
   if (report.candidateGate?.commit !== candidate.commit || report.candidateGate?.version !== candidate.version) diagnostics.push('release-qa-candidate-mismatch');
-  return { schemaVersion: RELEASE_EVIDENCE_SCHEMA_VERSION, valid: diagnostics.length === 0, version, commit, manifestDigest: manifest.digest, candidateDigest: digest(candidate), reportDigest: digest(report), diagnostics };
+  const releaseReadiness = verifyReleaseQaReport(report);
+  return { schemaVersion: RELEASE_EVIDENCE_SCHEMA_VERSION, valid: diagnostics.length === 0, ready: releaseReadiness.valid, version, commit, manifestDigest: manifest.digest, candidateDigest: digest(candidate), reportDigest: digest(report), diagnostics };
 }
 
 if (require.main === module) {
