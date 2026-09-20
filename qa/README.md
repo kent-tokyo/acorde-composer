@@ -27,7 +27,7 @@ schema migrationはv1の主要フィールドとdigestを検証してからv2へ
 
 notation coverageの個別fixtureは、`npm run check:notation`で単独検証でき、通常の`npm run check`にも含まれます。matrix schema、fixture存在、`score-partwise`、要素固有markerを検査します。release QAの20シナリオfixtureは`npm run check:release-fixtures`でも検証し、入力整合性とrelease readiness（実機結果）を分離します。
 
-性能測定の再現条件は`qa/performance-benchmark.json`で固定し、1小節の複数voice smoke、100小節、1,000小節、10,000小節のlong-score fixtureを登録しています。長大fixtureは`node scripts/generate-performance-fixture.cjs <measures>`で再生成できます。`npm run check:performance-fixtures`または通常の`npm run check`でfixture、measure数、engine version、metrics、反復範囲を検証し、`node scripts/benchmark-engine.cjs <fixture> 3`でparse/load/renderの実測を再実行できます。実機別の性能閾値、長時間再生・memory基準はまだ未確定です。
+性能測定の再現条件は`qa/performance-benchmark.json`で固定し、1小節の複数voice smoke、100小節、1,000小節、10,000小節のlong-score fixtureを登録しています。長大fixtureは`node scripts/generate-performance-fixture.cjs <measures>`で再生成できます。登録profileは外れ値の影響を抑えるため20反復で、`npm run check:performance-fixtures`または通常の`npm run check`はfixture、measure数、engine version、metrics、反復範囲を検証します。任意の再測定は`node scripts/benchmark-engine.cjs <fixture> <iterations>`で実行できます。実機別の性能閾値、長時間再生・memory基準はまだ未確定です。
 
 全profileの実測結果は`npm run bench:performance`で`qa/performance-benchmark-results.json`へ保存し、`npm run check:performance-results`でschemaを検証できます。baselineとcandidateの各profileのp95を`npm run compare:performance -- <baseline> <candidate> 20`で比較し、20%超の退行をCLI終了コード1として検出します。
 
