@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { validatePerformanceBenchmark } = require('../scripts/validate-performance-benchmark.cjs');
-const { validatePerformanceResults } = require('../scripts/validate-performance-results.cjs');
+const { validatePerformanceResults, validEngineIdentity, validEnvironment } = require('../scripts/validate-performance-results.cjs');
 const { comparePerformanceResults } = require('../scripts/compare-performance-benchmark.cjs');
 const { validateColdStartResults } = require('../scripts/validate-cold-start-results.cjs');
 const { validatePlaybackResults } = require('../scripts/validate-playback-results.cjs');
@@ -15,6 +15,15 @@ test('performance benchmark profile is reproducible and points to the checked-in
     validatePerformanceBenchmark(path.resolve(__dirname, '../qa/performance-benchmark.json'), path.resolve(__dirname, '..')),
     { valid: true, profileCount: 4, errors: [] },
   );
+});
+
+test('version 2 measurements require a verified engine identity and environment', () => {
+  const identity = { product: 'Acorde Composer', commit: 'be680d5', clean: true, binary: 'build/engine/acorde-composer-engine', sha256: 'a'.repeat(64) };
+  const environment = { platform: 'darwin', arch: 'arm64', os_release: '25.5.0', node: 'v24.5.0' };
+  assert.equal(validEngineIdentity(identity), true);
+  assert.equal(validEngineIdentity({ ...identity, clean: false }), false);
+  assert.equal(validEnvironment(environment), true);
+  assert.equal(validEnvironment({ ...environment, node: '' }), false);
 });
 
 test('cold start result schema is valid and keeps a bounded timing summary', () => {
