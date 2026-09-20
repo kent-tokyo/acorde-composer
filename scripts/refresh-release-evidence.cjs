@@ -13,7 +13,7 @@ function refreshReleaseEvidence({ root = path.resolve(__dirname, '..'), runner =
   const dist = path.join(root, 'dist');
   run('npm', ['run', 'pack'], { runner });
   run(process.execPath, [path.join(root, 'scripts/check-release-candidate.cjs'), '--json', '--strict-dependency', '--output', path.join(dist, 'candidate-gate.json')], { runner });
-  run(process.execPath, [path.join(root, 'scripts/run-release-qa.cjs'), '--results', path.join(root, 'qa/release-qa-results.json'), '--candidate-gate', path.join(dist, 'candidate-gate.json')], { runner });
+  run(process.execPath, [path.join(root, 'scripts/run-release-qa.cjs'), '--matrix', path.join(root, 'qa/release-qa-matrix.json'), '--results', path.join(root, 'qa/release-qa-results.json'), '--candidate-gate', path.join(dist, 'candidate-gate.json')], { runner });
   run(process.execPath, [path.join(root, 'scripts/validate-release-evidence.cjs')], { runner });
   return { manifest: path.join(dist, 'release-artifact-manifest.json'), candidateGate: path.join(dist, 'candidate-gate.json'), report: path.join(dist, 'release-qa-report.json') };
 }

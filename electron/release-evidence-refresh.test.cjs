@@ -12,6 +12,8 @@ test('release evidence refresh runs pack, strict candidate gate, QA, and consist
   assert.equal(calls.length, 4);
   assert.deepEqual(calls[0], ['npm', ['run', 'pack']]);
   assert.ok(calls[1][1].includes('--strict-dependency'));
+  assert.ok(calls[2][1].includes('--matrix'));
+  assert.ok(calls[2][1].includes('/repo/qa/release-qa-matrix.json'));
   assert.ok(calls[2][1].includes('--candidate-gate'));
   assert.match(calls[3][1][0], /validate-release-evidence\.cjs$/);
   assert.equal(result.report, '/repo/dist/release-qa-report.json');
