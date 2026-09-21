@@ -19,7 +19,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 現在は `acorde` v1.2.0の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
-## 現在のソースバージョン
+## 現在のリリース
 
 **Acorde Composer v0.1.14**（`acorde v1.2.0`）
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-現在の検証結果はNode 210件、Rust unit test 24件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。機械可読な段階別結果は`npm run check:candidate:json`、依存provenanceを含む正式候補判定は`npm run check:candidate:strict`で取得できます。JSONの`valid`はローカル検証、`releaseReady`は正式候補可否を示します。実SF3 fixtureは非ゼロPCM materializationまで、spannerはglissando／cross-staffのround-tripまで個別回帰で確認します。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)と[CHANGELOG](CHANGELOG.md)を参照してください。
+現在の検証結果はNode 210件、Rust unit test 24件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。機械可読な段階別結果は`npm run check:candidate:json`、依存provenanceを含む正式候補判定は`npm run check:candidate:strict`で取得できます。JSONの`valid`はローカル検証、`releaseReady`は正式候補可否を示します。実SF3 fixtureは非ゼロPCM materializationまで、spannerはglissando／cross-staffのround-tripまで個別回帰で確認します。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 
