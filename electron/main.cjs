@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
@@ -16,6 +16,7 @@ const { attachResolvedLayers, attachResolvedSample, attachResolvedSnapshot } = r
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./support-bundle-path.cjs');
+const { buildApplicationMenuTemplate } = require('./application-menu.cjs');
 
 let engine;
 const aiRateLimiter = createAiRateLimiter();
@@ -69,6 +70,16 @@ function createWindow() {
     },
   });
   window.loadFile(path.join(__dirname, '../src/index.html'));
+  const sendMenuCommand = (command) => {
+    if (!window.isDestroyed()) window.webContents.send('menu:command', command);
+  };
+  const template = buildApplicationMenuTemplate({
+    send: sendMenuCommand,
+    platform: process.platform,
+    openHandbook: () => shell.openExternal('https://handbook.musescore.org/navigation/the-user-interface'),
+  });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  return window;
 }
 
 async function openScorePath(filePath) {

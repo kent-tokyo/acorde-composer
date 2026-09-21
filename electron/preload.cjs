@@ -3,6 +3,12 @@ const { contextBridge, ipcRenderer, clipboard } = require('electron');
 contextBridge.exposeInMainWorld('acorde', {
   clipboardRead: () => clipboard.readText(),
   clipboardWrite: (text) => clipboard.writeText(text),
+  onMenuCommand: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, command) => callback(command);
+    ipcRenderer.on('menu:command', handler);
+    return () => ipcRenderer.removeListener('menu:command', handler);
+  },
   newScore: (template = 'piano') => ipcRenderer.invoke('file:new', { template }),
   openScore: () => ipcRenderer.invoke('file:open'),
   openRecentScore: (index) => ipcRenderer.invoke('file:openPath', { filePath: index }),

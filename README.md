@@ -22,11 +22,11 @@ For comparison criteria, migration steps, and limitations, see the [Choosing and
 
 Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
 
-The current engine pins the five adjacent `acorde` crates at v1.1.7 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+The current engine pins the five adjacent `acorde` crates at v1.2.0 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.13
+## Current release: v0.1.14
 
-This release uses `acorde` v1.1.7 and includes:
+This release uses `acorde` v1.2.0 and includes:
 
 - Electron UI with isolated preload and bounded JSON IPC
 - MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
@@ -34,7 +34,8 @@ This release uses `acorde` v1.1.7 and includes:
 - Note/rest editing, lyrics, chord symbols, dynamics, articulations, grace notes, tuplets, slurs, ties, hairpins, ottava, pedal, arpeggio, trill, fingering, string number, and technique text
 - Multiple part/staff controls, voice selection, keyboard navigation, selection playback, undo/redo, and autosave recovery
 - Mixer controls, oscillator fallback, decoded PCM sample playback, SoundFont status, and bounded sample contracts
-- A resolved SoundFont preset-zone adapter boundary for key/velocity selection, sample metadata, and missing-sample diagnostics
+- A resolved SoundFont preset-zone path for key/velocity selection, channel-aware PCM materialization, sample metadata, and missing-sample diagnostics
+- A MuseScore-oriented native menu and workspace layout that keeps parts, mixer, palettes, properties, playback, and zoom in familiar locations
 - AI proposal review, OMR review queue, provider license gates, timeout recovery, and redacted support bundles
 - Artifact manifest generation, release QA reports, schema migration, checksum, SBOM, NOTICE, and provenance checks
 - Reproducible long-score benchmarks for 100 / 1,000 / 10,000 measures, cold start, playback, layout, SVG, and repeat render
@@ -88,7 +89,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 197 Node tests and 20 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The notation coverage matrix assigns individual MusicXML fixtures to 12 elements, and the latest macOS arm64 packaged artifact passed the multiple-voice Open → edit → save → reload scenario. These results do not replace signed artifacts or Windows real-device QA. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.13](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.13).
+The current local verification is 210 Node tests and 21 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The suite includes a legal real-SF3 fixture that must materialize non-zero PCM and focused round-trip checks for glissando and cross-staff spanners. The 20-scenario release QA matrix remains separate from local regression results; `not-run` scenarios are not counted as passed. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14).
 
 ## License and external assets
 

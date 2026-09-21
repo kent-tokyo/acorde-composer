@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.14 — 2026-09-21
+
+### Changed
+
+- `acorde-core`、`acorde-io`、`acorde-layout`、`acorde-render-svg`、`acorde-soundfont`をv1.2.0へ更新
+- Acordeのresolved SoundFont metadataが指定するchannel layoutでsampleをdecodeし、実SF3 fixtureから非ゼロPCMをWeb Audio境界へ渡す経路を固定
+- native application menuをFile／Edit／View／Add／Format／Tools／Plugins／Helpの順に整理し、panel、toolbar、playback、zoomの配置をMuseScore利用者が移行しやすい構成へ変更
+
+### Fixed
+
+- 言語切替時にlanguage selector自体を置換して初期化を中断する問題を修正
+- EscapeでSelect、SでSlurを選ぶショートカットとnative menu acceleratorを統一
+
+### Verification
+
+- Composer Node: 210 passed
+- Composer Rust: 21 passed
+- 実SF3 PCM materializationとglissando／cross-staff spanner round-tripを個別回帰で確認
+- strict candidate gateとartifact／QA evidenceの整合検証を実施。20件の実機QAは未実施を合格扱いにしない
+
 ## 0.1.13 — 2026-09-20
 
 ### Changed

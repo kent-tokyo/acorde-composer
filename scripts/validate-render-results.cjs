@@ -6,7 +6,7 @@ function validateRenderResults(inputPath = path.resolve('qa/performance-render-r
   const input = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const errors = [];
   if (input?.schemaVersion !== 1) errors.push('schemaVersion must be 1');
-  if (input?.engine !== 'acorde@1.1.7') errors.push('engine must be pinned to acorde@1.1.7');
+  if (input?.engine !== 'acorde@1.2.0') errors.push('engine must be pinned to acorde@1.2.0');
   if (typeof input?.fixturePath !== 'string' || path.isAbsolute(input.fixturePath)) errors.push('fixturePath must be relative');
   if (!Number.isInteger(input?.iterations) || input.iterations < 3) errors.push('iterations must be at least 3');
   for (const metric of METRICS) {

@@ -24,6 +24,6 @@ for (let index = 0; index < iterations; index += 1) {
 const sorted = samples.slice().sort((left, right) => left - right);
 const percentile = (fraction) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))];
 const summary = { p50: Number(percentile(0.5).toFixed(3)), p95: Number(percentile(0.95).toFixed(3)), max: Number(sorted.at(-1).toFixed(3)) };
-const report = { schemaVersion: 2, engine: 'acorde@1.1.7', fixturePath: path.relative(root, inputPath), iterations, engine_identity: identity, environment: { platform: process.platform, arch: process.arch, os_release: os.release(), node: process.version }, cold_start_ms: summary, metric: 'spawn-to-engine-ready' };
+const report = { schemaVersion: 2, engine: 'acorde@1.2.0', fixturePath: path.relative(root, inputPath), iterations, engine_identity: identity, environment: { platform: process.platform, arch: process.arch, os_release: os.release(), node: process.version }, cold_start_ms: summary, metric: 'spawn-to-engine-ready' };
 fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify({ outputPath, iterations, cold_start_ms: summary })}\n`);

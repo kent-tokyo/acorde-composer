@@ -17,13 +17,13 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-現在は `acorde` v1.1.7の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+現在は `acorde` v1.2.0の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
-**Acorde Composer v0.1.13**（`acorde v1.1.7`）
+**Acorde Composer v0.1.14**（`acorde v1.2.0`）
 
-AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界外で接続します。
+AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。v0.1.14ではMuseScoreに近いメニュー順とworkspace配置、Acorde v1.2.0のchannel-aware SoundFont PCM経路を追加しました。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界外で接続します。
 
 ## 既存ソフトからの移行
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-現在の検証結果はNode 197件、Rust unit test 20件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。機械可読な段階別結果は`npm run check:candidate:json`、依存provenanceを含む正式候補判定は`npm run check:candidate:strict`で取得できます。JSONの`valid`はローカル検証、`releaseReady`は正式候補可否を示します。notation coverageの12要素に個別MusicXML fixtureを割り当て、100／1,000／10,000小節の性能fixture、cold start、playback、layout、SVG、repeat renderの測定CLIも追加しています。最新macOS arm64 packaged artifactで複数voiceのOpen → edit → save → reloadを確認しています。これは署名済み配布物やWindows実機QAの代替ではありません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.13](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.13)を参照してください。
+現在の検証結果はNode 210件、Rust unit test 21件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。機械可読な段階別結果は`npm run check:candidate:json`、依存provenanceを含む正式候補判定は`npm run check:candidate:strict`で取得できます。JSONの`valid`はローカル検証、`releaseReady`は正式候補可否を示します。実SF3 fixtureは非ゼロPCM materializationまで、spannerはglissando／cross-staffのround-tripまで個別回帰で確認します。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 

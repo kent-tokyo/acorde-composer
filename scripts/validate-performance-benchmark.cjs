@@ -7,7 +7,7 @@ function validatePerformanceBenchmark(inputPath = path.resolve('qa/performance-b
   const input = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const errors = [];
   if (input?.schemaVersion !== 1) errors.push('schemaVersion must be 1');
-  if (input?.engine !== 'acorde@1.1.7') errors.push('engine must be pinned to acorde@1.1.7');
+  if (input?.engine !== 'acorde@1.2.0') errors.push('engine must be pinned to acorde@1.2.0');
   if (!Array.isArray(input?.profiles) || input.profiles.length === 0) errors.push('profiles must be non-empty');
   for (const profile of Array.isArray(input?.profiles) ? input.profiles : []) {
     if (!profile || typeof profile !== 'object' || !profile.id) { errors.push('profile id is required'); continue; }

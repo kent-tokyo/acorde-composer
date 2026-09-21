@@ -61,6 +61,8 @@ test('application preferences expose persisted English, Japanese, and Chinese la
   assert.match(app, /acorde-composer\.language\.v1/);
   assert.match(app, /document\.documentElement\.lang = language/);
   assert.match(app, /saveLanguagePreference/);
+  assert.doesNotMatch(app, /\['language-label', copy\.language\]/);
+  assert.match(app, /setLabelText\('language-label', copy\.language\)/);
 });
 
 test('editor labels use the English UI contract and route prompt/alert/confirm through the shared modal', () => {
@@ -280,4 +282,17 @@ test('diagnostics export uses the support bundle path and reports save errors', 
   assert.match(app, /acorde-support-bundle\.json/);
   assert.match(app, /support bundleを書き出せませんでした/);
   assert.match(preload, /saveSupportBundle: \(payload\) => ipcRenderer\.invoke\('file:saveSupportBundle'/);
+});
+
+test('workspace follows the MuseScore panel and toolbar geography', () => {
+  assert.match(index, /data-panel="properties"/);
+  assert.match(index, /id="properties-panel"/);
+  assert.match(app, /function installMuseScoreWorkspaceLayout\(\)/);
+  assert.match(app, /className = 'musescore-score-actions'/);
+  assert.match(app, /className = 'musescore-playback'/);
+  assert.match(app, /className = 'sidebar-panel sidebar-palettes'/);
+  assert.match(app, /className = 'status-zoom'/);
+  assert.match(style, /MuseScore-oriented workspace/);
+  assert.match(style, /\.sidebar-tabs/);
+  assert.match(style, /\.properties-actions/);
 });
