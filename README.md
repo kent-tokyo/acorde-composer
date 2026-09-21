@@ -24,7 +24,7 @@ Composer uses `acorde` as its only music library. The Score model, MusicXML / MI
 
 The current engine pins the five adjacent `acorde` crates at v1.2.0 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
 
-## Current release: v0.1.14
+## Current source version: v0.1.14
 
 This release uses `acorde` v1.2.0 and includes:
 
@@ -89,7 +89,7 @@ npm run release:qa:validate -- \
   --input dist/release-qa-report.json
 ```
 
-The current local verification is 210 Node tests and 24 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The suite includes a legal real-SF3 fixture that must materialize non-zero PCM and focused round-trip checks for glissando and cross-staff spanners. The 20-scenario release QA matrix remains separate from local regression results; `not-run` scenarios are not counted as passed. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14).
+The current local verification is 210 Node tests and 24 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The suite includes a legal real-SF3 fixture that must materialize non-zero PCM and focused round-trip checks for glissando and cross-staff spanners. The 20-scenario release QA matrix remains separate from local regression results; `not-run` scenarios are not counted as passed. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), and [CHANGELOG.md](CHANGELOG.md).
 
 ## License and external assets
 
