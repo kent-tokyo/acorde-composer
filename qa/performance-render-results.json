@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.7",
+  "engine": "acorde@1.2.0",
   "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
   "iterations": 3,
   "layout_ms": {
-    "p50": 11.068,
-    "p95": 12.618,
-    "max": 12.618
+    "p50": 11.538,
+    "p95": 13.358,
+    "max": 13.358
   },
   "svg_ms": {
-    "p50": 23.915,
-    "p95": 24.698,
-    "max": 24.698
+    "p50": 24.93,
+    "p95": 25.276,
+    "max": 25.276
   },
   "svg_metadata_ms": {
-    "p50": 22.541,
-    "p95": 23.562,
-    "max": 23.562
+    "p50": 29.112,
+    "p95": 29.493,
+    "max": 29.493
   },
   "repeat_render_ms": {
-    "p50": 23.732,
-    "p95": 26.01,
-    "max": 26.01
+    "p50": 25.218,
+    "p95": 26.072,
+    "max": 26.072
   }
 }

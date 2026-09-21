@@ -1,141 +1,187 @@
 {
-  "schemaVersion": 1,
-  "engine": "acorde@1.1.7",
+  "schemaVersion": 2,
+  "engine": "acorde@1.2.0",
+  "engine_identity": {
+    "schemaVersion": 1,
+    "product": "Acorde Composer",
+    "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+    "clean": true,
+    "binary": "build/engine/acorde-composer-engine",
+    "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "os_release": "25.5.0",
+    "node": "v24.5.0"
+  },
   "profiles": [
     {
       "id": "multivoice-smoke",
       "fixturePath": "qa/fixtures/multivoice-ui.musicxml",
-      "iterations": 3,
+      "iterations": 20,
+      "engine_identity": {
+        "schemaVersion": 1,
+        "product": "Acorde Composer",
+        "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+        "clean": true,
+        "binary": "build/engine/acorde-composer-engine",
+        "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+      },
       "parse_ms": {
-        "p50": 0.158,
-        "p95": 347.369,
-        "max": 347.369
+        "p50": 0.196,
+        "p95": 413.691,
+        "max": 413.691
       },
       "load_ms": {
-        "p50": 0.296,
-        "p95": 0.304,
-        "max": 0.304
+        "p50": 0.216,
+        "p95": 0.779,
+        "max": 0.779
       },
       "render_ms": {
-        "p50": 0.122,
-        "p95": 0.232,
-        "max": 0.232
+        "p50": 0.168,
+        "p95": 0.631,
+        "max": 0.631
       },
       "serialize_ms": {
-        "p50": 0.117,
-        "p95": 0.137,
-        "max": 0.137
+        "p50": 0.132,
+        "p95": 0.595,
+        "max": 0.595
       },
       "harness_memory": {
-        "rss_before_bytes": 46366720,
-        "rss_after_bytes": 47792128,
-        "rss_delta_bytes": 1425408
+        "rss_before_bytes": 51904512,
+        "rss_after_bytes": 54296576,
+        "rss_delta_bytes": 2392064
       },
       "harness_cpu": {
-        "user_us": 2139,
-        "system_us": 299
+        "user_us": 10697,
+        "system_us": 1641
       }
     },
     {
       "id": "long-100-measures",
       "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
-      "iterations": 3,
+      "iterations": 20,
+      "engine_identity": {
+        "schemaVersion": 1,
+        "product": "Acorde Composer",
+        "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+        "clean": true,
+        "binary": "build/engine/acorde-composer-engine",
+        "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+      },
       "parse_ms": {
-        "p50": 1.996,
-        "p95": 3.25,
-        "max": 3.25
+        "p50": 1.915,
+        "p95": 3.145,
+        "max": 3.145
       },
       "load_ms": {
-        "p50": 2.499,
-        "p95": 2.808,
-        "max": 2.808
+        "p50": 2.366,
+        "p95": 3.602,
+        "max": 3.602
       },
       "render_ms": {
-        "p50": 1.276,
-        "p95": 1.368,
-        "max": 1.368
+        "p50": 1.245,
+        "p95": 1.821,
+        "max": 1.821
       },
       "serialize_ms": {
-        "p50": 1.233,
-        "p95": 1.265,
-        "max": 1.265
+        "p50": 1.241,
+        "p95": 1.659,
+        "max": 1.659
       },
       "harness_memory": {
-        "rss_before_bytes": 46579712,
-        "rss_after_bytes": 54919168,
-        "rss_delta_bytes": 8339456
+        "rss_before_bytes": 52068352,
+        "rss_after_bytes": 74612736,
+        "rss_delta_bytes": 22544384
       },
       "harness_cpu": {
-        "user_us": 9324,
-        "system_us": 1297
+        "user_us": 57441,
+        "system_us": 9441
       }
     },
     {
       "id": "long-1000-measures",
       "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
-      "iterations": 3,
+      "iterations": 20,
+      "engine_identity": {
+        "schemaVersion": 1,
+        "product": "Acorde Composer",
+        "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+        "clean": true,
+        "binary": "build/engine/acorde-composer-engine",
+        "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+      },
       "parse_ms": {
-        "p50": 20.617,
-        "p95": 22.193,
-        "max": 22.193
+        "p50": 19.549,
+        "p95": 22.477,
+        "max": 22.477
       },
       "load_ms": {
-        "p50": 26.812,
-        "p95": 26.975,
-        "max": 26.975
+        "p50": 24.431,
+        "p95": 26.576,
+        "max": 26.576
       },
       "render_ms": {
-        "p50": 13.538,
-        "p95": 14.384,
-        "max": 14.384
+        "p50": 12.593,
+        "p95": 14.106,
+        "max": 14.106
       },
       "serialize_ms": {
-        "p50": 12.05,
-        "p95": 12.857,
-        "max": 12.857
+        "p50": 12.819,
+        "p95": 15.419,
+        "max": 15.419
       },
       "harness_memory": {
-        "rss_before_bytes": 47267840,
-        "rss_after_bytes": 123813888,
-        "rss_delta_bytes": 76546048
+        "rss_before_bytes": 52592640,
+        "rss_after_bytes": 228327424,
+        "rss_delta_bytes": 175734784
       },
       "harness_cpu": {
-        "user_us": 88467,
-        "system_us": 15728
+        "user_us": 518697,
+        "system_us": 83353
       }
     },
     {
       "id": "long-10000-measures",
       "fixturePath": "qa/fixtures/performance/10000-measures.musicxml",
-      "iterations": 3,
+      "iterations": 20,
+      "engine_identity": {
+        "schemaVersion": 1,
+        "product": "Acorde Composer",
+        "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+        "clean": true,
+        "binary": "build/engine/acorde-composer-engine",
+        "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+      },
       "parse_ms": {
-        "p50": 199.809,
-        "p95": 220.598,
-        "max": 220.598
+        "p50": 197.892,
+        "p95": 228.848,
+        "max": 228.848
       },
       "load_ms": {
-        "p50": 262.794,
-        "p95": 272.437,
-        "max": 272.437
+        "p50": 251.97,
+        "p95": 275.306,
+        "max": 275.306
       },
       "render_ms": {
-        "p50": 155.47,
-        "p95": 159.422,
-        "max": 159.422
+        "p50": 158.181,
+        "p95": 162.414,
+        "max": 162.414
       },
       "serialize_ms": {
-        "p50": 135.303,
-        "p95": 137.453,
-        "max": 137.453
+        "p50": 139.123,
+        "p95": 148.653,
+        "max": 148.653
       },
       "harness_memory": {
-        "rss_before_bytes": 55394304,
-        "rss_after_bytes": 410157056,
-        "rss_delta_bytes": 354762752
+        "rss_before_bytes": 58933248,
+        "rss_after_bytes": 443957248,
+        "rss_delta_bytes": 385024000
       },
       "harness_cpu": {
-        "user_us": 828042,
-        "system_us": 142774
+        "user_us": 5519581,
+        "system_us": 798004
       }
     }
   ]

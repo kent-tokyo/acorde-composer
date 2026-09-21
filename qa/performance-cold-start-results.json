@@ -1,11 +1,26 @@
 {
-  "schemaVersion": 1,
-  "engine": "acorde@1.1.7",
+  "schemaVersion": 2,
+  "engine": "acorde@1.2.0",
   "fixturePath": "qa/fixtures/performance/100-measures.musicxml",
   "iterations": 3,
+  "engine_identity": {
+    "schemaVersion": 1,
+    "product": "Acorde Composer",
+    "commit": "22b897bd32ba70bca92e39b0de348748b545ed20",
+    "clean": true,
+    "binary": "build/engine/acorde-composer-engine",
+    "sha256": "088532003724fac30377766661e0952c66b59425814e1c9be448e428ade734aa"
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "os_release": "25.5.0",
+    "node": "v24.5.0"
+  },
   "cold_start_ms": {
-    "p50": 4.618,
-    "p95": 5.025,
-    "max": 5.025
-  }
+    "p50": 2.3,
+    "p95": 173.628,
+    "max": 173.628
+  },
+  "metric": "spawn-to-engine-ready"
 }

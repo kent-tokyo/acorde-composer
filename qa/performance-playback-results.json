@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
-  "engine": "acorde@1.1.7",
+  "engine": "acorde@1.2.0",
   "fixturePath": "qa/fixtures/performance/1000-measures.musicxml",
   "iterations": 3,
   "eventCount": 1000,
   "parse_ms": {
-    "p50": 21.88,
-    "p95": 22.705,
-    "max": 22.705
+    "p50": 21.141,
+    "p95": 24.994,
+    "max": 24.994
   },
   "playback_ms": {
-    "p50": 14.282,
-    "p95": 15.227,
-    "max": 15.227
+    "p50": 14.232,
+    "p95": 15.154,
+    "max": 15.154
   },
   "harness_memory": {
-    "rss_before_bytes": 47300608,
-    "rss_after_bytes": 91373568,
-    "rss_delta_bytes": 44072960
+    "rss_before_bytes": 47202304,
+    "rss_after_bytes": 109985792,
+    "rss_delta_bytes": 62783488
   }
 }
