@@ -16,7 +16,7 @@
 ### Verification
 
 - Composer Node: 210 passed
-- Composer Rust: 21 passed
+- Composer Rust: 24 passed
 - 実SF3 PCM materializationとglissando／cross-staff spanner round-tripを個別回帰で確認
 - strict candidate gateとartifact／QA evidenceの整合検証を実施。20件の実機QAは未実施を合格扱いにしない
 

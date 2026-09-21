@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-当前已验证 Node 210 项、Rust unit test 21 项。`npm run check:candidate` 会按固定顺序运行 Node、静态检查、fixture、Playground、Rust test、clippy 和差分检查；需要机器可读的分阶段结果时可运行`npm run check:candidate:json`，需要包含依赖 provenance 的正式候选判定时可运行`npm run check:candidate:strict`。JSON 中`valid`表示本地验证，`releaseReady`表示正式候选是否就绪。实际 SF3 fixture 会验证非零 PCM materialization，spanner 回归会验证 glissando／cross-staff round-trip。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md) 和 [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)。
+当前已验证 Node 210 项、Rust unit test 24 项。`npm run check:candidate` 会按固定顺序运行 Node、静态检查、fixture、Playground、Rust test、clippy 和差分检查；需要机器可读的分阶段结果时可运行`npm run check:candidate:json`，需要包含依赖 provenance 的正式候选判定时可运行`npm run check:candidate:strict`。JSON 中`valid`表示本地验证，`releaseReady`表示正式候选是否就绪。实际 SF3 fixture 会验证非零 PCM materialization，spanner 回归会验证 glissando／cross-staff round-trip。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md) 和 [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)。
 
 性能 profile 还保存 parse→serialize 测量以及 harness RSS／CPU 证据。可通过 feature matrix 和 evidence index 追踪已实现范围与外部依赖的剩余任务。
 

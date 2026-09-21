@@ -875,13 +875,39 @@ mod tests {
             "voice": 0, "note_index": 0, "start": true, "end": false
         })).expect("glissando command deserializes");
         handle(Request::ApplyCommand { command: glissando, label: Some("SetGlissando".into()) }, &mut engine).expect("glissando applies");
-        let exported = serialize_musicxml_with_report(&parsed.score).expect("advanced fixture serializes");
-        assert!(exported.output.contains("<glissando"));
-        assert!(exported.output.contains("<staff>2</staff>"));
-        let reparsed = parse_musicxml_with_report(&exported.output).expect("advanced XML reparses");
+        let exported = handle(Request::SerializeCurrent, &mut engine).expect("edited advanced score serializes");
+        let xml = exported.as_str().expect("serialized MusicXML string");
+        assert!(xml.contains("<glissando"));
+        assert!(xml.contains("<staff>2</staff>"));
+        let reparsed = parse_musicxml_with_report(xml).expect("advanced XML reparses");
         let notes: Vec<_> = reparsed.score.parts.iter().flat_map(|part| part.staves.iter()).flat_map(|staff| staff.measures.iter()).flat_map(|measure| measure.voices.iter()).flat_map(|voice| voice.iter()).collect();
         assert!(notes.iter().any(|note| note.glissando_start));
         assert!(notes.iter().any(|note| note.cross_staff.as_ref().map(|value| value.target_staff) == Some(1)));
+    }
+
+    #[test]
+    fn typed_spanner_update_remove_and_undo_cross_the_composer_engine_boundary() {
+        let parsed = parse_musicxml_with_report(ADVANCED_NOTATION_FIXTURE).expect("typed spanner fixture parses");
+        let mut updated = parsed.score.spanners.first().expect("fixture has a typed spanner").clone();
+        updated.text = Some("port.".into());
+        updated.line_type = Some("wavy".into());
+        let mut engine = None;
+        handle(Request::LoadScore { score: parsed.score }, &mut engine).expect("typed spanner score loads");
+        let update: Command = serde_json::from_value(serde_json::json!({ "type": "update_spanner", "spanner": updated })).expect("update spanner command deserializes");
+        handle(Request::ApplyCommand { command: update, label: Some("UpdateSpanner".into()) }, &mut engine).expect("spanner update applies");
+        let updated_xml = handle(Request::SerializeCurrent, &mut engine).expect("updated spanner serializes");
+        assert!(updated_xml.as_str().is_some_and(|xml| xml.contains("port.") && xml.contains("line-type=\"wavy\"")));
+        handle(Request::Undo, &mut engine).expect("spanner update undoes");
+        let restored_xml = handle(Request::SerializeCurrent, &mut engine).expect("restored spanner serializes");
+        assert!(restored_xml.as_str().is_some_and(|xml| xml.contains("gliss.") && !xml.contains("port.")));
+        handle(Request::Redo, &mut engine).expect("spanner update redoes");
+        let remove: Command = serde_json::from_value(serde_json::json!({ "type": "remove_spanner", "id": updated.id })).expect("remove spanner command deserializes");
+        let removed = handle(Request::ApplyCommand { command: remove, label: Some("RemoveSpanner".into()) }, &mut engine).expect("spanner removal applies");
+        assert!(removed["spanners"].as_array().is_some_and(Vec::is_empty));
+        let restored = handle(Request::Undo, &mut engine).expect("spanner removal undoes");
+        assert!(restored["spanners"].as_array().is_some_and(|spanners| spanners.len() == 1 && spanners[0]["text"] == "port."));
+        let reloaded = handle(Request::SerializeCurrent, &mut engine).expect("restored updated spanner serializes");
+        assert!(reloaded.as_str().is_some_and(|xml| xml.contains("port.") && xml.contains("<glissando")));
     }
 
     #[test]

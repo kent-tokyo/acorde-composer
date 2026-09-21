@@ -59,6 +59,14 @@ test('accepts notation annotation commands used by the editor', () => {
   assert.doesNotThrow(() => assertCommand({ type: 'set_system_break', measure_index: 0, value: true }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_part_group', group: { first_part: 0, last_part: 1, symbol: 'Bracket', barlines_connect: true } }));
   assert.doesNotThrow(() => assertCommand({ type: 'set_stem', part_index: 0, staff_index: 0, measure_index: 0, voice_index: 0, note_index: 0, stem_up: true }));
+  const spanner = { id: 'composer-span-1', kind: 'Glissando', start: { part: 0, staff: 0, measure: 0, voice: 0, note: 0 }, end: { part: 0, staff: 0, measure: 0, voice: 0, note: 1 }, number: 1, line_type: 'wavy', text: 'gliss.', placement: 'above', ottava_size: null, ottava_type: null };
+  assert.doesNotThrow(() => assertCommand({ type: 'add_spanner', spanner }));
+  assert.doesNotThrow(() => assertCommand({ type: 'update_spanner', spanner: { ...spanner, text: 'port.' } }));
+  assert.doesNotThrow(() => assertCommand({ type: 'remove_spanner', id: spanner.id }));
+  assert.equal(describeCommand({ type: 'update_spanner', spanner }), 'Update notation spanner');
+  assert.throws(() => assertCommand({ type: 'add_spanner', spanner: { ...spanner, kind: 'Unknown' } }), /kind is not supported/);
+  assert.throws(() => assertCommand({ type: 'update_spanner', spanner: { ...spanner, start: { ...spanner.start, note: -1 } } }), /non-negative integer/);
+  assert.throws(() => assertCommand({ type: 'remove_spanner', id: '' }), /id is invalid/);
 });
 
 test('accepts structured tremolo articulation used by the Composer UI', () => {
