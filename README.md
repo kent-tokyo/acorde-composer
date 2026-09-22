@@ -12,7 +12,7 @@ Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) 
 - Review AI and OMR proposals before they become validated score commands.
 - Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
 
-The development tree uses `acorde` v1.2.2. The published release remains **v0.1.14**, built and evidenced with `acorde` v1.2.0. See [CHANGELOG.md](CHANGELOG.md).
+The published release is **v0.1.15**, built and evidenced with `acorde` v1.2.2. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Safe MusicXML migration
 

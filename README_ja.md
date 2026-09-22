@@ -21,7 +21,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 ## 現在のリリース
 
-公開版は **Acorde Composer v0.1.14**（`acorde v1.2.0`）です。開発ツリーは `acorde v1.2.2` を使用しています。
+公開版は **Acorde Composer v0.1.15**（`acorde v1.2.2`）です。
 
 AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界内で接続します。
 

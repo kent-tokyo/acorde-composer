@@ -2,11 +2,11 @@
 
 This file records user-visible releases and the current development delta. Detailed commit-by-commit history is available in Git.
 
-## Unreleased
+## 0.1.15 — 2026-09-23
 
 ### Changed
 
-- Development dependency updated to `acorde` v1.2.2; release 0.1.14 evidence remains pinned to its v1.2.0 environment.
+- Updated the five Acorde crates to v1.2.2 and regenerated candidate evidence with the exact `v1.2.2` tag.
 - Unified native menu, context menu, renderer dispatch, and shortcuts through one command registry; menu placement now follows the MuseScore-oriented File → Edit → View → Add → Format → Tools → Plugins → Help geography.
 - Added persisted workspace visibility, Navigator, Select All, Find / Go to, context commands, adaptive page/continuous layout, and English/Japanese/Chinese menu contracts.
 - Raised the bounded engine request limit from 25 MiB to 64 MiB so the 9.5 MiB UprightPianoKW SF2 fixture can traverse the current JSON byte-array protocol. A streaming/file-path protocol for larger assets is tracked upstream.

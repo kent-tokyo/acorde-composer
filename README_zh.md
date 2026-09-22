@@ -21,7 +21,7 @@
 
 ## 当前版本
 
-已发布版本为 **Acorde Composer v0.1.14**（`acorde v1.2.0`）；开发树使用 `acorde v1.2.2`。
+已发布版本为 **Acorde Composer v0.1.15**（`acorde v1.2.2`）。
 
 AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界内。
 

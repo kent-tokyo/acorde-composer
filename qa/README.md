@@ -1,6 +1,6 @@
 # Release QA evidence
 
-The published app is Acorde Composer 0.1.14 with `acorde` 1.2.0. The current development checkout uses `acorde` 1.2.2; do not treat old artifacts or benchmark records as evidence for this checkout.
+The published app is Acorde Composer 0.1.15 with `acorde` 1.2.2. Do not treat old artifacts or benchmark records as evidence for this release.
 
 ## Release-QA rule
 
