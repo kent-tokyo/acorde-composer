@@ -63,6 +63,9 @@ enum Request {
     SerializeCurrent,
     RenderCurrent {
         width: Option<f32>,
+        staff_size: Option<f32>,
+        measures_per_system: Option<usize>,
+        interactive: Option<bool>,
     },
     PlaybackEvents {
         score: Score,
@@ -134,6 +137,38 @@ fn current_engine(engine: &Option<ScoreEngine>) -> Result<&ScoreEngine, String> 
     engine
         .as_ref()
         .ok_or_else(|| "no score is loaded".to_string())
+}
+
+fn render_current_adaptive(
+    score: &Score,
+    width: f32,
+    staff_size: f32,
+    requested_measures_per_system: usize,
+    interactive: bool,
+) -> Result<String, String> {
+    let requested = requested_measures_per_system.clamp(1, 16);
+    let mut last_width_error = None;
+    for measures_per_system in (1..=requested).rev() {
+        let options = SvgRenderOptions {
+            width,
+            staff_size,
+            measures_per_system,
+            interactive,
+        };
+        match render_svg(score, &options) {
+            Ok(svg) => return Ok(svg),
+            Err(error) => {
+                let message = error.to_string();
+                let recoverable = message.contains("minimum measure widths exceed the available system width")
+                    || message.contains("leave no usable measure width");
+                if !recoverable {
+                    return Err(message);
+                }
+                last_width_error = Some(message);
+            }
+        }
+    }
+    Err(last_width_error.unwrap_or_else(|| "adaptive score rendering failed".into()))
 }
 
 fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_json::Value, String> {
@@ -218,15 +253,16 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
                 .map(serde_json::Value::String)
                 .map_err(|error| error.to_string())
         }
-        Request::RenderCurrent { width } => {
+        Request::RenderCurrent { width, staff_size, measures_per_system, interactive } => {
             let state = current_engine(engine)?;
-            let options = SvgRenderOptions {
-                width: width.unwrap_or(900.0),
-                ..Default::default()
-            };
-            render_svg(&state.score, &options)
+            render_current_adaptive(
+                &state.score,
+                width.unwrap_or(900.0),
+                staff_size.unwrap_or(10.0),
+                measures_per_system.unwrap_or(4),
+                interactive.unwrap_or(true),
+            )
                 .map(serde_json::Value::String)
-                .map_err(|error| error.to_string())
         }
         Request::PlaybackEvents {
             score,
@@ -660,7 +696,7 @@ mod tests {
             }
         }
         let region = SampleRegion { sample_id: 7, start_frame: 0, end_frame: 4, key_min: 60, key_max: 60, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 44_100, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.1 };
-        let event = PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 100, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, pitch_bend_curve: Vec::new(), post_note_pause_beats: 0.0, articulations: Vec::new(), chord_symbol: None, guitar_technique: None, velocity: 100, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, program: 0, instrument_id: None, is_metronome: false };
         let action = schedule_sample_note_on(3, event, &region, 1.0).expect("fixture region schedules");
         let sample = FixtureDecoder.decode(&region).expect("fixture decoder returns bounded PCM");
         let mut renderer = FixtureRenderer { rendered: Vec::new() };
@@ -672,7 +708,7 @@ mod tests {
     fn acorde_v1_1_0_preset_zone_mapping_preserves_playback_address() {
         let region = SampleRegion { sample_id: 11, start_frame: 0, end_frame: 4, key_min: 60, key_max: 72, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 44_100, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.1 };
         let zone = SoundFontPresetZone::new(0, 0, region).expect("valid preset zone");
-        let event = PlaybackEvent { address: Some("0:0:1:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 64, pitch_midi_cents: 0, velocity: 96, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:1:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 64, pitch_midi_cents: 0, pitch_bend_curve: Vec::new(), post_note_pause_beats: 0.0, articulations: Vec::new(), chord_symbol: None, guitar_technique: None, velocity: 96, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, program: 0, instrument_id: None, is_metronome: false };
         let action = schedule_preset_note_on(7, event, &[zone], 0, 0, 1.0).expect("preset zone schedules");
         match action { SampleAction::Start { voice_id, sample_id, event, .. } => { assert_eq!(voice_id, 7); assert_eq!(sample_id, 11); assert_eq!(event.address.as_deref(), Some("0:0:1:1:0")); }, _ => panic!("expected start action") }
     }
@@ -688,7 +724,7 @@ mod tests {
         for value in [1000i16, -1000, 2000, -2000] { sf2.extend(value.to_le_bytes()); }
         let sample = decode_sf2_pcm16(&sf2, 0, 4, 2, 1).expect("acorde decodes SF2 PCM");
         let region = SampleRegion { sample_id: 9, start_frame: 0, end_frame: 4, key_min: 60, key_max: 60, velocity_min: 1, velocity_max: 127, root_key: 60, fine_tune_cents: 0, attenuation_db: 0.0, sample_rate: 2, compression: acorde_soundfont::SampleCompression::Pcm16, loop_points: None, attack_secs: 0.0, decay_secs: 0.0, sustain_level: 1.0, release_secs: 0.0 };
-        let event = PlaybackEvent { address: Some("0:0:0:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, velocity: 127, duration_beats: 1.0, duration_secs: 1.0, pedal: false, part_index: 0, channel: 0, is_metronome: false };
+        let event = PlaybackEvent { address: Some("0:0:0:1:0".into()), source: None, source_voice_number: None, time_beats: 0.0, time_secs: 0.0, pitch_midi: 60, pitch_midi_cents: 0, pitch_bend_curve: Vec::new(), post_note_pause_beats: 0.0, articulations: Vec::new(), chord_symbol: None, guitar_technique: None, velocity: 127, duration_beats: 1.0, duration_secs: 1.0, pedal: false, part_index: 0, channel: 0, program: 0, instrument_id: None, is_metronome: false };
         let action = schedule_sample_note_on(4, event, &region, 1.0).expect("acorde schedules sample action");
         let rendered = render_sample_action(&sample, &action, 2).expect("acorde renders sample action");
         assert_eq!(rendered, vec![1000, -1000]);
@@ -719,7 +755,7 @@ mod tests {
     }
 
     fn soundfont_playback_event(key: u8, velocity: u8) -> PlaybackEvent {
-        PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: Some(1), time_beats: 0.0, time_secs: 0.0, pitch_midi: key, pitch_midi_cents: 0, velocity, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, is_metronome: false }
+        PlaybackEvent { address: Some("0:0:0:0:0".into()), source: None, source_voice_number: Some(1), time_beats: 0.0, time_secs: 0.0, pitch_midi: key, pitch_midi_cents: 0, pitch_bend_curve: Vec::new(), post_note_pause_beats: 0.0, articulations: Vec::new(), chord_symbol: None, guitar_technique: None, velocity, duration_beats: 1.0, duration_secs: 0.5, pedal: false, part_index: 0, channel: 0, program: 0, instrument_id: None, is_metronome: false }
     }
 
     #[test]
@@ -921,5 +957,60 @@ mod tests {
         let metadata = render_svg_metadata(&parsed, &layout, &SvgRenderOptions { width: 1200.0, ..Default::default() }).expect("advanced SVG metadata renders");
         assert!(metadata.note_count >= 3);
         assert!(!metadata.accessible_text.is_empty());
+    }
+
+    #[test]
+    fn adaptive_current_render_survives_measure_growth_and_narrow_widths() {
+        let score = parse_musicxml(FIXTURE).expect("adaptive render fixture parses");
+        let mut engine = None;
+        handle(Request::LoadScore { score }, &mut engine).expect("adaptive render fixture loads");
+        for after_index in 0..99 {
+            let command: Command = serde_json::from_value(serde_json::json!({
+                "type": "add_measure", "after_index": after_index
+            }))
+            .expect("add-measure command deserializes");
+            handle(Request::ApplyCommand { command, label: Some("AddMeasure".into()) }, &mut engine)
+                .expect("measure growth remains valid");
+            if after_index == 2 {
+                let four_measures = current_engine(&engine).expect("four-measure score stays loaded");
+                assert_eq!(four_measures.score.parts[0].staves[0].measures.len(), 4);
+                let svg = render_current_adaptive(&four_measures.score, 560.0, 10.0, 4, true)
+                    .expect("fourth measure does not trigger a width allocation failure");
+                assert!(svg.contains("<svg"));
+            }
+        }
+        let state = current_engine(&engine).expect("grown score stays loaded");
+        assert_eq!(state.score.parts[0].staves[0].measures.len(), 100);
+        for width in [560.0, 699.0, 700.0, 900.0, 1200.0, 1600.0] {
+            let svg = render_current_adaptive(&state.score, width, 10.0, 4, true)
+                .expect("adaptive density renders a 100-measure score");
+            assert!(svg.contains("<svg"));
+        }
+        for measure_index in (50..100).rev() {
+            let command: Command = serde_json::from_value(serde_json::json!({
+                "type": "delete_measure", "measure_index": measure_index
+            }))
+            .expect("delete-measure command deserializes");
+            handle(
+                Request::ApplyCommand {
+                    command,
+                    label: Some("DeleteMeasure".into()),
+                },
+                &mut engine,
+            )
+            .expect("measure deletion remains valid");
+        }
+        let reduced = current_engine(&engine).expect("reduced score stays loaded");
+        assert_eq!(reduced.score.parts[0].staves[0].measures.len(), 50);
+        let svg = render_current_adaptive(&reduced.score, 560.0, 10.0, 4, true)
+            .expect("reduced score renders at the narrow boundary");
+        assert!(svg.contains("<svg"));
+
+        handle(Request::Undo, &mut engine).expect("measure deletion undoes");
+        let restored = current_engine(&engine).expect("undo keeps score loaded");
+        assert_eq!(restored.score.parts[0].staves[0].measures.len(), 51);
+        let svg = render_current_adaptive(&restored.score, 900.0, 10.0, 4, true)
+            .expect("undone score renders without corrupting history");
+        assert!(svg.contains("<svg"));
     }
 }

@@ -39,7 +39,22 @@ const AUTOSAVE_KEY = 'acorde-composer.autosave.v1';
 const MIXER_KEY = 'acorde-composer.mixer.v1';
 const ACCESSIBILITY_KEY = 'acorde-composer.accessibility.v1';
 const PRINT_SETTINGS_KEY = 'acorde-composer.print-settings.v1';
+const LAYOUT_DENSITY_KEY = 'acorde-composer.layout-density.v1';
 const LANGUAGE_KEY = 'acorde-composer.language.v1';
+const WORKSPACE_KEY = 'acorde-composer.workspace.v1';
+const SHORTCUTS_KEY = 'acorde-composer.shortcuts.v1';
+let workspacePersistenceReady = false;
+let contextTarget = null;
+let viewportRenderTimer = null;
+let viewportRenderWidth = null;
+const renderCoordinator = new window.AcordeRenderCoordinator.RenderCoordinator();
+const safeStorage = window.AcordeSafeStorage;
+function browserStorage() { try { return window.localStorage; } catch { return null; } }
+function storedValue(key, fallback = null) { return safeStorage?.read(browserStorage(), key, fallback) ?? fallback; }
+function storedJson(key, fallback = null) { return safeStorage?.readJson(browserStorage(), key, fallback) ?? fallback; }
+function storeValue(key, value) { return safeStorage?.write(browserStorage(), key, value) === true; }
+function storeJson(key, value) { return safeStorage?.writeJson(browserStorage(), key, value) === true; }
+function removeStoredValue(key) { return safeStorage?.remove(browserStorage(), key) === true; }
 const LANGUAGE_COPY = {
   en: {
     preferences: 'Application preferences', preferencesHelp: 'Choose the language used by Acorde Composer. Changes apply immediately.', language: 'Language', close: 'Close', done: 'Done',
@@ -47,7 +62,7 @@ const LANGUAGE_COPY = {
     select: 'Select', note: 'Note', rest: 'Rest', slur: 'Slur', tie: 'Tie', scoreSettings: 'Edit score settings', history: 'History', mixer: 'Mixer',
     voice: 'Voice', duration: 'Duration', dot: 'Dot', tuplet: 'Tuplet', dynamic: 'Dynamic', grace: 'Grace note', accidental: 'Accidental', articulation: 'Articulation',
     scoreSettingsTitle: 'Score settings', accessibility: 'Accessibility', reduceMotion: 'Reduce animation and motion', highContrast: 'High contrast notation', apply: 'Apply changes', cancel: 'Cancel',
-    saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', saveFailed: 'Save failed',
+    saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', saveFailed: 'Save failed', pageSettings: 'Page settings', layoutDensity: 'Layout density', pageSize: 'Page size', orientation: 'Orientation', margins: 'Margins', adaptive: 'Adaptive to window', measuresPerSystem: 'measures per system',
   },
   ja: {
     preferences: 'アプリの環境設定', preferencesHelp: 'Acorde Composerで使用する言語を選択します。変更はすぐに反映されます。', language: '言語', close: '閉じる', done: '完了',
@@ -55,7 +70,7 @@ const LANGUAGE_COPY = {
     select: '選択', note: '音符', rest: '休符', slur: 'スラー', tie: 'タイ', scoreSettings: '譜面設定', history: '履歴', mixer: 'ミキサー',
     voice: 'ボイス', duration: '音価', dot: '付点', tuplet: '連符', dynamic: 'ダイナミクス', grace: '装飾音', accidental: '臨時記号', articulation: 'アーティキュレーション',
     scoreSettingsTitle: '譜面設定', accessibility: 'アクセシビリティ', reduceMotion: 'アニメーションを減らす', highContrast: '譜面の高コントラスト表示', apply: '変更を適用', cancel: 'キャンセル',
-    saved: '保存済み', unsaved: '未保存の変更', saving: '保存中…', saveFailed: '保存に失敗',
+    saved: '保存済み', unsaved: '未保存の変更', saving: '保存中…', saveFailed: '保存に失敗', pageSettings: 'ページ設定', layoutDensity: 'レイアウト密度', pageSize: '用紙サイズ', orientation: '向き', margins: '余白', adaptive: 'ウィンドウに合わせる', measuresPerSystem: '小節／段',
   },
   zh: {
     preferences: '应用偏好设置', preferencesHelp: '选择 Acorde Composer 使用的语言。更改会立即生效。', language: '语言', close: '关闭', done: '完成',
@@ -63,11 +78,10 @@ const LANGUAGE_COPY = {
     select: '选择', note: '音符', rest: '休止符', slur: '连线', tie: '连音线', scoreSettings: '乐谱设置', history: '历史', mixer: '混音器',
     voice: '声部', duration: '时值', dot: '附点', tuplet: '连音', dynamic: '力度', grace: '装饰音', accidental: '变音记号', articulation: '奏法',
     scoreSettingsTitle: '乐谱设置', accessibility: '无障碍', reduceMotion: '减少动画和动态效果', highContrast: '高对比度乐谱', apply: '应用更改', cancel: '取消',
-    saved: '已保存', unsaved: '有未保存的更改', saving: '保存中…', saveFailed: '保存失败',
+    saved: '已保存', unsaved: '有未保存的更改', saving: '保存中…', saveFailed: '保存失败', pageSettings: '页面设置', layoutDensity: '布局密度', pageSize: '页面大小', orientation: '方向', margins: '页边距', adaptive: '适应窗口', measuresPerSystem: '小节／系统',
   },
 };
-let language = 'en';
-try { language = LANGUAGE_COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
+let language = LANGUAGE_COPY[storedValue(LANGUAGE_KEY)] ? storedValue(LANGUAGE_KEY) : 'en';
 function applyLanguage(nextLanguage = language) {
   language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en';
   const copy = LANGUAGE_COPY[language];
@@ -76,22 +90,34 @@ function applyLanguage(nextLanguage = language) {
   const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
   [['new-button', copy.new], ['template-button', copy.template], ['open-button', copy.open], ['save-button', copy.save], ['midi-save-button', copy.midi], ['shortcuts-button', copy.keyboard], ['preferences-button', copy.preferencesButton], ['select-tool', `↖ ${copy.select}`], ['note-tool', `♩ ${copy.note}`], ['rest-tool', `𝄽 ${copy.rest}`], ['slur-tool', `⌁ ${copy.slur}`], ['tie-tool', `⌒ ${copy.tie}`], ['settings-button', copy.scoreSettings], ['history-button', copy.history], ['mixer-button', copy.mixer]].forEach(([id, value]) => text(id, value));
   const dialogTitle = (id, value) => { const heading = $(id)?.querySelector('h2'); if (heading) heading.textContent = value; };
-  dialogTitle('score-settings', copy.scoreSettingsTitle); dialogTitle('preferences-dialog', copy.preferences);
+  dialogTitle('score-settings', copy.scoreSettingsTitle); dialogTitle('preferences-dialog', copy.preferences); dialogTitle('page-layout-dialog', copy.pageSettings); dialogTitle('layout-density-dialog', copy.layoutDensity);
   [['preferences-help', copy.preferencesHelp], ['preferences-close', copy.close], ['preferences-done', copy.done], ['accessibility-legend', copy.accessibility], ['score-cancel', copy.cancel], ['score-apply', copy.apply]].forEach(([id, value]) => text(id, value));
   const setLabelText = (id, value) => { const label = $(id); if (label?.firstChild?.nodeType === Node.TEXT_NODE) label.firstChild.textContent = `${value} `; };
-  setLabelText('language-label', copy.language); setLabelText('reduce-motion-label', copy.reduceMotion); setLabelText('high-contrast-label', copy.highContrast);
+  setLabelText('language-label', copy.language); setLabelText('reduce-motion-label', copy.reduceMotion); setLabelText('high-contrast-label', copy.highContrast); setLabelText('page-layout-preset-label', copy.pageSize); setLabelText('page-layout-orientation-label', copy.orientation); setLabelText('page-layout-margin-label', copy.margins); setLabelText('layout-density-label', copy.layoutDensity);
+  [['page-layout-apply', copy.apply], ['layout-density-apply', copy.apply], ['page-layout-cancel', copy.cancel], ['layout-density-cancel', copy.cancel], ['layout-density-adaptive', copy.adaptive]].forEach(([id, value]) => text(id, value));
   const select = $('language-select'); if (select) select.value = language;
+  window.acorde.setApplicationLanguage?.(language).catch(() => {});
   const toolLabels = { 'voice-select': copy.voice, 'duration-select': copy.duration, 'tuplet-select': copy.tuplet, 'dynamic-select': copy.dynamic, 'grace-select': copy.grace, 'accidental-select': copy.accidental, 'articulation-select': copy.articulation };
   Object.entries(toolLabels).forEach(([id, label]) => $(id)?.setAttribute('aria-label', label));
   if ($('save-status')) updateSaveStatus(dirty ? 'unsaved' : 'saved');
 }
-function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(language); }
+function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; storeValue(LANGUAGE_KEY, language); applyLanguage(language); }
 const aiProposal = { type: 'batch', label: 'AI proposal', commands: [
-  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 4, pitch: { step: 'C', octave: 3, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
-  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 5, pitch: { step: 'G', octave: 3, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
-  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 6, pitch: { step: 'C', octave: 4, alter: 0 }, duration: 'quarter', dot_count: 0, is_rest: false },
+  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 4, pitch: { step: 'C', octave: 3, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: false },
+  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 5, pitch: { step: 'G', octave: 3, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: false },
+  { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 6, pitch: { step: 'C', octave: 4, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: false },
 ] };
 const $ = (id) => document.getElementById(id);
+let shortcutOverrides = window.AcordeCommandRegistry?.normalizeShortcutOverrides(storedJson(SHORTCUTS_KEY, {})) || {};
+let layoutDensity = window.AcordeRenderPolicy?.normalizeDensity(storedValue(LAYOUT_DENSITY_KEY)) || 'adaptive';
+function saveShortcutOverrides(next = shortcutOverrides) {
+  shortcutOverrides = window.AcordeCommandRegistry?.normalizeShortcutOverrides(next) || {};
+  storeJson(SHORTCUTS_KEY, shortcutOverrides);
+  syncApplicationMenuState();
+  renderShortcutEditor();
+}
+const ENGINE_DURATIONS = Object.freeze({ whole: 'Whole', half: 'Half', quarter: 'Quarter', eighth: 'Eighth', sixteenth: 'Sixteenth', thirtysecond: 'ThirtySecond', sixtyfourth: 'SixtyFourth' });
+function engineDuration(value) { return ENGINE_DURATIONS[String(value || '').toLowerCase()] || 'Quarter'; }
 const basePlaybackPosition = window.acorde.playbackPosition;
 let playbackPositionInFlight = false;
 window.acorde.playbackPosition = async (...args) => {
@@ -106,16 +132,118 @@ function uiConfirm(message) { return new Promise((resolve) => { const dialog = e
 document.querySelector('.left-rail')?.setAttribute('aria-label', 'Score library'); document.querySelector('.editor')?.setAttribute('aria-label', 'Score editor'); document.querySelector('.right-panel')?.setAttribute('aria-label', 'Assistant and import panel');
 document.querySelectorAll('dialog').forEach((dialog) => { const heading = dialog.querySelector('h2'); if (!heading) return; heading.id ||= `${dialog.id}-title`; dialog.setAttribute('aria-labelledby', heading.id); });
 function syncSelectionPlaybackControl() { const button = $('selection-play-button'); if (!button) return; button.disabled = !selectedRange; button.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first'; }
-let storedMixer = null;
-try { storedMixer = JSON.parse(localStorage.getItem(MIXER_KEY) || 'null'); } catch { localStorage.removeItem(MIXER_KEY); }
+function activeMeasures() { return currentScore?.parts?.[activePartIndex]?.staves?.[Number($('staff-select')?.value || 0)]?.measures || []; }
+function sectionSelectionAvailable() {
+  const measures = activeMeasures();
+  return window.AcordeSectionNavigation?.supportsSections(currentScore, measures) === true;
+}
+function currentSectionRange() {
+  const measures = activeMeasures();
+  const selectedMeasure = selectedAddress?.measure ?? selectedRange?.[0];
+  return window.AcordeSectionNavigation?.rangeForMeasure(currentScore, measures, selectedMeasure) || null;
+}
+async function selectCurrentSection() {
+  const range = currentSectionRange();
+  if (range) return selectMeasureRange(...range);
+  const messages = { en: 'Select Section needs Acorde section-break data. Tracking: acorde#79.', ja: '「セクションを選択」にはAcordeのsection breakデータが必要です。追跡: acorde#79。', zh: '“选择段落”需要 Acorde 提供 section break 数据。跟踪：acorde#79。' };
+  await uiAlert(messages[language] || messages.en);
+}
+function selectAllMeasures() {
+  const measures = activeMeasures();
+  if (!Array.isArray(measures) || measures.length === 0) return;
+  selectedRange = [0, measures.length - 1];
+  $('score')?.querySelectorAll('[data-acorde-kind="measure"]').forEach((measure) => measure.classList.toggle('acorde-range', Number(measure.dataset.measure) <= selectedRange[1]));
+  syncSelectionPlaybackControl();
+  renderNavigator();
+}
+function selectMeasureRange(start, end) {
+  const score = $('score');
+  if (!score) return;
+  const activeSelector = `[data-acorde-kind="note"][data-part="${activePartIndex}"][data-staff="${Number($('staff-select')?.value || 0)}"][data-measure="${start}"]`;
+  const note = score.querySelector(activeSelector) || score.querySelector(`[data-acorde-kind="note"][data-measure="${start}"]`);
+  if (note) selectRenderedNote(note);
+  selectedRange = [start, end];
+  score.querySelectorAll('[data-acorde-kind="measure"]').forEach((measure) => {
+    const index = Number(measure.dataset.measure);
+    measure.classList.toggle('acorde-range', index >= start && index <= end);
+  });
+  syncSelectionPlaybackControl();
+  renderNavigator();
+  const target = note || score.querySelector(`[data-acorde-kind="measure"][data-measure="${start}"]`);
+  target?.scrollIntoView({ block: 'center', inline: 'center' });
+}
+async function findOrGoToMeasure() {
+  const measures = currentScore?.parts?.[activePartIndex]?.staves?.[Number($('staff-select')?.value || 0)]?.measures;
+  if (!Array.isArray(measures) || measures.length === 0) return;
+  const initial = selectedRange ? `${selectedRange[0] + 1}${selectedRange[1] === selectedRange[0] ? '' : `-${selectedRange[1] + 1}`}` : String((selectedAddress?.measure ?? 0) + 1);
+  const labels = {
+    en: 'Find / Go to — measure or range (for example 12 or 12-16)',
+    ja: '検索 / 移動 — 小節番号または範囲（例: 12 または 12-16）',
+    zh: '查找 / 跳转 — 小节号或范围（例如 12 或 12-16）',
+  };
+  const value = await uiPrompt(labels[language] || labels.en, initial);
+  if (value === null) return;
+  const range = window.AcordeMeasureNavigation?.parseMeasureRange(value, measures.length);
+  if (!range) {
+    const error = language === 'ja' ? `1〜${measures.length}の小節番号、または昇順の範囲を入力してください。` : language === 'zh' ? `请输入 1–${measures.length} 之间的小节号或升序范围。` : `Enter a measure number from 1 to ${measures.length}, or an ascending range.`;
+    await uiAlert(error);
+    return;
+  }
+  selectMeasureRange(...range);
+}
+function renderNavigator() {
+  const panel = $('navigator-panel'); const measuresNode = $('navigator-measures'); const summary = $('navigator-summary'); const input = $('navigator-measure-input');
+  if (!panel || !measuresNode || !summary || !input) return;
+  const measures = activeMeasures();
+  const selected = selectedRange?.[0] ?? selectedAddress?.measure ?? 0;
+  input.max = String(Math.max(1, measures.length)); input.value = String(Math.min(Math.max(1, selected + 1), Math.max(1, measures.length)));
+  if (!measures.length) { summary.textContent = 'Open a score to navigate measures.'; measuresNode.replaceChildren(); return; }
+  const indexes = measures.length <= 32 ? [...measures.keys()] : [...new Set([...Array.from({ length: 12 }, (_, index) => index), ...Array.from({ length: 9 }, (_, index) => selected - 4 + index).filter((index) => index >= 0 && index < measures.length), ...Array.from({ length: 12 }, (_, index) => measures.length - 12 + index)])].sort((a, b) => a - b);
+  summary.textContent = selectedRange ? `Measures ${selectedRange[0] + 1}–${selectedRange[1] + 1} of ${measures.length}` : `Measure ${selected + 1} of ${measures.length}`;
+  measuresNode.replaceChildren(...indexes.flatMap((index, position) => {
+    const gap = position > 0 && index > indexes[position - 1] + 1 ? [Object.assign(document.createElement('span'), { className: 'navigator-gap', textContent: '…' })] : [];
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'navigator-measure'; button.textContent = String(index + 1); button.title = `Go to measure ${index + 1}`; button.setAttribute('aria-label', `Go to measure ${index + 1}`); button.classList.toggle('active', Boolean(selectedRange ? index >= selectedRange[0] && index <= selectedRange[1] : index === selected)); button.addEventListener('click', () => selectMeasureRange(index, index)); return [...gap, button];
+  }));
+}
+function installShortcutEditor() {
+  const dialog = $('shortcuts-dialog'); const host = $('shortcut-editor'); if (!dialog || !host || host.dataset.bound === 'true') return;
+  host.dataset.bound = 'true';
+  host.addEventListener('keydown', async (event) => {
+    const input = event.target.closest('.shortcut-binding-input');
+    if (!input) return;
+    event.preventDefault();
+    const binding = window.AcordeCommandRegistry?.normalizeShortcutBinding({ key: event.key === ' ' ? 'Space' : event.key, code: event.code, modifier: event.metaKey || event.ctrlKey, shift: event.shiftKey });
+    if (!binding) { input.closest('.shortcut-row')?.querySelector('.shortcut-message').replaceChildren(document.createTextNode('Use a letter, number, bracket, arrow, Enter, Escape, or Space.')); return; }
+    const commandId = input.dataset.command;
+    const conflict = window.AcordeCommandRegistry?.findShortcutConflict(commandId, binding, shortcutOverrides);
+    if (conflict) { const label = window.AcordeCommandRegistry.resolveCommand(conflict)?.label || conflict; input.closest('.shortcut-row')?.querySelector('.shortcut-message').replaceChildren(document.createTextNode(`Already used by ${label}.`)); return; }
+    saveShortcutOverrides({ ...shortcutOverrides, [commandId]: binding });
+    input.focus();
+  });
+  $('shortcut-reset-all')?.addEventListener('click', () => saveShortcutOverrides({}));
+}
+function renderShortcutEditor() {
+  const host = $('shortcut-editor'); if (!host) return;
+  const platform = navigator.platform.includes('Mac') ? 'darwin' : 'default';
+  const commands = (window.AcordeCommandRegistry?.COMMANDS || []).filter((definition) => definition.customizable);
+  host.replaceChildren(...commands.map((definition) => {
+    const row = document.createElement('div'); row.className = 'shortcut-row';
+    const label = document.createElement('label'); label.textContent = definition.label;
+    const input = document.createElement('input'); input.className = 'shortcut-binding-input'; input.readOnly = true; input.dataset.command = definition.id; input.value = window.AcordeCommandRegistry.shortcutLabel(window.AcordeCommandRegistry.shortcutsForCommand(definition, shortcutOverrides)[0], platform); input.setAttribute('aria-label', `${definition.label} shortcut; press a new key combination to reassign`);
+    const reset = document.createElement('button'); reset.type = 'button'; reset.className = 'quiet shortcut-reset'; reset.textContent = 'Reset'; reset.addEventListener('click', () => { const next = { ...shortcutOverrides }; delete next[definition.id]; saveShortcutOverrides(next); });
+    const message = document.createElement('small'); message.className = 'shortcut-message'; message.textContent = shortcutOverrides[definition.id] ? 'Custom' : 'Default';
+    row.append(label, input, reset, message); return row;
+  }));
+}
+const storedMixer = storedJson(MIXER_KEY);
 let mixerState = window.AcordeMixerState.normalize(storedMixer || { soundfont: window.AcordeAudioProfile.fallback() });
 let mixerSnapshot = '';
 audioBackend.outputDeviceId = mixerState.outputDeviceId || null;
-function saveMixer() { const serialized = JSON.stringify(mixerState); if (serialized === mixerSnapshot) return; localStorage.setItem(MIXER_KEY, serialized); mixerSnapshot = serialized; }
+function saveMixer() { const serialized = JSON.stringify(mixerState); if (serialized === mixerSnapshot) return; storeValue(MIXER_KEY, serialized); mixerSnapshot = serialized; }
 let accessibilityState = { reducedMotion: false, highContrast: false };
-try { accessibilityState = { ...accessibilityState, ...JSON.parse(localStorage.getItem(ACCESSIBILITY_KEY) || '{}') }; } catch { localStorage.removeItem(ACCESSIBILITY_KEY); }
+accessibilityState = { ...accessibilityState, ...storedJson(ACCESSIBILITY_KEY, {}) };
 function applyAccessibilityPreferences() { document.documentElement.classList.toggle('reduced-motion', Boolean(accessibilityState.reducedMotion)); document.documentElement.classList.toggle('high-contrast', Boolean(accessibilityState.highContrast)); }
-function saveAccessibilityPreferences() { localStorage.setItem(ACCESSIBILITY_KEY, JSON.stringify(accessibilityState)); applyAccessibilityPreferences(); }
+function saveAccessibilityPreferences() { storeJson(ACCESSIBILITY_KEY, accessibilityState); applyAccessibilityPreferences(); }
 applyAccessibilityPreferences();
 applyLanguage();
 
@@ -128,21 +256,61 @@ function renderNotes() {
 }
 function commandHistoryText(command) { if (command.type === 'batch') return `${command.label || 'Batch'} (${command.commands.length} operations)`; const labels = { add_note: command.is_rest ? 'Add rest' : 'Add note', add_measure: 'Add measure', delete_measure: 'Delete measure', delete_note: 'Delete note', set_duration: 'Change duration', set_dynamic: 'Set dynamic', set_grace: 'Set grace note', set_lyric: 'Set lyric', set_chord_symbol: 'Set chord symbol', toggle_articulation: 'Toggle articulation', toggle_slur: 'Toggle slur', toggle_tie: 'Toggle tie' }; const target = command.measure_index === undefined ? '' : ` · measure ${command.measure_index + 1}`; return `${labels[command.type] || command.type}${target}`; }
 function renderHistory() { const list = $('history-list'); if (!list) return; list.replaceChildren(...scoreCommands.map((command, index) => { const item = document.createElement('li'); item.textContent = `${index + 1}. ${commandHistoryText(command)}`; return item; })); $('history-summary').textContent = `${history.past.length} undoable · ${history.future.length} redoable · ${scoreCommands.length} applied`; }
-function updateHistory() { $('undo-button').disabled = history.past.length === 0; $('redo-button').disabled = history.future.length === 0; renderHistory(); }
+let applicationMenuStateSnapshot = '';
+function syncApplicationMenuState() {
+  const leftRail = document.querySelector('.left-rail');
+  const rightPanel = document.querySelector('.right-panel');
+  const state = {
+    hasScore: Boolean(currentScore),
+    hasSelection: Boolean(currentScore && selectedAddress),
+    canUndo: history.past.length > 0,
+    canRedo: history.future.length > 0,
+    palettesVisible: !leftRail || (!leftRail.classList.contains('hidden') && !$('sidebar-palettes')?.classList.contains('hidden')),
+    propertiesVisible: !rightPanel || (!rightPanel.classList.contains('hidden') && document.querySelector('.panel-tab[data-panel="properties"]')?.classList.contains('active')),
+    historyVisible: Boolean($('history-dialog')?.open),
+    mixerVisible: Boolean($('mixer-settings')?.open),
+    playbackControlsVisible: !document.querySelector('.musescore-playback')?.classList.contains('hidden'),
+    noteInputVisible: !document.querySelector('.editor-toolbar')?.classList.contains('hidden'),
+    statusBarVisible: !document.querySelector('.transport')?.classList.contains('hidden'),
+    navigatorVisible: !document.querySelector('.navigator-panel')?.classList.contains('hidden'),
+    sectionSelectionAvailable: Boolean(selectedAddress && sectionSelectionAvailable()),
+    shortcutOverrides,
+  };
+  const snapshot = JSON.stringify(state);
+  if (workspacePersistenceReady) persistWorkspaceFromDom();
+  if (snapshot === applicationMenuStateSnapshot) return;
+  applicationMenuStateSnapshot = snapshot;
+  window.acorde.setApplicationMenuState?.(state).catch(() => { applicationMenuStateSnapshot = ''; });
+}
+function updateHistory() { $('undo-button').disabled = history.past.length === 0; $('redo-button').disabled = history.future.length === 0; renderHistory(); syncApplicationMenuState(); }
 const SELECTION_REQUIRED_IDS = ['lyric-button', 'chord-button', 'rehearsal-button', 'measure-tempo-button', 'navigation-button', 'volta-button', 'expression-button', 'cue-button', 'note-head-button', 'fingering-button', 'string-number-button', 'technique-button', 'arpeggio-button', 'trill-button', 'technique-text-button', 'stem-button', 'multi-rest-button', 'page-break-button', 'system-break-button'];
-function refreshSelectionActions() { const disabled = !currentScore || !selectedAddress; SELECTION_REQUIRED_IDS.forEach((id) => { const element = $(id); if (!element) return; element.disabled = disabled; element.setAttribute('aria-disabled', String(disabled)); element.title = disabled ? 'Select a note or measure first' : ''; }); }
+function refreshSelectionActions() { const disabled = !currentScore || !selectedAddress; SELECTION_REQUIRED_IDS.forEach((id) => { const element = $(id); if (!element) return; element.disabled = disabled; element.setAttribute('aria-disabled', String(disabled)); element.title = disabled ? 'Select a note or measure first' : ''; }); syncApplicationMenuState(); }
 function updateSaveStatus(state) { const status = $('save-status'); const dot = document.querySelector('.status-dot'); if (!status) return; const labels = { saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', error: 'Save failed' }; const label = labels[state] || labels.saved; status.textContent = label; status.setAttribute('aria-label', `Document save status: ${label}`); status.className = `muted save-status ${state}`; dot?.classList.toggle('unsaved', state === 'unsaved' || state === 'saving'); dot?.classList.toggle('error', state === 'error'); }
-function persistAutosave() { autosaveTimer = null; if (!currentScore || !dirty) return; localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), score: currentScore })); }
+function persistAutosave() { autosaveTimer = null; if (!currentScore || !dirty) return; storeJson(AUTOSAVE_KEY, { savedAt: new Date().toISOString(), score: currentScore }); }
 function markDirty() { dirty = true; document.title = '• Acorde Composer'; updateSaveStatus('unsaved'); refreshSelectionActions(); clearTimeout(autosaveTimer); autosaveTimer = setTimeout(persistAutosave, 150); }
-function clearDirty() { dirty = false; document.title = 'Acorde Composer'; updateSaveStatus('saved'); clearTimeout(autosaveTimer); autosaveTimer = null; localStorage.removeItem(AUTOSAVE_KEY); }
-const saveScoreToDisk = window.acorde.saveScore;
-window.acorde.saveScore = async (...args) => { updateSaveStatus('saving'); try { const result = await saveScoreToDisk(...args); if (result) clearDirty(); else updateSaveStatus(dirty ? 'unsaved' : 'saved'); return result; } catch (error) { updateSaveStatus('error'); throw error; } };
-const saveMidiToDisk = window.acorde.saveMidi;
-window.acorde.saveMidi = async (...args) => { updateSaveStatus('saving'); try { const result = await saveMidiToDisk(...args); if (result) clearDirty(); else updateSaveStatus(dirty ? 'unsaved' : 'saved'); return result; } catch (error) { updateSaveStatus('error'); throw error; } };
+function clearDirty() { dirty = false; document.title = 'Acorde Composer'; updateSaveStatus('saved'); clearTimeout(autosaveTimer); autosaveTimer = null; removeStoredValue(AUTOSAVE_KEY); }
+async function saveCurrentDocument(saveAs = false) {
+  if (!currentScore) return uiAlert('先に楽譜を開いてください。');
+  updateSaveStatus('saving');
+  try {
+    const report = await window.acorde.serializeMusicxmlReport(currentScore);
+    showDiagnostics(report);
+    const visibleName = $('file-name')?.textContent?.trim() || 'score';
+    const suggestedName = `${visibleName.replace(/\.[^.]+$/, '') || 'score'}.musicxml`;
+    const saved = await window.acorde.saveDocument({ suggestedName, content: report.output, saveAs });
+    if (!saved) { updateSaveStatus(dirty ? 'unsaved' : 'saved'); return null; }
+    $('file-name').textContent = saved.split(/[\\/]/).pop();
+    clearDirty();
+    return saved;
+  } catch (error) {
+    updateSaveStatus('error');
+    uiAlert(`MusicXMLを保存できませんでした: ${userFacingError(error)}`);
+    return null;
+  }
+}
 ['undo-button', 'redo-button'].forEach((id) => { const button = $(id); button?.setAttribute('aria-label', id === 'undo-button' ? 'Undo' : 'Redo'); button?.setAttribute('title', id === 'undo-button' ? 'Undo' : 'Redo'); });
 updateSaveStatus('saved');
-window.addEventListener('beforeunload', (event) => { if (!dirty) return; persistAutosave(); event.preventDefault(); event.returnValue = ''; });
-window.addEventListener('beforeunload', () => { if (midiInput) midiInput.onmidimessage = null; audioBackend.dispose(); });
+window.addEventListener('beforeunload', (event) => { if (dirty) { persistAutosave(); event.preventDefault(); event.returnValue = ''; } if (midiInput) midiInput.onmidimessage = null; audioBackend.dispose(); });
 function updateScoreHeader() { if (!currentScore) return; const title = currentScore.metadata?.title || 'Untitled score'; const tempo = currentScore.settings?.tempo_bpm || 120; const measures = currentScore.parts?.[0]?.staves?.[0]?.measures?.length || 0; const time = currentScore.settings?.time_signature || { numerator: 4, denominator: 4 }; const partName = currentScore.parts?.[activePartIndex]?.name || 'Piano'; $('project-title').textContent = title; $('project-summary').textContent = `${measures} measures`; $('tempo-display').textContent = `♩ = ${tempo}`; $('time-select').value = `${time.numerator}/${time.denominator}`; $('key-select').value = String(currentScore.settings?.key_signature?.fifths ?? 0); const paperTitle = document.querySelector('.score-header h1'); if (paperTitle) paperTitle.textContent = title; const paperTempo = document.querySelector('.score-header .tempo strong'); if (paperTempo) paperTempo.textContent = `♩ = ${tempo}`; const staffLabel = document.querySelector('.score-paper .staff-label'); if (staffLabel) staffLabel.textContent = partName; const projectCard = document.querySelector('.project-card strong'); if (projectCard) projectCard.textContent = title; }
 function updateZoom() { $('score').style.setProperty('zoom', scoreZoom); $('zoom-value').textContent = `${Math.round(scoreZoom * 100)}%`; $('zoom-out-button').disabled = scoreZoom <= 0.75; $('zoom-in-button').disabled = scoreZoom >= 1.5; }
 function renderOmrReviewQueue() {
@@ -167,7 +335,10 @@ function renderOmrReviewQueue() {
     row.dataset.itemId = item.id;
     const confidence = item.confidence == null ? '—' : `${Math.round(item.confidence * 100)}%`;
     const box = item.sourceBox || {};
-    row.innerHTML = `<strong>${item.kind}</strong><span>${confidence} · ${item.status}</span><small>bbox ${box.x},${box.y} ${box.width}×${box.height}</small>`;
+    const kind = document.createElement('strong'); kind.textContent = String(item.kind || 'unknown');
+    const statusLabel = document.createElement('span'); statusLabel.textContent = `${confidence} · ${item.status}`;
+    const boundsLabel = document.createElement('small'); boundsLabel.textContent = `bbox ${box.x},${box.y} ${box.width}×${box.height}`;
+    row.append(kind, statusLabel, boundsLabel);
     const actions = document.createElement('div');
     actions.className = 'omr-review-actions';
     for (const action of ['accept', 'reject', 'correct']) {
@@ -196,9 +367,12 @@ async function loadOmrReviewProposal(proposal) {
   renderOmrReviewQueue();
   return result;
 }
-function voiceCount() { const staves = currentScore?.parts?.[activePartIndex]?.staves || []; let count = 1; for (const staff of staves) for (const measure of staff.measures || []) count = Math.max(count, measure.voices?.length || 1); return count; }
-function setActiveVoice(index) { const count = voiceCount(); activeVoiceIndex = Math.max(0, Math.min(Number(index) || 0, count - 1)); const selector = $('voice-select'); if (selector) { selector.value = String(activeVoiceIndex); selector.title = `Voice ${activeVoiceIndex + 1} of ${count}. Use [ / ] to switch.`; selector.setAttribute('aria-describedby', 'voice-status'); } const status = $('voice-status'); if (status) { status.setAttribute('role', 'status'); status.textContent = count > 1 ? `Voice ${activeVoiceIndex + 1} / ${count}` : 'Voice 1'; } const hint = document.querySelector('.score-hint'); if (hint) hint.dataset.activeVoice = String(activeVoiceIndex + 1); }
-function refreshVoiceSelector() { const selector = $('voice-select'); if (!selector) return; const count = voiceCount(); selector.replaceChildren(...Array.from({ length: count }, (_, index) => { const option = document.createElement('option'); option.value = index; option.textContent = `Voice ${index + 1}`; return option; })); setActiveVoice(activeVoiceIndex); }
+function activeVoiceSlots() { return window.AcordeVoiceSelection.slots(currentScore, activePartIndex); }
+function voiceCount() { return activeVoiceSlots().length; }
+function sourceVoiceNumber(slot) { return window.AcordeVoiceSelection.sourceNumber(currentScore, activePartIndex, slot); }
+function setActiveVoice(slot) { const slots = activeVoiceSlots(); activeVoiceIndex = window.AcordeVoiceSelection.resolveSlot(currentScore, activePartIndex, slot); const ordinal = slots.indexOf(activeVoiceIndex) + 1; const source = sourceVoiceNumber(activeVoiceIndex); const selector = $('voice-select'); if (selector) { selector.value = String(activeVoiceIndex); selector.title = `Voice ${source} (${ordinal} of ${slots.length}). Use [ / ] to switch.`; selector.setAttribute('aria-describedby', 'voice-status'); } const status = $('voice-status'); if (status) { status.setAttribute('role', 'status'); status.textContent = slots.length > 1 ? `Voice ${source} (${ordinal} / ${slots.length})` : `Voice ${source}`; } const hint = document.querySelector('.score-hint'); if (hint) hint.dataset.activeVoice = String(source); }
+function stepActiveVoice(direction) { setActiveVoice(window.AcordeVoiceSelection.stepSlot(currentScore, activePartIndex, activeVoiceIndex, direction)); }
+function refreshVoiceSelector() { const selector = $('voice-select'); if (!selector) return; const slots = activeVoiceSlots(); selector.replaceChildren(...slots.map((slot) => { const option = document.createElement('option'); option.value = String(slot); option.textContent = `Voice ${sourceVoiceNumber(slot)}`; return option; })); setActiveVoice(activeVoiceIndex); }
 function refreshStaffSelector() { const selector = $('staff-select'); if (!selector) return; const count = Math.max(1, currentScore?.parts?.[activePartIndex]?.staves?.length || 1); selector.replaceChildren(...Array.from({ length: count }, (_, index) => { const option = document.createElement('option'); option.value = index; option.textContent = `Staff ${index + 1}`; return option; })); selector.value = String(Math.min(Number(selector.value || 0), count - 1)); }
 function applyPartView() { const button = $('part-view-button'); $('score').querySelectorAll('[data-acorde-kind="staff-group"]').forEach((group) => { group.hidden = partViewOnly && Number(group.dataset.part) !== activePartIndex; }); if (button) { button.textContent = partViewOnly ? 'Full Score' : 'Part View'; button.setAttribute('aria-pressed', String(partViewOnly)); } }
 function openScoreSettings() { if (!currentScore) return; const part = currentScore.parts?.[activePartIndex] || {}; const staffIndex = Number($('staff-select')?.value || 0); const staff = part.staves?.[staffIndex] || {}; $('title-input').value = currentScore.metadata?.title || ''; $('composer-input').value = currentScore.metadata?.composer || ''; $('lyricist-input').value = currentScore.metadata?.lyricist || ''; $('copyright-input').value = currentScore.metadata?.copyright || ''; $('work-number-input').value = currentScore.metadata?.work_number || ''; $('movement-title-input').value = currentScore.metadata?.movement_title || ''; $('tempo-input').value = currentScore.settings?.tempo_bpm || 120; $('midi-channel-input').value = Number(part.midi_channel ?? 0) + 1; $('midi-program-input').value = Number(part.midi_program ?? 0) + 1; $('clef-select').value = staff.clef || 'Treble'; $('transpose-input').value = Number(staff.transpose_semitones || 0); $('reduced-motion').checked = Boolean(accessibilityState.reducedMotion); $('high-contrast').checked = Boolean(accessibilityState.highContrast); $('score-settings').showModal(); }
@@ -208,11 +382,38 @@ const baseUpdateScoreHeader = updateScoreHeader;
 updateScoreHeader = () => { baseUpdateScoreHeader(); if (currentScore) { const parts = currentScore.parts?.length || 0; const staffs = currentScore.parts?.reduce((sum, part) => sum + (part.staves?.length || 0), 0) || 0; $('project-summary').textContent = `${currentScore.parts?.[0]?.staves?.[0]?.measures?.length || 0} measures · ${parts} part${parts === 1 ? '' : 's'} · ${staffs} staff${staffs === 1 ? '' : 's'}`; } };
 function installPartControls() { const meta = $('score-meta'); const add = document.createElement('button'); add.id = 'add-part-button'; add.className = 'quiet'; add.textContent = '＋ Part'; const remove = document.createElement('button'); remove.id = 'delete-part-button'; remove.className = 'quiet'; remove.textContent = '− Part'; const addStaff = document.createElement('button'); addStaff.id = 'add-staff-button'; addStaff.className = 'quiet'; addStaff.textContent = '＋ Staff'; const removeStaff = document.createElement('button'); removeStaff.id = 'delete-staff-button'; removeStaff.className = 'quiet'; removeStaff.textContent = '− Staff'; const rename = document.createElement('button'); rename.id = 'rename-part-button'; rename.className = 'quiet'; rename.textContent = 'Rename Part'; [add, remove, addStaff, removeStaff, rename].forEach((button) => meta.insertBefore(button, $('mixer-button'))); add.addEventListener('click', async () => { if (!currentScore) return; try { await applyCommand({ type: 'add_part', name: `Piano ${currentScore.parts.length + 1}`, short_name: '', clefs: ['Treble'], midi_channel: Math.min(15, currentScore.parts.length), midi_program: 0 }, 'AddPart'); } catch (error) { uiAlert(`パートを追加できませんでした: ${userFacingError(error)}`); } }); remove.addEventListener('click', async () => { if (!currentScore || currentScore.parts.length <= 1) return; try { await applyCommand({ type: 'delete_part', part_index: currentScore.parts.length - 1 }, 'DeletePart'); } catch (error) { uiAlert(`パートを削除できませんでした: ${userFacingError(error)}`); } }); addStaff.addEventListener('click', async () => { if (!currentScore) return; try { await applyCommand({ type: 'add_staff', part_index: 0, clef: 'Treble' }, 'AddStaff'); } catch (error) { uiAlert(`譜表を追加できませんでした: ${userFacingError(error)}`); } }); removeStaff.addEventListener('click', async () => { if (!currentScore || (currentScore.parts?.[0]?.staves?.length || 1) <= 1) return; try { await applyCommand({ type: 'delete_staff', part_index: 0, staff_index: currentScore.parts[0].staves.length - 1 }, 'DeleteStaff'); } catch (error) { uiAlert(`譜表を削除できませんでした: ${userFacingError(error)}`); } }); rename.addEventListener('click', async () => { if (!currentScore?.parts?.[0]) return; const name = await uiPrompt('Part name', currentScore.parts[0].name || 'Piano'); if (!name?.trim()) return; try { await applyCommand({ type: 'set_part_name', part_index: 0, name: name.trim(), short_name: '' }, 'SetPartName'); } catch (error) { uiAlert(`パート名を変更できませんでした: ${userFacingError(error)}`); } }); }
 function installPartSelector() { const selector = document.createElement('select'); selector.id = 'part-select'; selector.setAttribute('aria-label', 'Active part'); $('score-meta').insertBefore(selector, $('mixer-button')); const refresh = () => { selector.replaceChildren(...(currentScore?.parts || []).map((part, index) => { const option = document.createElement('option'); option.value = index; option.textContent = part.name || `Part ${index + 1}`; return option; })); selector.value = String(Math.min(activePartIndex, Math.max(0, (currentScore?.parts?.length || 1) - 1))); activePartIndex = Number(selector.value); }; selector.addEventListener('change', () => { activePartIndex = Number(selector.value); }); refresh(); document.addEventListener('click', async (event) => { const target = event.target; if (!target.id || !['add-part-button', 'delete-part-button', 'add-staff-button', 'delete-staff-button', 'rename-part-button'].includes(target.id) || !currentScore) return; event.stopImmediatePropagation(); if (target.id === 'add-part-button') return applyCommand({ type: 'add_part', name: `Piano ${currentScore.parts.length + 1}`, short_name: '', clefs: ['Treble'], midi_channel: Math.min(15, currentScore.parts.length), midi_program: 0 }, 'AddPart').then(refresh).catch((error) => uiAlert(`パートを追加できませんでした: ${userFacingError(error)}`)); if (target.id === 'delete-part-button') { if (currentScore.parts.length <= 1) return; return applyCommand({ type: 'delete_part', part_index: activePartIndex }, 'DeletePart').then(() => { activePartIndex = Math.max(0, activePartIndex - 1); refresh(); }).catch((error) => uiAlert(`パートを削除できませんでした: ${userFacingError(error)}`)); } if (target.id === 'add-staff-button') return applyCommand({ type: 'add_staff', part_index: activePartIndex, clef: 'Treble' }, 'AddStaff').then(refresh).catch((error) => uiAlert(`譜表を追加できませんでした: ${userFacingError(error)}`)); if (target.id === 'delete-staff-button') { if ((currentScore.parts?.[activePartIndex]?.staves?.length || 1) <= 1) return; return applyCommand({ type: 'delete_staff', part_index: activePartIndex, staff_index: currentScore.parts[activePartIndex].staves.length - 1 }, 'DeleteStaff').then(refresh).catch((error) => uiAlert(`譜表を削除できませんでした: ${userFacingError(error)}`)); } const name = await uiPrompt('Part name', currentScore.parts[activePartIndex]?.name || `Part ${activePartIndex + 1}`); if (name?.trim()) applyCommand({ type: 'set_part_name', part_index: activePartIndex, name: name.trim(), short_name: '' }, 'SetPartName').then(refresh).catch((error) => uiAlert(`パート名を変更できませんでした: ${userFacingError(error)}`)); }, true); }
+function installActivePartControls() {
+  const meta = $('score-meta');
+  const selector = document.createElement('select'); selector.id = 'part-select'; selector.setAttribute('aria-label', 'Active part');
+  const actions = [['add-part-button', '＋ Part'], ['delete-part-button', '− Part'], ['add-staff-button', '＋ Staff'], ['delete-staff-button', '− Staff'], ['rename-part-button', 'Rename Part']].map(([id, label]) => { const button = document.createElement('button'); button.id = id; button.className = 'quiet'; button.type = 'button'; button.textContent = label; return button; });
+  meta.insertBefore(selector, $('mixer-button'));
+  actions.forEach((button) => meta.insertBefore(button, $('mixer-button')));
+  const refresh = () => {
+    const parts = currentScore?.parts || [];
+    activePartIndex = Math.min(activePartIndex, Math.max(0, parts.length - 1));
+    selector.replaceChildren(...parts.map((part, index) => { const option = document.createElement('option'); option.value = String(index); option.textContent = part.name || `Part ${index + 1}`; return option; }));
+    selector.value = String(activePartIndex);
+    selector.disabled = parts.length === 0;
+    $('delete-part-button').disabled = parts.length <= 1;
+    const staffCount = parts[activePartIndex]?.staves?.length || 0;
+    $('delete-staff-button').disabled = staffCount <= 1;
+  };
+  const execute = async (command, label, message) => { try { await applyCommand(command, label); refresh(); } catch (error) { uiAlert(`${message}: ${userFacingError(error)}`); } };
+  selector.addEventListener('change', () => { activePartIndex = Number(selector.value); refresh(); updateScoreHeader(); refreshStaffSelector(); applyPartView(); });
+  $('add-part-button').addEventListener('click', () => { if (!currentScore) return; return execute({ type: 'add_part', name: `Piano ${currentScore.parts.length + 1}`, short_name: '', clefs: ['Treble'], midi_channel: Math.min(15, currentScore.parts.length), midi_program: 0 }, 'AddPart', 'パートを追加できませんでした'); });
+  $('delete-part-button').addEventListener('click', () => { if (!currentScore || currentScore.parts.length <= 1) return; const target = activePartIndex; return execute({ type: 'delete_part', part_index: target }, 'DeletePart', 'パートを削除できませんでした').then(() => { activePartIndex = Math.max(0, Math.min(target, (currentScore?.parts?.length || 1) - 1)); refresh(); }); });
+  $('add-staff-button').addEventListener('click', () => { if (!currentScore) return; return execute({ type: 'add_staff', part_index: activePartIndex, clef: 'Treble' }, 'AddStaff', '譜表を追加できませんでした'); });
+  $('delete-staff-button').addEventListener('click', () => { const staffCount = currentScore?.parts?.[activePartIndex]?.staves?.length || 0; if (staffCount <= 1) return; return execute({ type: 'delete_staff', part_index: activePartIndex, staff_index: staffCount - 1 }, 'DeleteStaff', '譜表を削除できませんでした'); });
+  $('rename-part-button').addEventListener('click', async () => { const part = currentScore?.parts?.[activePartIndex]; if (!part) return; const name = await uiPrompt('Part name', part.name || `Part ${activePartIndex + 1}`); if (name?.trim()) await execute({ type: 'set_part_name', part_index: activePartIndex, name: name.trim(), short_name: '' }, 'SetPartName', 'パート名を変更できませんでした'); });
+  window.addEventListener('score-changed', refresh);
+  refresh();
+}
 function installPartExport() { const button = document.createElement('button'); button.id = 'export-part-button'; button.className = 'quiet'; button.textContent = 'Export Part'; $('score-meta').insertBefore(button, $('mixer-button')); button.addEventListener('click', async () => { if (!currentScore) return; try { const part = await window.acorde.extractPart(currentScore, activePartIndex); const report = await window.acorde.serializeMusicxmlReport(part); showDiagnostics(report); const saved = await window.acorde.saveScore({ suggestedName: `${part.parts[0]?.name || 'part'}.musicxml`, content: report.output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`パートを書き出せませんでした: ${userFacingError(error)}`); } }); }
 function installPartMidiExport() { const button = document.createElement('button'); button.id = 'export-part-midi-button'; button.className = 'quiet'; button.textContent = 'Part MIDI'; $('score-meta').insertBefore(button, $('mixer-button')); button.addEventListener('click', async () => { if (!currentScore) return; try { const part = await window.acorde.extractPart(currentScore, activePartIndex); const report = await window.acorde.serializeMidiReport(part); showDiagnostics(report); const saved = await window.acorde.saveMidi({ suggestedName: `${part.parts[0]?.name || 'part'}.mid`, data: report.output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`パートMIDIを書き出せませんでした: ${userFacingError(error)}`); } }); }
 function installPresentationControls() { const actions = document.querySelector('.top-actions'); const preset = document.createElement('select'); preset.id = 'page-preset'; preset.setAttribute('aria-label', 'Page preset'); preset.innerHTML = '<option value="a4">A4</option><option value="letter">Letter</option><option value="compact">Compact (A5)</option>'; const orientation = document.createElement('select'); orientation.id = 'page-orientation'; orientation.setAttribute('aria-label', 'Page orientation'); orientation.innerHTML = '<option value="portrait">Portrait</option><option value="landscape">Landscape</option>'; const margin = document.createElement('select'); margin.id = 'page-margin'; margin.setAttribute('aria-label', 'Page margin'); margin.innerHTML = '<option value="standard">Standard margin</option><option value="narrow">Narrow margin</option><option value="wide">Wide margin</option>'; const svg = document.createElement('button'); svg.id = 'svg-save-button'; svg.className = 'quiet'; svg.textContent = 'Export SVG'; const pdf = document.createElement('button'); pdf.id = 'pdf-save-button'; pdf.className = 'quiet'; pdf.textContent = 'Export PDF'; const print = document.createElement('button'); print.id = 'print-button'; print.className = 'quiet'; print.textContent = 'Print'; actions.insertBefore(preset, $('midi-save-button')); actions.insertBefore(orientation, $('midi-save-button')); actions.insertBefore(margin, $('midi-save-button')); actions.insertBefore(svg, $('midi-save-button')); actions.insertBefore(pdf, $('midi-save-button')); actions.append(print); const exportIds = ['abc-save-button', 'page-preset', 'page-orientation', 'page-margin', 'svg-save-button', 'pdf-save-button', 'midi-save-button', 'print-button']; const exportMenu = document.createElement('details'); exportMenu.id = 'export-menu'; exportMenu.className = 'export-menu'; const exportSummary = document.createElement('summary'); exportSummary.textContent = 'Export'; exportMenu.append(exportSummary); const exportElements = exportIds.map((id) => $(id)).filter(Boolean); exportElements.forEach((element) => exportMenu.append(element)); actions.insertBefore(exportMenu, actions.firstChild); const presets = { a4: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, letter: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, compact: { width: 900, staffSize: 8, measuresPerSystem: 5 } }; const margins = { standard: 0.4, narrow: 0.2, wide: 0.7 }; const pageNames = { a4: 'A4', letter: 'Letter', compact: 'A5' }; const pageConfig = () => `${pageNames[preset.value]} ${orientation.value}, margin ${margins[margin.value]}in`; svg.addEventListener('click', async () => { if (!currentScore) return; try { const output = await window.acorde.renderSvg(currentScore, presets[preset.value].width, presets[preset.value]); const saved = await window.acorde.saveScore({ suggestedName: `score-${preset.value}.svg`, content: output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`SVGを書き出せませんでした: ${userFacingError(error)}`); } }); pdf.addEventListener('click', async () => { if (!currentScore) return; try { showDiagnostics({ format: 'pdf', diagnostics: [{ code: 'print.page-config', severity: 'Info', preserved_value: pageConfig() }] }); const saved = await window.acorde.savePdf({ suggestedName: `score-${preset.value}.pdf`, pageSize: pageNames[preset.value], landscape: orientation.value === 'landscape', margin: margins[margin.value] }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`PDFを書き出せませんでした: ${userFacingError(error)}`); } }); print.addEventListener('click', () => { showDiagnostics({ format: 'print', diagnostics: [{ code: 'print.page-config', severity: 'Info', preserved_value: pageConfig() }] }); const printStyle = document.getElementById('print-page-config') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'print-page-config' })); printStyle.textContent = `@media print { @page { size: ${pageNames[preset.value]} ${orientation.value}; margin: ${margins[margin.value]}in; } }`; window.print(); }); }
 function installRenderDiagnostics() { $('svg-save-button').addEventListener('click', async (event) => { event.stopImmediatePropagation(); if (!currentScore) return; const presets = { a4: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, letter: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, compact: { width: 900, staffSize: 8, measuresPerSystem: 5 } }; const preset = $('page-preset').value; try { const metadata = await window.acorde.renderSvgMetadata(currentScore, presets[preset].width, presets[preset]); const output = await window.acorde.renderSvg(currentScore, presets[preset].width, presets[preset]); showSvgGeometryDiagnostics(output, metadata); const saved = await window.acorde.saveScore({ suggestedName: `score-${preset}.svg`, content: output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`SVGを書き出せませんでした: ${userFacingError(error)}`); } }, true); }
 function selectRenderedNote(note, extendRange = false) {
+  contextTarget = null;
   $('score').querySelectorAll('.acorde-selected').forEach((item) => item.classList.remove('acorde-selected'));
   note.classList.add('acorde-selected');
   note.focus({ preventScroll: true });
@@ -232,15 +433,78 @@ function selectRenderedNote(note, extendRange = false) {
   if (item) { $('duration-select').value = String(item.duration || 'quarter').toLowerCase(); $('dot-toggle').checked = Number(item.dot_count || 0) > 0; $('tuplet-select').value = item.tuplet ? `${item.tuplet.actual_notes}:${item.tuplet.normal_notes}` : ''; $('dynamic-select').value = item.dynamic || ''; $('grace-select').value = item.is_grace ? (item.grace_slash ? 'acciaccatura' : 'appoggiatura') : ''; }
   selectionPlayButton.disabled = !selectedRange;
   selectionPlayButton.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first';
+  renderNavigator();
+}
+function currentRenderOptions() {
+  const scorePaper = document.querySelector('.score-paper');
+  const available = scorePaper?.clientWidth ? scorePaper.clientWidth - 32 : 900;
+  return window.AcordeRenderPolicy.options(available, layoutDensity);
+}
+async function renderCurrentScore() {
+  const options = currentRenderOptions();
+  return window.acorde.renderCurrent(options.width, options);
+}
+function showScoreContextMenuForTarget(target) {
+  if (!target || !currentScore) return;
+  const kind = target.dataset.acordeKind;
+  if (kind === 'note' || kind === 'rest') {
+    selectRenderedNote(target);
+    contextTarget = { kind, ...['part', 'staff', 'measure', 'voice', 'note'].reduce((value, key) => ({ ...value, [key]: Number(target.dataset[key]) }), {}) };
+  } else {
+    const part = Number(target.dataset.part);
+    const staff = Number(target.dataset.staff);
+    const measure = Number(target.dataset.measure);
+    selectedRange = [measure, measure];
+    $('score').querySelectorAll('[data-acorde-kind="measure"]').forEach((item) => item.classList.toggle('acorde-range', Number(item.dataset.measure) === measure));
+    contextTarget = { kind, part, staff, measure, ...(kind === 'measure-text' ? { textIndex: Number(target.dataset.textIndex) } : {}) };
+    syncSelectionPlaybackControl();
+  }
+  const measureCount = currentScore.parts?.[contextTarget.part]?.staves?.[contextTarget.staff]?.measures?.length || 0;
+  window.acorde.showScoreContextMenu?.({ hasScore: true, kind, canDelete: kind !== 'measure' || measureCount > 1, shortcutOverrides });
+}
+function installMeasureHitAreas() {
+  const svg = $('score').querySelector('svg');
+  const scoreRoot = svg?.querySelector('.acorde-score');
+  if (!scoreRoot || !currentScore) return;
+  const measuresPerSystem = currentRenderOptions().measuresPerSystem;
+  const markers = [...svg.querySelectorAll('[data-acorde-kind="measure"]:not(.acorde-measure-hit-area)')];
+  markers.forEach((marker) => {
+    const part = Number(marker.dataset.part); const staff = Number(marker.dataset.staff); const measure = Number(marker.dataset.measure);
+    const measureCount = currentScore.parts?.[part]?.staves?.[staff]?.measures?.length || 0;
+    const row = Math.floor(measure / measuresPerSystem);
+    const staffGroup = svg.querySelector(`[data-acorde-kind="staff-group"][data-part="${part}"][data-staff="${staff}"][data-row="${row}"]`);
+    const bounds = staffGroup?.getBBox?.();
+    const area = window.AcordeRenderPolicy.measureHitArea(measure, measureCount, measuresPerSystem, bounds);
+    if (!area) return;
+    const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hitArea.setAttribute('class', 'acorde-measure-hit-area'); hitArea.setAttribute('data-acorde-kind', 'measure'); hitArea.setAttribute('data-part', String(part)); hitArea.setAttribute('data-staff', String(staff)); hitArea.setAttribute('data-measure', String(measure));
+    hitArea.setAttribute('x', String(area.x)); hitArea.setAttribute('y', String(area.y)); hitArea.setAttribute('width', String(area.width)); hitArea.setAttribute('height', String(area.height)); hitArea.setAttribute('fill', 'transparent'); hitArea.setAttribute('pointer-events', 'all');
+    scoreRoot.insertBefore(hitArea, scoreRoot.firstChild);
+  });
+}
+function sanitizedScoreSvg(svg) {
+  const parsed = new DOMParser().parseFromString(String(svg), 'image/svg+xml');
+  const root = parsed.documentElement;
+  if (root.localName !== 'svg' || parsed.querySelector('parsererror')) throw new Error('Rendered score is not valid SVG');
+  root.querySelectorAll('script, foreignObject, iframe, object, embed, audio, video, image, a, animate, animateMotion, animateTransform, set').forEach((element) => element.remove());
+  root.querySelectorAll('*').forEach((element) => [...element.attributes].forEach((attribute) => {
+    const name = attribute.name.toLowerCase(); const value = attribute.value.trim();
+    if (name.startsWith('on') || ((name === 'href' || name === 'xlink:href') && !value.startsWith('#'))) element.removeAttribute(attribute.name);
+  }));
+  return document.importNode(root, true);
 }
 function updateRenderedScore(svg) {
   updateEngineIndicator('ready');
-  $('score').innerHTML = svg;
+  $('score').replaceChildren(sanitizedScoreSvg(svg));
+  const interactiveSvg = $('score').querySelector('svg');
+  if (interactiveSvg) { interactiveSvg.setAttribute('role', 'group'); interactiveSvg.setAttribute('aria-label', interactiveSvg.querySelector('title')?.textContent || 'Editable score'); }
+  installMeasureHitAreas();
   playbackNoteByAddress.clear();
   highlightedPlaybackNote = null;
   highlightedPlaybackAddress = null;
   refreshSelectionActions();
   applyPartView();
+  renderNavigator();
   $('score').querySelectorAll('[data-acorde-kind="note"]').forEach((note) => {
     playbackNoteByAddress.set(note.dataset.noteAddr, note);
     note.setAttribute('tabindex', '0');
@@ -279,29 +543,40 @@ function updateRenderedScore(svg) {
       }
       selectRenderedNote(note, event.shiftKey);
     });
-    note.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectRenderedNote(note, event.shiftKey); } });
+    note.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectRenderedNote(note, event.shiftKey); } else if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(note); } });
   });
-  $('score').querySelectorAll('[data-acorde-kind="measure"]').forEach((measure) => measure.addEventListener('click', async (event) => {
+  $('score').querySelectorAll('.acorde-measure-hit-area').forEach((measure) => { measure.setAttribute('tabindex', '0'); measure.setAttribute('role', 'button'); measure.setAttribute('aria-label', `Measure ${Number(measure.dataset.measure) + 1}`); measure.addEventListener('keydown', (event) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(measure); } }); measure.addEventListener('click', async (event) => {
     if (toolMode === 'select') return;
     event.stopPropagation();
     if (!currentScore) return;
     const part = Number(measure.dataset.part); const staff = Number(measure.dataset.staff); const measureIndex = Number(measure.dataset.measure);
     const voices = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measureIndex]?.voices || [];
     const voiceIndex = Math.min(activeVoiceIndex, Math.max(0, voices.length - 1));
-    const voice = voices[voiceIndex];
-    if (!voice) return;
+    const voice = voices[voiceIndex] || [];
     const isRest = toolMode === 'rest';
     const bounds = measure.getBoundingClientRect();
     const ratio = bounds.width ? Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)) : 0;
     const position = Math.round(ratio * voice.length);
     const tuple = $('tuplet-select').value ? $('tuplet-select').value.split(':').map(Number) : null;
-    const command = { type: 'add_note', part_index: part, staff_index: staff, measure_index: measureIndex, voice: voiceIndex, position, pitch: isRest ? null : { step: 'C', octave: 4, alter: 0 }, duration: $('duration-select').value, dot_count: $('dot-toggle').checked ? 1 : 0, is_rest: isRest, tuplet: tuple ? { actual_notes: tuple[0], normal_notes: tuple[1] } : null };
+    const command = { type: 'add_note', part_index: part, staff_index: staff, measure_index: measureIndex, voice: voiceIndex, position, pitch: isRest ? null : { step: 'C', octave: 4, alter: 0 }, duration: engineDuration($('duration-select').value), dot_count: $('dot-toggle').checked ? 1 : 0, is_rest: isRest, tuplet: tuple ? { actual_notes: tuple[0], normal_notes: tuple[1] } : null };
     try { await applyCommand(command, isRest ? 'AddRest' : 'AddNote'); } catch (error) { uiAlert(`入力できませんでした: ${userFacingError(error)}`); }
-  }));
+  }); });
+  $('score').querySelectorAll('[data-acorde-kind="measure-text"]').forEach((text) => { text.setAttribute('tabindex', '0'); text.setAttribute('role', 'button'); text.addEventListener('keydown', (event) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(text); } }); });
+  const scoreElement = $('score');
+  if (scoreElement.dataset.contextMenuBound !== 'true') scoreElement.addEventListener('contextmenu', (event) => {
+    const target = event.target.closest?.('[data-acorde-kind="note"], [data-acorde-kind="rest"], [data-acorde-kind="measure-text"], [data-acorde-kind="measure"]');
+    if (!target || !currentScore) return;
+    event.preventDefault();
+    event.stopPropagation();
+    showScoreContextMenuForTarget(target);
+  });
+  scoreElement.dataset.contextMenuBound = 'true';
   syncSelectionPlaybackControl();
   window.dispatchEvent(new Event('score-changed'));
 }
-function showDiagnostics(report) { lastDiagnosticsReport = report || null; const diagnostics = report?.diagnostics || []; const losses = diagnostics.filter((item) => item.loss_reason).length; $('diagnostics').classList.toggle('hidden', diagnostics.length === 0); $('diagnostics').setAttribute('role', diagnostics.length ? 'status' : 'none'); const exportButton = $('diagnostics-export'); $('diagnostics').innerHTML = diagnostics.length ? `<strong>${report.format || 'score'} · ${diagnostics.length} diagnostic${diagnostics.length > 1 ? 's' : ''}${losses ? ` · ${losses} loss` : ''}</strong><span>${diagnostics.map((item) => `[${item.severity}] ${item.code}: ${item.loss_reason || `preserved ${item.preserved_value || 'value'}`}${item.source_location ? ` (${item.source_location})` : ''}`).join(' · ')}</span>` : ''; if (exportButton) { exportButton.classList.toggle('hidden', diagnostics.length === 0); $('diagnostics').append(exportButton); } }
+function commitRenderedScore(svg) { return renderCoordinator.commit(svg, updateRenderedScore); }
+async function renderAndUpdateCurrentScore() { return renderCoordinator.render(renderCurrentScore, updateRenderedScore); }
+function showDiagnostics(report) { lastDiagnosticsReport = report || null; const diagnostics = Array.isArray(report?.diagnostics) ? report.diagnostics : []; const losses = diagnostics.filter((item) => item?.loss_reason).length; const host = $('diagnostics'); host.classList.toggle('hidden', diagnostics.length === 0); host.setAttribute('role', diagnostics.length ? 'status' : 'none'); const exportButton = $('diagnostics-export'); host.replaceChildren(); if (diagnostics.length) { const heading = document.createElement('strong'); heading.textContent = `${String(report?.format || 'score')} · ${diagnostics.length} diagnostic${diagnostics.length > 1 ? 's' : ''}${losses ? ` · ${losses} loss` : ''}`; const detail = document.createElement('span'); detail.textContent = diagnostics.map((item) => `[${item?.severity || 'Info'}] ${item?.code || 'unknown'}: ${item?.loss_reason || `preserved ${item?.preserved_value || 'value'}`}${item?.source_location ? ` (${item.source_location})` : ''}`).join(' · '); host.append(heading, detail); } if (exportButton) { exportButton.classList.toggle('hidden', diagnostics.length === 0); host.append(exportButton); } }
 const baseShowDiagnostics = showDiagnostics; showDiagnostics = (report) => { if (report?.format === 'pdf' || report?.format === 'print') { const config = report.diagnostics?.find((item) => item.code === 'print.page-config')?.preserved_value || ''; const match = config.match(/^(A4|Letter|A5)\s+(portrait|landscape),\s+margin\s+([0-9.]+)in/); if (match) { const geometry = window.AcordePrintGeometry.calculate(match[1], match[2], Number(match[3])); report = { ...report, diagnostics: [...(report.diagnostics || []), { code: 'print.page-geometry', severity: geometry.valid ? 'Info' : 'Warning', ...(geometry.valid ? { preserved_value: `page ${Math.round(geometry.width_points)} × ${Math.round(geometry.height_points)}pt; printable ${Math.round(geometry.content_width_points)} × ${Math.round(geometry.content_height_points)}pt` } : { loss_reason: 'page margins leave no printable area' }) }] }; } } baseShowDiagnostics(report); };
 function showSvgGeometryDiagnostics(svg, metadata) { const root = svg.match(/<svg\b[^>]*>/i)?.[0] || ''; const width = root.match(/\bwidth="([^"]+)"/i)?.[1] || 'unknown'; const height = root.match(/\bheight="([^"]+)"/i)?.[1] || 'unknown'; const viewBox = root.match(/\bviewBox="([^"]+)"/i)?.[1] || 'unknown'; const viewBoxValues = viewBox === 'unknown' ? [] : viewBox.trim().split(/[ ,]+/).map(Number); const validViewBox = viewBoxValues.length === 4 && viewBoxValues.every(Number.isFinite) && viewBoxValues[2] > 0 && viewBoxValues[3] > 0; const dimension = (value) => { const match = value.match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i); return match ? Number(match[1]) : null; }; const widthValue = dimension(width); const heightValue = dimension(height); const validDimensions = widthValue != null && heightValue != null && widthValue > 0 && heightValue > 0; const complete = width !== 'unknown' && height !== 'unknown' && viewBox !== 'unknown'; const valid = complete && validDimensions && validViewBox; const geometryMessage = valid ? `output ${width} × ${height}; viewBox ${viewBox}` : complete ? 'SVG root geometry is present but invalid; width, height, and viewBox must contain positive numeric values' : 'SVG root geometry is incomplete; width, height, and viewBox could not all be read'; showDiagnostics({ format: 'svg', diagnostics: [{ code: 'render.svg-geometry', severity: valid ? 'Info' : 'Warning', ...(valid ? { preserved_value: geometryMessage } : { loss_reason: geometryMessage }) }, { code: 'render.vector-glyphs', severity: 'Info', preserved_value: `embedded vector glyphs; ${metadata.note_count} notes, ${metadata.measure_count} measures` }, { code: 'render.accessible-text', severity: 'Info', preserved_value: metadata.accessible_text }] }); }
 function addComposerAbcExportWarnings(report, score) {
@@ -324,18 +599,14 @@ async function applyCommand(command, label = 'Composer') {
   currentScore = await window.acorde.applyCommand(command, label);
   markDirty();
   updateScoreHeader();
-  updateRenderedScore(await window.acorde.renderCurrent(900));
+  await renderAndUpdateCurrentScore();
   history.past.push(command); history.future.length = 0; scoreCommands.push(command); updateHistory();
 }
 
 renderNotes();
-installPartControls();
+installActivePartControls();
 function installPartGroupControl() { const button = document.createElement('button'); button.id = 'part-group-button'; button.className = 'quiet'; button.textContent = 'Part group'; $('score-meta').insertBefore(button, $('mixer-button')); button.addEventListener('click', async () => { if (!currentScore || currentScore.parts.length < 2) return uiAlert('Part groupには2つ以上のpartが必要です。'); const first = Number(await uiPrompt(`First part (1-${currentScore.parts.length})`, '1')); const last = Number(await uiPrompt(`Last part (${first || 1}-${currentScore.parts.length})`, String(currentScore.parts.length))); if (!Number.isInteger(first) || !Number.isInteger(last) || first < 1 || last < first || last > currentScore.parts.length) return; const symbol = await uiPrompt('Group symbol: Bracket, Brace, Line', 'Bracket'); if (symbol === null) return; const normalized = symbol.trim().toLowerCase(); const groupSymbol = normalized === 'brace' ? 'Brace' : normalized === 'line' ? 'Line' : normalized === 'bracket' ? 'Bracket' : null; if (!groupSymbol) return uiAlert('Group symbolは Bracket / Brace / Line のいずれかです。'); try { await applyCommand({ type: 'set_part_group', group: { first_part: first - 1, last_part: last - 1, symbol: groupSymbol, barlines_connect: true } }, 'SetPartGroup'); } catch (error) { uiAlert(`パートグループを変更できませんでした: ${userFacingError(error)}`); } }); }
 installPartGroupControl();
-installPartSelector();
-$('part-select').addEventListener('change', refreshVoiceSelector);
-$('part-select').addEventListener('change', updateScoreHeader);
-$('part-select').addEventListener('change', applyPartView);
 const staffSelector = document.createElement('select');
 staffSelector.id = 'staff-select';
 staffSelector.setAttribute('aria-label', 'Active staff');
@@ -354,11 +625,72 @@ installPartMidiExport();
 function installAbcExport() { const button = document.createElement('button'); button.id = 'abc-save-button'; button.className = 'quiet'; button.textContent = 'Export ABC'; const actions = document.querySelector('.top-actions'); actions.insertBefore(button, $('midi-save-button')); button.addEventListener('click', async () => { if (!currentScore) return; try { const report = addComposerAbcExportWarnings(await window.acorde.serializeAbcReport(currentScore), currentScore); showDiagnostics(report); const saved = await window.acorde.saveScore({ suggestedName: 'morning-sketch.abc', content: report.output }); if (saved) $('file-name').textContent = saved.split(/[\\/]/).pop(); } catch (error) { uiAlert(`ABCを書き出せませんでした: ${userFacingError(error)}`); } }); }
 installAbcExport();
 installPresentationControls();
-function installPrintSettingsPersistence() { const defaults = { preset: 'a4', orientation: 'portrait', margin: 'standard' }; let saved = defaults; try { saved = { ...defaults, ...JSON.parse(localStorage.getItem(PRINT_SETTINGS_KEY) || '{}') }; } catch { localStorage.removeItem(PRINT_SETTINGS_KEY); } const preset = $('page-preset'); const orientation = $('page-orientation'); const margin = $('page-margin'); if (!preset || !orientation || !margin) return; const hasOption = (select, value) => Array.from(select.options).some((option) => option.value === value); if (hasOption(preset, saved.preset)) preset.value = saved.preset; if (hasOption(orientation, saved.orientation)) orientation.value = saved.orientation; if (hasOption(margin, saved.margin)) margin.value = saved.margin; const persist = () => localStorage.setItem(PRINT_SETTINGS_KEY, JSON.stringify({ preset: preset.value, orientation: orientation.value, margin: margin.value })); [preset, orientation, margin].forEach((control) => control.addEventListener('change', persist)); persist(); }
+function installPrintSettingsPersistence() { const defaults = { preset: 'a4', orientation: 'portrait', margin: 'standard' }; const saved = { ...defaults, ...storedJson(PRINT_SETTINGS_KEY, {}) }; const preset = $('page-preset'); const orientation = $('page-orientation'); const margin = $('page-margin'); if (!preset || !orientation || !margin) return; const hasOption = (select, value) => Array.from(select.options).some((option) => option.value === value); if (hasOption(preset, saved.preset)) preset.value = saved.preset; if (hasOption(orientation, saved.orientation)) orientation.value = saved.orientation; if (hasOption(margin, saved.margin)) margin.value = saved.margin; const persist = () => storeJson(PRINT_SETTINGS_KEY, { preset: preset.value, orientation: orientation.value, margin: margin.value }); [preset, orientation, margin].forEach((control) => control.addEventListener('change', persist)); persist(); }
 installPrintSettingsPersistence();
+function copySelectValue(fromId, toId) {
+  const from = $(fromId); const to = $(toId);
+  if (from && to && Array.from(to.options).some((option) => option.value === from.value)) to.value = from.value;
+}
+function openPageSettings() {
+  copySelectValue('page-preset', 'page-layout-preset');
+  copySelectValue('page-orientation', 'page-layout-orientation');
+  copySelectValue('page-margin', 'page-layout-margin');
+  $('page-layout-dialog')?.showModal();
+  $('page-layout-preset')?.focus();
+}
+function applyPageSettings() {
+  [['page-layout-preset', 'page-preset'], ['page-layout-orientation', 'page-orientation'], ['page-layout-margin', 'page-margin']].forEach(([fromId, toId]) => {
+    const from = $(fromId); const to = $(toId);
+    if (!from || !to || to.value === from.value) return;
+    to.value = from.value;
+    to.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  $('page-layout-dialog')?.close();
+}
+async function applyLayoutDensity(nextDensity) {
+  const normalized = window.AcordeRenderPolicy?.normalizeDensity(nextDensity) || 'adaptive';
+  const previous = layoutDensity;
+  if (normalized === previous) return;
+  layoutDensity = normalized;
+  try {
+    storeValue(LAYOUT_DENSITY_KEY, layoutDensity);
+    if (currentScore) await renderAndUpdateCurrentScore();
+  } catch (error) {
+    layoutDensity = previous;
+    storeValue(LAYOUT_DENSITY_KEY, previous);
+    await uiAlert(`Layout density could not be applied: ${userFacingError(error)}`);
+  }
+}
+function openLayoutDensity() {
+  const select = $('layout-density-select');
+  if (select) select.value = layoutDensity;
+  $('layout-density-dialog')?.showModal();
+  select?.focus();
+}
+$('page-layout-apply')?.addEventListener('click', applyPageSettings);
+$('layout-density-apply')?.addEventListener('click', async () => {
+  await applyLayoutDensity($('layout-density-select')?.value);
+  $('layout-density-dialog')?.close();
+});
 function installPdfRenderDiagnostics() { $('pdf-save-button').addEventListener('click', async () => { if (!currentScore) return; const presets = { a4: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, letter: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, compact: { width: 900, staffSize: 8, measuresPerSystem: 5 } }; try { const metadata = await window.acorde.renderSvgMetadata(currentScore, presets[$('page-preset').value].width, presets[$('page-preset').value]); const svg = await window.acorde.renderSvg(currentScore, presets[$('page-preset').value].width, presets[$('page-preset').value]); const bounds = window.AcordePrintGeometry.analyzeSvgBounds(svg); const report = lastDiagnosticsReport || { format: 'pdf', diagnostics: [] }; const diagnostics = (report.diagnostics || []).filter((item) => !['render.vector-glyphs', 'render.accessible-text', 'render.clipping'].includes(item.code)); showDiagnostics({ ...report, format: 'pdf', diagnostics: [...diagnostics, { code: 'render.vector-glyphs', severity: 'Info', preserved_value: `embedded vector glyphs; ${metadata.note_count} notes, ${metadata.measure_count} measures` }, { code: 'render.accessible-text', severity: 'Info', preserved_value: metadata.accessible_text }, { code: 'render.clipping', severity: bounds.valid ? 'Info' : 'Warning', ...(bounds.valid ? { preserved_value: bounds.reason } : { loss_reason: bounds.reason }) }] }); } catch {} }); }
 const baseShowSvgGeometryDiagnostics = showSvgGeometryDiagnostics; showSvgGeometryDiagnostics = (svg, metadata) => { baseShowSvgGeometryDiagnostics(svg, metadata); const bounds = window.AcordePrintGeometry.analyzeSvgBounds(svg); const report = lastDiagnosticsReport || { format: 'svg', diagnostics: [] }; showDiagnostics({ ...report, format: 'svg', diagnostics: [...(report.diagnostics || []), { code: 'render.clipping', severity: bounds.valid ? 'Info' : 'Warning', ...(bounds.valid ? { preserved_value: bounds.reason } : { loss_reason: bounds.reason }) }] }); };
-installRenderDiagnostics();
+function installSingleSvgExport() {
+  const previous = $('svg-save-button'); if (!previous) return;
+  const button = previous.cloneNode(true); previous.replaceWith(button);
+  button.addEventListener('click', async () => {
+    if (!currentScore) return;
+    const presets = { a4: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, letter: { width: 1200, staffSize: 10, measuresPerSystem: 4 }, compact: { width: 900, staffSize: 8, measuresPerSystem: 5 } };
+    const preset = $('page-preset').value;
+    try {
+      const metadata = await window.acorde.renderSvgMetadata(currentScore, presets[preset].width, presets[preset]);
+      const output = await window.acorde.renderSvg(currentScore, presets[preset].width, presets[preset]);
+      showSvgGeometryDiagnostics(output, metadata);
+      const saved = await window.acorde.saveScore({ suggestedName: `score-${preset}.svg`, content: output });
+      if (saved) $('file-name').textContent = saved.split('/').pop();
+    } catch (error) { uiAlert(`SVGを書き出せませんでした: ${userFacingError(error)}`); }
+  });
+}
+installSingleSvgExport();
 installPdfRenderDiagnostics();
 function syncEditorAfterScoreChange() {
   if (currentScore) mixerState = window.AcordeMixerState.normalize(mixerState, currentScore.parts?.length || 0);
@@ -376,11 +708,11 @@ function syncEditorAfterScoreChange() {
 }
 window.addEventListener('score-changed', syncEditorAfterScoreChange);
 updateZoom();
-const savedDraft = localStorage.getItem(AUTOSAVE_KEY);
+const savedDraft = storedValue(AUTOSAVE_KEY);
 if (savedDraft) { $('recovery').classList.remove('hidden'); $('first-use-guide').classList.add('hidden'); }
-function revealQuickStartAfterRecovery() { if (localStorage.getItem('acorde-composer.quick-start-dismissed') !== '1') $('first-use-guide')?.classList.remove('hidden'); }
+function revealQuickStartAfterRecovery() { if (storedValue('acorde-composer.quick-start-dismissed') !== '1') $('first-use-guide')?.classList.remove('hidden'); }
 function userFacingError(error) { const message = String(error?.message || error || 'Unknown error'); if (message.includes('acorde engine stopped')) { updateEngineIndicator('unavailable'); return 'acorde engineを起動できませんでした。アプリを再起動してもう一度お試しください。'; } return message; }
-function updateEngineIndicator(state) { const badge = document.querySelector('.engine-badge'); if (!badge) return; const label = badge.querySelector('small'); const pulse = badge.querySelector('.pulse'); const labels = { checking: 'Checking… · v1.2.0', ready: 'Ready · v1.2.0', unavailable: 'Unavailable · restart app' }; badge.setAttribute('role', 'status'); badge.setAttribute('aria-label', 'acorde engine status'); badge.setAttribute('aria-live', 'polite'); if (label) label.textContent = labels[state] || labels.checking; badge.dataset.state = state; pulse?.classList.toggle('error', state === 'unavailable'); }
+function updateEngineIndicator(state) { const badge = document.querySelector('.engine-badge'); if (!badge) return; const label = badge.querySelector('small'); const pulse = badge.querySelector('.pulse'); const labels = { checking: 'Checking… · v1.2.2', ready: 'Ready · v1.2.2', unavailable: 'Unavailable · restart app' }; badge.setAttribute('role', 'status'); badge.setAttribute('aria-label', 'acorde engine status'); badge.setAttribute('aria-live', 'polite'); if (label) label.textContent = labels[state] || labels.checking; badge.dataset.state = state; pulse?.classList.toggle('error', state === 'unavailable'); }
 function pitchFromMidi(midi) {
   const names = [['C', 0], ['C', 1], ['D', 0], ['D', 1], ['E', 0], ['F', 0], ['F', 1], ['G', 0], ['G', 1], ['A', 0], ['A', 1], ['B', 0]];
   const [step, alter] = names[Math.max(0, Math.min(127, midi)) % 12];
@@ -396,6 +728,19 @@ async function transposeSelected(semitones) {
   const midi = (pitch.octave + 1) * 12 + base + pitch.alter + semitones;
   try { await applyCommand({ type: 'add_pitch', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, pitch: pitchFromMidi(midi) }, 'TransposeNote'); } catch (error) { uiAlert(`音高を変更できませんでした: ${userFacingError(error)}`); }
 }
+async function openTransposeDialog() {
+  const prompts = {
+    en: 'Transpose selected note by semitones (-48 to 48)',
+    ja: '選択した音符を半音単位で移調（-48〜48）',
+    zh: '按半音移调所选音符（-48 到 48）',
+  };
+  if (!selectedNoteData()?.pitch) return uiAlert(language === 'ja' ? '移調する音符を選択してください。' : language === 'zh' ? '请选择要移调的音符。' : 'Select a note to transpose.');
+  const value = await uiPrompt(prompts[language] || prompts.en, '1');
+  if (value === null) return;
+  const semitones = Number(value);
+  if (!Number.isInteger(semitones) || semitones === 0 || semitones < -48 || semitones > 48) return uiAlert(language === 'ja' ? '0以外の-48〜48の整数を入力してください。' : language === 'zh' ? '请输入 -48 到 48 之间且不为 0 的整数。' : 'Enter a non-zero integer from -48 to 48.');
+  await transposeSelected(semitones);
+}
 function navigateSelection(direction, edge = null, extendRange = false) {
   const rendered = [...$('score').querySelectorAll('[data-acorde-kind="note"]')];
   if (!rendered.length) return;
@@ -405,11 +750,23 @@ function navigateSelection(direction, edge = null, extendRange = false) {
 }
 document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; if (event.key === 'ArrowUp') { event.preventDefault(); transposeSelected(1); } if (event.key === 'ArrowDown') { event.preventDefault(); transposeSelected(-1); } if (event.key === 'ArrowLeft') { event.preventDefault(); navigateSelection(-1, null, event.shiftKey); } if (event.key === 'ArrowRight') { event.preventDefault(); navigateSelection(1, null, event.shiftKey); } if (event.key === 'Home') { event.preventDefault(); navigateSelection(0, 'first', event.shiftKey); } if (event.key === 'End') { event.preventDefault(); navigateSelection(0, 'last', event.shiftKey); } });
 async function deleteSelected() {
-  if (!currentScore || !selectedAddress) return;
+  if (!currentScore) return;
+  if (contextTarget?.kind === 'measure-text') {
+    const { part, staff, measure, textIndex } = contextTarget;
+    try { await applyCommand({ type: 'set_measure_text', part_index: part, staff_index: staff, measure_index: measure, text_index: textIndex, text: null }, 'DeleteMeasureText'); contextTarget = null; } catch (error) { uiAlert(`テキストを削除できませんでした: ${userFacingError(error)}`); }
+    return;
+  }
+  if (contextTarget?.kind === 'measure') {
+    const measureCount = currentScore.parts?.[contextTarget.part]?.staves?.[contextTarget.staff]?.measures?.length || 0;
+    if (measureCount <= 1) return;
+    try { await applyCommand({ type: 'delete_measure', measure_index: contextTarget.measure }, 'DeleteMeasure'); selectedAddress = null; selectedRange = null; contextTarget = null; refreshSelectionActions(); } catch (error) { uiAlert(`小節を削除できませんでした: ${userFacingError(error)}`); }
+    return;
+  }
+  if (!selectedAddress) return;
   const { part, staff, measure, voice, note } = selectedAddress;
   const item = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.voices?.[voice]?.[note];
   if (!item) return;
-  try { await applyCommand({ type: 'delete_note', note_id: item.id, part_index: part, staff_index: staff, measure_index: measure, voice }, 'DeleteNote'); selectedAddress = null; } catch (error) { uiAlert(`削除できませんでした: ${userFacingError(error)}`); }
+  try { await applyCommand({ type: 'delete_note', note_id: item.id, part_index: part, staff_index: staff, measure_index: measure, voice }, 'DeleteNote'); selectedAddress = null; refreshSelectionActions(); } catch (error) { uiAlert(`削除できませんでした: ${userFacingError(error)}`); }
 }
 function selectedNoteData() {
   if (!currentScore || !selectedAddress) return null;
@@ -419,6 +776,14 @@ function selectedNoteData() {
   return { pitch: item.is_rest ? null : item.pitches?.[0] || null, duration: String(item.duration || 'Quarter').toLowerCase(), dot_count: item.dot_count || 0, is_rest: Boolean(item.is_rest) };
 }
 async function copySelected() {
+  if (contextTarget?.kind === 'measure-text') {
+    const { part, staff, measure, textIndex } = contextTarget;
+    const text = currentScore?.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.texts?.[textIndex];
+    if (!text) return;
+    await window.acorde.clipboardWrite(JSON.stringify({ format: 'acorde-composer-measure-text', version: 1, text }));
+    $('score').setAttribute('aria-label', 'Measure text copied');
+    return;
+  }
   const note = selectedNoteData();
   if (!note) return;
   await window.acorde.clipboardWrite(JSON.stringify({ format: 'acorde-composer-note', version: 1, note }));
@@ -428,28 +793,39 @@ async function pasteNote() {
   if (!currentScore) return;
   let payload;
   try { payload = JSON.parse(await window.acorde.clipboardRead()); } catch { return; }
-  if (payload?.format !== 'acorde-composer-note' || payload.version !== 1 || !payload.note) return;
-  const target = selectedAddress || { part: 0, staff: 0, measure: 0, voice: 0, note: -1 };
+  if (payload?.version !== 1) return;
+  const contextAddress = contextTarget ? { part: contextTarget.part, staff: contextTarget.staff, measure: contextTarget.measure, voice: 0, note: -1 } : null;
+  if (payload.format === 'acorde-composer-measure-text' && payload.text && contextAddress) {
+    const texts = currentScore.parts?.[contextAddress.part]?.staves?.[contextAddress.staff]?.measures?.[contextAddress.measure]?.texts || [];
+    try { await applyCommand({ type: 'set_measure_text', part_index: contextAddress.part, staff_index: contextAddress.staff, measure_index: contextAddress.measure, text_index: texts.length, text: payload.text }, 'PasteMeasureText'); } catch (error) { uiAlert(`テキストを貼り付けできませんでした: ${userFacingError(error)}`); }
+    return;
+  }
+  if (payload?.format !== 'acorde-composer-note' || !payload.note) return;
+  const target = selectedAddress || contextAddress || { part: 0, staff: 0, measure: 0, voice: 0, note: -1 };
   const voice = currentScore.parts?.[target.part]?.staves?.[target.staff]?.measures?.[target.measure]?.voices?.[target.voice];
   if (!voice) return;
   const note = payload.note;
   const command = { type: 'add_note', part_index: target.part, staff_index: target.staff, measure_index: target.measure, voice: target.voice, position: Math.min(voice.length, target.note + 1), pitch: note.is_rest ? null : note.pitch, duration: note.duration, dot_count: Number(note.dot_count) || 0, is_rest: Boolean(note.is_rest) };
   try { await applyCommand(command, 'PasteNote'); } catch (error) { uiAlert(`貼り付けできませんでした: ${userFacingError(error)}`); }
 }
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); deleteSelected(); } });
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; const modifier = event.metaKey || event.ctrlKey; if (!modifier) return; if (event.key.toLowerCase() === 'c') { event.preventDefault(); copySelected(); } if (event.key.toLowerCase() === 'v') { event.preventDefault(); pasteNote(); } });
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; const key = event.key.toLowerCase(); if (event.metaKey || event.ctrlKey) { if (key === 'z') { event.preventDefault(); if (event.shiftKey) $('redo-button').click(); else $('undo-button').click(); } else if (key === 'y') { event.preventDefault(); $('redo-button').click(); } return; } if (event.key === 'Escape') { event.preventDefault(); selectTool('select'); return; } if (key === '[' || key === ']') { event.preventDefault(); setActiveVoice(activeVoiceIndex + (key === ']' ? 1 : -1)); return; } const shortcuts = { n: 'note', r: 'rest', s: 'slur', l: 'slur', t: 'tie', h: 'hairpin' }; if (shortcuts[key]) { event.preventDefault(); selectTool(shortcuts[key]); } });
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; if (event.key === '?') { event.preventDefault(); $('shortcuts-dialog').showModal(); } });
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select') || event.metaKey || event.ctrlKey || event.altKey) return; if (event.code === 'Space') { event.preventDefault(); $('play-button').click(); } });
+document.addEventListener('pointerdown', (event) => { if (event.button === 0) contextTarget = null; });
+document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; const platform = navigator.platform.includes('Mac') ? 'darwin' : 'default'; const command = window.AcordeCommandRegistry?.commandForKeyboardEvent(event, platform, shortcutOverrides); if (!command) return; event.preventDefault(); dispatchApplicationMenuCommand(command); });
 $('generate-button').addEventListener('click', () => { renderAiPreview(); $('suggestion').classList.remove('hidden'); $('generate-button').textContent = '✦ Regenerate suggestions'; });
 document.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => { $('prompt').value = chip.textContent; $('suggestion').classList.remove('hidden'); }));
 $('apply-button').addEventListener('click', async () => { if (!currentScore) return uiAlert('先にMusicXMLを開いてください。'); try { await applyCommand(aiProposal, 'ApplyAI'); $('apply-button').textContent = 'Applied ✓'; $('apply-button').disabled = true; $('reject-button').disabled = true; } catch (error) { uiAlert(`提案を適用できませんでした: ${userFacingError(error)}`); } });
 $('reject-button').addEventListener('click', () => { $('suggestion').classList.add('hidden'); $('apply-button').disabled = false; $('apply-button').textContent = 'Apply reviewed changes'; });
-$('undo-button').addEventListener('click', async () => { try { currentScore = await window.acorde.undo(); updateRenderedScore(await window.acorde.renderCurrent(900)); history.future.push(history.past.pop()); scoreCommands.pop(); $('apply-button').textContent = 'Preview & apply'; $('apply-button').disabled = false; updateHistory(); } catch (error) { uiAlert(`元に戻せませんでした: ${userFacingError(error)}`); } });
-$('redo-button').addEventListener('click', async () => { try { currentScore = await window.acorde.redo(); updateRenderedScore(await window.acorde.renderCurrent(900)); history.past.push(history.future.pop()); scoreCommands.push(history.past.at(-1)); updateHistory(); } catch (error) { uiAlert(`やり直せませんでした: ${userFacingError(error)}`); } });
-$('duration-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; try { await applyCommand({ type: 'set_duration', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, duration: $('duration-select').value, dot_count: $('dot-toggle').checked ? 1 : 0 }, 'SetDuration'); } catch (error) { uiAlert(`音価を変更できませんでした: ${userFacingError(error)}`); } });
-$('dot-toggle').addEventListener('change', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; try { await applyCommand({ type: 'set_duration', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, duration: $('duration-select').value, dot_count: $('dot-toggle').checked ? 1 : 0 }, 'SetDot'); } catch (error) { uiAlert(`付点を変更できませんでした: ${userFacingError(error)}`); } });
-$('tuplet-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress || $('tuplet-select').value === '') return; const { part, staff, measure, voice, note } = selectedAddress; const value = $('tuplet-select').value; const tuplet = value === 'clear' ? null : (() => { const [actual_notes, normal_notes] = value.split(':').map(Number); return { actual_notes, normal_notes }; })(); try { await applyCommand({ type: 'set_tuplet', part_index: part, staff_index: staff, measure_index: measure, voice_index: voice, note_index: note, tuplet }, 'SetTuplet'); } catch (error) { uiAlert(`連符を変更できませんでした: ${userFacingError(error)}`); } finally { $('tuplet-select').value = tuplet ? value : ''; } });
+$('undo-button').addEventListener('click', async () => { try { currentScore = await window.acorde.undo(); await renderAndUpdateCurrentScore(); history.future.push(history.past.pop()); scoreCommands.pop(); $('apply-button').textContent = 'Preview & apply'; $('apply-button').disabled = false; updateHistory(); } catch (error) { uiAlert(`元に戻せませんでした: ${userFacingError(error)}`); } });
+$('redo-button').addEventListener('click', async () => { try { currentScore = await window.acorde.redo(); await renderAndUpdateCurrentScore(); history.past.push(history.future.pop()); scoreCommands.push(history.past.at(-1)); updateHistory(); } catch (error) { uiAlert(`やり直せませんでした: ${userFacingError(error)}`); } });
+$('duration-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; try { await applyCommand({ type: 'set_duration', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, duration: engineDuration($('duration-select').value), dot_count: $('dot-toggle').checked ? 1 : 0 }, 'SetDuration'); } catch (error) { uiAlert(`音価を変更できませんでした: ${userFacingError(error)}`); } });
+$('dot-toggle').addEventListener('change', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; try { await applyCommand({ type: 'set_duration', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, duration: engineDuration($('duration-select').value), dot_count: $('dot-toggle').checked ? 1 : 0 }, 'SetDot'); } catch (error) { uiAlert(`付点を変更できませんでした: ${userFacingError(error)}`); } });
+const TUPLET_MENU_PRESETS = Object.freeze({ 2: '2:3', 3: '3:2', 4: '4:3', 5: '5:4', 6: '6:4', 7: '7:4', 8: '8:6', 9: '9:8' });
+async function applyTupletValue(value) {
+  if (!currentScore || !selectedAddress || value === '') return;
+  const { part, staff, measure, voice, note } = selectedAddress;
+  const tuplet = value === 'clear' ? null : (() => { const [actual_notes, normal_notes] = value.split(':').map(Number); return { actual_notes, normal_notes }; })();
+  try { await applyCommand({ type: 'set_tuplet', part_index: part, staff_index: staff, measure_index: measure, voice_index: voice, note_index: note, tuplet }, 'SetTuplet'); } catch (error) { uiAlert(`連符を変更できませんでした: ${userFacingError(error)}`); } finally { $('tuplet-select').value = tuplet && [...$('tuplet-select').options].some((option) => option.value === value) ? value : ''; }
+}
+$('tuplet-select').addEventListener('change', () => applyTupletValue($('tuplet-select').value));
 $('dynamic-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress || $('dynamic-select').value === '') return; const { part, staff, measure, voice, note } = selectedAddress; const value = $('dynamic-select').value; try { await applyCommand({ type: 'set_dynamic', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, dynamic: value === 'clear' ? null : value }, 'SetDynamic'); } catch (error) { uiAlert(`強弱記号を変更できませんでした: ${userFacingError(error)}`); } finally { $('dynamic-select').value = value === 'clear' ? '' : value; } });
 $('grace-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress || $('grace-select').value === '') return; const { part, staff, measure, voice, note } = selectedAddress; const value = $('grace-select').value; try { await applyCommand({ type: 'set_grace', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, is_grace: value !== 'clear', slash: value === 'acciaccatura' }, 'SetGrace'); } catch (error) { uiAlert(`装飾音を変更できませんでした: ${userFacingError(error)}`); } finally { $('grace-select').value = value === 'clear' ? '' : value; } });
 $('lyric-button').addEventListener('click', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; const item = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.voices?.[voice]?.[note]; const text = await uiPrompt('Lyric syllable', item?.lyric?.text || ''); if (text === null) return; try { await applyCommand({ type: 'set_lyric', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, lyric: text.trim() ? { text: text.trim(), syllabic: 'single' } : null }, 'SetLyric'); } catch (error) { uiAlert(`歌詞を変更できませんでした: ${userFacingError(error)}`); } });
@@ -464,8 +840,9 @@ let highlightedPlaybackAddress = null;
 function highlightPlayback(address) { if (address === highlightedPlaybackAddress) return; highlightedPlaybackNote?.classList.remove('acorde-playing'); highlightedPlaybackAddress = address || null; highlightedPlaybackNote = address ? playbackNoteByAddress.get(address) || null : null; highlightedPlaybackNote?.classList.add('acorde-playing'); }
 const selectionPlayButton = document.createElement('button'); selectionPlayButton.id = 'selection-play-button'; selectionPlayButton.className = 'transport-button small'; selectionPlayButton.textContent = 'Selection'; selectionPlayButton.title = 'Select a measure range first'; selectionPlayButton.disabled = true; $('play-button').after(selectionPlayButton);
 const shortcutList = document.querySelector('#shortcuts-dialog dl'); if (shortcutList) { const entries = [['H', 'Hairpin tool'], ['Space', 'Play / stop']]; entries.forEach(([termText, descriptionText]) => { if ([...shortcutList.querySelectorAll('dt')].some((item) => item.textContent === termText)) return; const term = document.createElement('dt'); term.textContent = termText; const description = document.createElement('dd'); description.textContent = descriptionText; shortcutList.append(term, description); }); }
+installShortcutEditor(); renderShortcutEditor();
 function updatePlaybackFrame(start) { if (!$('play-button').classList.contains('playing')) return; const elapsed = Math.max(0, audioContext.currentTime - start); while (playbackEventCursor + 1 < scheduledEvents.length && scheduledEvents[playbackEventCursor + 1].time_secs <= elapsed) playbackEventCursor += 1; const active = scheduledEvents[playbackEventCursor]?.time_secs <= elapsed ? scheduledEvents[playbackEventCursor] : null; highlightPlayback(active?.address); const total = playbackDuration || 0; $('timecode').textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(Math.floor(elapsed % 60)).padStart(2, '0')} / ${String(Math.floor(total / 60)).padStart(2, '0')}:${String(Math.floor(total % 60)).padStart(2, '0')}`; document.querySelector('.transport-progress').style.width = `${Math.min(100, total ? elapsed / total * 100 : 0)}%`; playbackFrame = requestAnimationFrame(() => updatePlaybackFrame(start)); }
-async function prepareSoundfontEvents(events) { const soundfont = mixerState.soundfont; if (!soundfont.path || !soundfont.preset) return { events, diagnostics: [] }; try { const data = await window.acorde.readSoundfont(soundfont.path); const prepared = await window.acorde.prepareSoundfontPlayback({ data: Array.from(data), providerVersion: soundfont.version || 'acorde-soundfont/1.2.0', bank: soundfont.preset.bank, program: soundfont.preset.program, channels: soundfont.channels, events }); const samples = prepared?.samples && typeof prepared.samples === 'object' ? prepared.samples : {}; const hydrated = Array.isArray(prepared?.events) ? prepared.events.map((event) => event?.soundfont_sample_key && samples[event.soundfont_sample_key] ? { ...event, decoded_sample: samples[event.soundfont_sample_key] } : event) : events; return { events: hydrated, diagnostics: Array.isArray(prepared?.diagnostics) ? prepared.diagnostics : [] }; } catch (error) { return { events, diagnostics: [`soundfont-playback-fallback:${userFacingError(error)}`] }; } }
+async function prepareSoundfontEvents(events) { const soundfont = mixerState.soundfont; if (!soundfont.path || !soundfont.preset) return { events, diagnostics: [] }; try { const data = await window.acorde.readSoundfont(soundfont.path); const prepared = await window.acorde.prepareSoundfontPlayback({ data: Array.from(data), providerVersion: soundfont.version || 'acorde-soundfont/1.2.2', bank: soundfont.preset.bank, program: soundfont.preset.program, channels: soundfont.channels, events }); const samples = prepared?.samples && typeof prepared.samples === 'object' ? prepared.samples : {}; const hydrated = Array.isArray(prepared?.events) ? prepared.events.map((event) => event?.soundfont_sample_key && samples[event.soundfont_sample_key] ? { ...event, decoded_sample: samples[event.soundfont_sample_key] } : event) : events; return { events: hydrated, diagnostics: Array.isArray(prepared?.diagnostics) ? prepared.diagnostics : [] }; } catch (error) { return { events, diagnostics: [`soundfont-playback-fallback:${userFacingError(error)}`] }; } }
 function stopPlayback() { audioBackend.stopAll(); if (playbackTimer) clearTimeout(playbackTimer); if (positionTimer) clearInterval(positionTimer); if (playbackFrame) cancelAnimationFrame(playbackFrame); playbackTimer = null; positionTimer = null; playbackFrame = null; scheduledEvents = []; playbackEventCursor = 0; playbackDuration = 0; highlightPlayback(null); $('position-label').textContent = 'Measure — · Beat —'; $('position-label').removeAttribute('title'); document.querySelector('.transport-progress').classList.remove('running'); document.querySelector('.transport-progress').style.width = '0'; $('play-button').classList.remove('playing'); $('play-button').textContent = '▶'; }
 async function startPlayback(offset = 0, selection = null) { if (!currentScore) return; stopPlayback(); audioContext = await audioBackend.resume(); audioBackend.setMasterControls(mixerState.master); const bpm = Number($('bpm-select').value) || null; const lastMeasure = currentScore.parts[0].staves[0].measures.length - 1; const loopRegion = loopEnabled && !selection ? (selectedRange || [0, lastMeasure]) : null; const allEvents = (await window.acorde.playbackEvents(currentScore, { bpm, loopRegion })).filter((item) => mixerState.metronome || !item.is_metronome); const rangeEvents = selection ? allEvents.filter((item) => { const measure = Number(item.address?.split(':')[2]); return Number.isInteger(measure) && measure >= selection[0] && measure <= selection[1]; }) : allEvents; const baseTime = selection && rangeEvents.length ? Math.min(...rangeEvents.map((item) => item.time_secs)) : 0; const normalizedEvents = rangeEvents.map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - baseTime) })); const fullDuration = normalizedEvents.reduce((max, item) => Math.max(max, item.time_secs + item.duration_secs), 0); scheduledEvents = normalizedEvents.filter((item) => item.time_secs + item.duration_secs > offset).map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - offset) })); playbackDuration = Math.max(0, fullDuration - offset); const soundfontPrepared = await prepareSoundfontEvents(scheduledEvents); if (soundfontPrepared.diagnostics.length) showDiagnostics({ format: 'soundfont', diagnostics: soundfontPrepared.diagnostics.map((loss_reason) => ({ code: 'soundfont.playback', severity: /^(soundfont-playback-fallback|decode-failed:|missing-zone:)/.test(loss_reason) ? 'Warning' : 'Info', loss_reason })) }); const start = audioContext.currentTime + 0.05; const byPart = new Map(); soundfontPrepared.events.forEach((item) => { const partIndex = item.is_metronome ? -1 : item.part_index; if (!byPart.has(partIndex)) byPart.set(partIndex, []); byPart.get(partIndex).push(item); }); const hasChannelSolo = Object.values(mixerState.channels).some((channel) => channel?.solo); byPart.forEach((events, partIndex) => { const channel = partIndex < 0 ? {} : { ...(mixerState.channels[partIndex] || {}) }; if (mixerState.soloPiano && partIndex > 0) channel.mute = true; if (hasChannelSolo && partIndex >= 0 && !mixerState.channels[partIndex]?.solo) channel.mute = true; audioBackend.schedule(events, start, channel, partIndex); }); $('play-button').classList.add('playing'); $('play-button').textContent = 'Ⅱ'; document.querySelector('.transport-progress').classList.add('running'); positionTimer = setInterval(async () => { const elapsed = Math.max(0, audioContext.currentTime - start); const position = await window.acorde.playbackPosition(elapsed + offset + baseTime, bpm); if (position) { $('position-label').textContent = `Measure ${position.measure_index + 1} · Beat ${position.beat.toFixed(2)}`; $('position-label').title = `Playback position from acorde: measure ${position.measure_index + 1}, beat ${position.beat.toFixed(2)}`; } }, 100); updatePlaybackFrame(start); playbackTimer = setTimeout(stopPlayback, (playbackDuration + 0.2) * 1000); }
 const guardedStartPlayback = startPlayback;
@@ -482,32 +859,37 @@ const playButton = $('play-button'); playButton?.setAttribute('aria-label', 'Pla
 $('loop-button').addEventListener('click', () => { loopEnabled = !loopEnabled; $('loop-button').classList.toggle('active', loopEnabled); $('loop-button').title = loopEnabled && selectedRange ? `Loop measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Loop'; });
 selectionPlayButton.addEventListener('click', async () => { if (!selectedRange) return; try { await startPlayback(0, selectedRange); } catch (error) { stopPlayback(); uiAlert(`選択範囲を再生できませんでした: ${userFacingError(error)}`); } });
 $('transport-track').addEventListener('click', async (event) => { if (!currentScore || !playbackDuration) return; const rect = event.currentTarget.getBoundingClientRect(); const offset = playbackDuration * Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)); try { await startPlayback(offset); } catch (error) { stopPlayback(); uiAlert(`シークできませんでした: ${userFacingError(error)}`); } });
-const panelTabs = [...document.querySelectorAll('.panel-tab')]; panelTabs.forEach((tab, index) => { tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', `${tab.dataset.panel}-panel`); tab.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End'); tab.setAttribute('aria-selected', String(tab.classList.contains('active'))); tab.tabIndex = tab.classList.contains('active') ? 0 : -1; tab.addEventListener('click', () => { panelTabs.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); item.tabIndex = -1; }); tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); tab.tabIndex = 0; ['properties', 'ai', 'omr'].forEach((name) => $(`${name}-panel`)?.classList.toggle('hidden', tab.dataset.panel !== name)); }); tab.addEventListener('keydown', (event) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); const next = event.key === 'Home' ? 0 : event.key === 'End' ? panelTabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + panelTabs.length) % panelTabs.length; panelTabs[next].focus(); panelTabs[next].click(); }); });
+const panelTabs = [...document.querySelectorAll('.panel-tab')]; panelTabs.forEach((tab, index) => { tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', `${tab.dataset.panel}-panel`); tab.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End'); tab.setAttribute('aria-selected', String(tab.classList.contains('active'))); tab.tabIndex = tab.classList.contains('active') ? 0 : -1; tab.addEventListener('click', () => { panelTabs.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); item.tabIndex = -1; }); tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); tab.tabIndex = 0; ['properties', 'ai', 'omr'].forEach((name) => $(`${name}-panel`)?.classList.toggle('hidden', tab.dataset.panel !== name)); syncApplicationMenuState(); }); tab.addEventListener('keydown', (event) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); const next = event.key === 'Home' ? 0 : event.key === 'End' ? panelTabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + panelTabs.length) % panelTabs.length; panelTabs[next].focus(); panelTabs[next].click(); }); });
 const panelTabList = document.querySelector('.panel-tabs'); if (panelTabList) panelTabList.setAttribute('role', 'tablist'); panelTabs.forEach((tab) => { const panel = $(tab.getAttribute('aria-controls')); tab.id = `${tab.dataset.panel}-tab`; if (panel) { panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', tab.id); panel.tabIndex = 0; } });
 $('undo-button').addEventListener('click', () => markDirty());
 $('redo-button').addEventListener('click', () => markDirty());
 selectTool('select');
-$('open-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and open another score?')) return; try { const result = await window.acorde.openScore(); if (result) { currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); $('file-name').textContent = result.filePath.split('/').pop(); showDiagnostics(result.report); updateRenderedScore(result.svg); clearDirty(); } } catch (error) { uiAlert(`楽譜を読み込めませんでした: ${userFacingError(error)}`); } });
-$('recent-files-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and open a recent score?')) return; try { const items = await window.acorde.recentFiles(); if (!items.length) return uiAlert('最近使ったファイルはありません。'); const choice = await uiPrompt(items.map((item, index) => `${index + 1}. ${item.name}`).join('\n'), '1'); const index = Number(choice) - 1; if (!Number.isInteger(index) || index < 0 || index >= items.length) return; const result = await window.acorde.openRecentScore(index); currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); $('file-name').textContent = result.filePath.split(/[\\/]/).pop(); showDiagnostics(result.report); updateRenderedScore(result.svg); clearDirty(); } catch (error) { uiAlert(`最近使った楽譜を開けませんでした: ${userFacingError(error)}`); } });
-$('save-button').addEventListener('click', async () => { try { const report = currentScore ? await window.acorde.serializeMusicxmlReport(currentScore) : { output: `<?xml version="1.0" encoding="UTF-8"?><score-partwise version="4.0"><work><work-title>Morning sketch</work-title></work></score-partwise>`, diagnostics: [] }; showDiagnostics(report); const saved = await window.acorde.saveScore({ suggestedName: 'morning-sketch.musicxml', content: report.output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`MusicXMLを書き出せませんでした: ${userFacingError(error)}`); } });
+function applyOpenedScoreResult(result) { currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); $('file-name').textContent = result.filePath.split(/[\\/]/).pop(); showDiagnostics(result.report); commitRenderedScore(result.svg); clearDirty(); }
+async function openRecentScoreAt(index, confirmDiscard = true) { if (!Number.isInteger(index) || index < 0) return; if (confirmDiscard && dirty && !await uiConfirm('Discard unsaved changes and open a recent score?')) return; try { applyOpenedScoreResult(await window.acorde.openRecentScore(index)); } catch (error) { uiAlert(`最近使った楽譜を開けませんでした: ${userFacingError(error)}`); } }
+$('open-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and open another score?')) return; try { const result = await window.acorde.openScore(); if (result) applyOpenedScoreResult(result); } catch (error) { uiAlert(`楽譜を読み込めませんでした: ${userFacingError(error)}`); } });
+$('recent-files-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and open a recent score?')) return; try { const items = await window.acorde.recentFiles(); if (!items.length) return uiAlert('最近使ったファイルはありません。'); const choice = await uiPrompt(items.map((item, index) => `${index + 1}. ${item.name}`).join('\n'), '1'); const index = Number(choice) - 1; if (!Number.isInteger(index) || index < 0 || index >= items.length) return; await openRecentScoreAt(index, false); } catch (error) { uiAlert(`最近使った楽譜を開けませんでした: ${userFacingError(error)}`); } });
+$('save-button').addEventListener('click', () => saveCurrentDocument(false));
 $('midi-save-button').addEventListener('click', async () => { if (!currentScore) return uiAlert('先に楽譜を開いてください。'); try { const report = await window.acorde.serializeMidiReport(currentScore); showDiagnostics(report); const saved = await window.acorde.saveMidi({ suggestedName: 'morning-sketch.mid', data: report.output }); if (saved) $('file-name').textContent = saved.split('/').pop(); } catch (error) { uiAlert(`MIDIを書き出せませんでした: ${userFacingError(error)}`); } });
-$('recover-button').addEventListener('click', async () => { try { const draft = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)); currentScore = await window.acorde.loadScore(draft.score); selectedAddress = null; selectedRange = null; updateScoreHeader(); updateRenderedScore(await window.acorde.renderCurrent(900)); $('file-name').textContent = 'Recovered draft'; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); $('recovery').classList.add('hidden'); revealQuickStartAfterRecovery(); markDirty(); } catch (error) { uiAlert(`下書きを復旧できませんでした: ${userFacingError(error)}`); } });
-$('discard-recovery').addEventListener('click', () => { localStorage.removeItem(AUTOSAVE_KEY); $('recovery').classList.add('hidden'); revealQuickStartAfterRecovery(); });
+$('recover-button').addEventListener('click', async () => { try { const draft = storedJson(AUTOSAVE_KEY); if (!draft?.score) throw new Error('Saved draft is unavailable'); currentScore = await window.acorde.loadScore(draft.score); selectedAddress = null; selectedRange = null; updateScoreHeader(); await renderAndUpdateCurrentScore(); $('file-name').textContent = 'Recovered draft'; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); $('recovery').classList.add('hidden'); revealQuickStartAfterRecovery(); markDirty(); } catch (error) { uiAlert(`下書きを復旧できませんでした: ${userFacingError(error)}`); } });
+$('discard-recovery').addEventListener('click', () => { removeStoredValue(AUTOSAVE_KEY); $('recovery').classList.add('hidden'); revealQuickStartAfterRecovery(); });
 $('omr-button').addEventListener('click', async () => { try { const input = await window.acorde.chooseOmrInput(); if (!input) return; $('drop-zone').classList.add('processing'); $('drop-zone').querySelector('strong').textContent = input.usable ? `${input.inputFormat.toUpperCase()} ready for review` : `OMR input unavailable (${input.reason})`; $('drop-zone').querySelector('span').textContent = input.usable ? `${input.path} · connect an approved OMR provider to create a draft` : 'Choose a bounded PNG, JPG, or PDF file'; renderOmrReviewQueue(); } catch (error) { $('drop-zone').querySelector('strong').textContent = `OMR input unavailable (${userFacingError(error)})`; } });
 $('omr-review-filter')?.addEventListener('change', renderOmrReviewQueue);
 window.addEventListener('omr-proposal-ready', async (event) => { if (!event.detail) return; try { const result = await loadOmrReviewProposal(event.detail); if (!result.usable) $('omr-review-summary').textContent = `Proposal unavailable: ${result.diagnostics.join(', ')}`; } catch (error) { $('omr-review-summary').textContent = `Review queue unavailable: ${userFacingError(error)}`; } });
-$('new-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore(); currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); updateRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; clearDirty(); } catch (error) { uiAlert(`新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
+$('new-button').addEventListener('click', async () => { if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore(); currentScore = result.score; selectedAddress = null; selectedRange = null; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); commitRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; clearDirty(); } catch (error) { uiAlert(`新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
 $('zoom-out-button').addEventListener('click', () => { scoreZoom = Math.max(0.75, scoreZoom - 0.1); updateZoom(); });
 $('zoom-in-button').addEventListener('click', () => { scoreZoom = Math.min(1.5, scoreZoom + 0.1); updateZoom(); });
 $('zoom-value').setAttribute('aria-live', 'polite');
 $('voice-select').addEventListener('change', () => { setActiveVoice($('voice-select').value); });
 function refreshSoundfontPresetSelect() { const select = $('soundfont-preset-select'); if (!select) return; select.replaceChildren(new Option('No preset selected', ''), ...(mixerState.soundfont.presets || []).map((preset) => new Option(`${preset.bank}:${preset.program} ${preset.name || 'Unnamed'}`, `${preset.bank}:${preset.program}`))); select.value = mixerState.soundfont.preset ? `${mixerState.soundfont.preset.bank}:${mixerState.soundfont.preset.program}` : ''; select.disabled = !mixerState.soundfont.path || !(mixerState.soundfont.presets || []).length; }
-async function refreshSoundfontStatus() { if (!mixerState.soundfont.path) { $('soundfont-path').textContent = 'Oscillator fallback (SoundFont provider not loaded)'; refreshSoundfontPresetSelect(); return; } const status = await window.acorde.validateSoundfont(mixerState.soundfont.path); if (!status.exists) { $('soundfont-path').textContent = `${status.path} (${status.reason}; oscillator fallback)`; refreshSoundfontPresetSelect(); return; } try { const data = await window.acorde.readSoundfont(mixerState.soundfont.path); const selected = mixerState.soundfont.preset || {}; const metadata = await window.acorde.inspectSoundfont(Array.from(data), 'acorde-soundfont/1.2.0', selected.bank, selected.program); const presets = Array.isArray(metadata.presets) ? metadata.presets : []; const resolvedPreset = metadata.preset || presets.find((preset) => preset.bank === selected.bank && preset.program === selected.program) || presets[0] || null; mixerState.soundfont = { ...mixerState.soundfont, version: metadata.provider_version, checksum: String(metadata.checksum), presetCount: metadata.preset_count, presets, preset: resolvedPreset }; refreshSoundfontPresetSelect(); saveMixer(); const diagnosticText = Array.isArray(metadata.diagnostics) && metadata.diagnostics.length ? `; ${metadata.diagnostics.join(', ')}` : ''; $('soundfont-path').textContent = `${status.path} (${metadata.format.toUpperCase()}, ${metadata.preset_count} presets; ${mixerState.soundfont.channels === 2 ? 'stereo' : 'mono'} decode${diagnosticText})`; } catch (error) { $('soundfont-path').textContent = `${status.path} (metadata unavailable: ${userFacingError(error)}; oscillator fallback)`; refreshSoundfontPresetSelect(); } }
+async function refreshSoundfontStatus() { if (!mixerState.soundfont.path) { $('soundfont-path').textContent = 'Oscillator fallback (SoundFont provider not loaded)'; refreshSoundfontPresetSelect(); return; } const status = await window.acorde.validateSoundfont(mixerState.soundfont.path); if (!status.exists) { $('soundfont-path').textContent = `${status.path} (${status.reason}; oscillator fallback)`; refreshSoundfontPresetSelect(); return; } try { const data = await window.acorde.readSoundfont(mixerState.soundfont.path); const selected = mixerState.soundfont.preset || {}; const metadata = await window.acorde.inspectSoundfont(Array.from(data), 'acorde-soundfont/1.2.2', selected.bank, selected.program); const presets = Array.isArray(metadata.presets) ? metadata.presets : []; const resolvedPreset = metadata.preset || presets.find((preset) => preset.bank === selected.bank && preset.program === selected.program) || presets[0] || null; mixerState.soundfont = { ...mixerState.soundfont, version: metadata.provider_version, checksum: String(metadata.checksum), presetCount: metadata.preset_count, presets, preset: resolvedPreset }; refreshSoundfontPresetSelect(); saveMixer(); const diagnosticText = Array.isArray(metadata.diagnostics) && metadata.diagnostics.length ? `; ${metadata.diagnostics.join(', ')}` : ''; $('soundfont-path').textContent = `${status.path} (${metadata.format.toUpperCase()}, ${metadata.preset_count} presets; ${mixerState.soundfont.channels === 2 ? 'stereo' : 'mono'} decode${diagnosticText})`; } catch (error) { $('soundfont-path').textContent = `${status.path} (metadata unavailable: ${userFacingError(error)}; oscillator fallback)`; refreshSoundfontPresetSelect(); } }
 async function refreshAudioOutputs() { const selector = $('audio-output-select'); if (!selector || !navigator.mediaDevices?.enumerateDevices) return; try { const devices = window.AcordeAudioOutput.normalizeDevices(await navigator.mediaDevices.enumerateDevices()); const resolvedId = window.AcordeAudioOutput.resolveOutputDeviceId(mixerState.outputDeviceId, devices); if (resolvedId !== mixerState.outputDeviceId) { mixerState.outputDeviceId = resolvedId; audioBackend.outputDeviceId = resolvedId; saveMixer(); } selector.replaceChildren(new Option('Default system output', ''), ...devices.map((device) => new Option(device.label || `Audio output ${device.deviceId}`, device.deviceId))); selector.value = resolvedId || ''; } catch { selector.replaceChildren(new Option('Default system output', '')); selector.value = ''; } }
-function openMixer() { $('master-volume').value = mixerState.master.volume; $('master-pan').value = mixerState.master.pan; $('master-mute').checked = mixerState.master.mute; $('master-solo').checked = mixerState.soloPiano; $('metronome-toggle').checked = mixerState.metronome; const channels = $('part-channels'); channels.replaceChildren(...(currentScore?.parts || []).map((part, index) => { const state = mixerState.channels[index] || { volume: 1, pan: 0, mute: false, solo: false }; mixerState.channels[index] = state; const row = document.createElement('div'); row.className = 'channel-row'; row.dataset.partIndex = index; row.innerHTML = `<strong>${part.name || `Part ${index + 1}`}</strong><label>Vol <input data-channel="volume" type="range" min="0" max="1" step="0.01" value="${state.volume ?? 1}" /></label><label>Pan <input data-channel="pan" type="range" min="-1" max="1" step="0.01" value="${state.pan ?? 0}" /></label><label class="check-row"><input data-channel="mute" type="checkbox" ${state.mute ? 'checked' : ''} /> Mute</label><label class="check-row"><input data-channel="solo" type="checkbox" ${state.solo ? 'checked' : ''} /> Solo</label><button type="button" data-channel="reset" class="quiet">Reset</button>`; row.querySelector('[data-channel="reset"]').addEventListener('click', () => { mixerState.channels[index] = { volume: 1, pan: 0, mute: false, solo: false }; row.querySelector('[data-channel="volume"]').value = '1'; row.querySelector('[data-channel="pan"]').value = '0'; row.querySelector('[data-channel="mute"]').checked = false; row.querySelector('[data-channel="solo"]').checked = false; saveMixer(); if (audioContext) applyLiveMixerControls(); }); return row; })); refreshSoundfontStatus(); $('mixer-settings').showModal(); }
+function mixerRange(label, channel, min, max, value) { const control = document.createElement('label'); control.textContent = `${label} `; const input = document.createElement('input'); input.dataset.channel = channel; input.type = 'range'; input.min = String(min); input.max = String(max); input.step = '0.01'; input.value = String(value); control.append(input); return control; }
+function mixerToggle(label, channel, checked) { const control = document.createElement('label'); control.className = 'check-row'; const input = document.createElement('input'); input.dataset.channel = channel; input.type = 'checkbox'; input.checked = Boolean(checked); control.append(input, ` ${label}`); return control; }
+function mixerChannelRow(part, index, state) { const row = document.createElement('div'); row.className = 'channel-row'; row.dataset.partIndex = index; const title = document.createElement('strong'); title.textContent = String(part?.name || `Part ${index + 1}`); const reset = document.createElement('button'); reset.type = 'button'; reset.dataset.channel = 'reset'; reset.className = 'quiet'; reset.textContent = 'Reset'; row.append(title, mixerRange('Vol', 'volume', 0, 1, state.volume ?? 1), mixerRange('Pan', 'pan', -1, 1, state.pan ?? 0), mixerToggle('Mute', 'mute', state.mute), mixerToggle('Solo', 'solo', state.solo), reset); reset.addEventListener('click', () => { mixerState.channels[index] = { volume: 1, pan: 0, mute: false, solo: false }; row.querySelector('[data-channel="volume"]').value = '1'; row.querySelector('[data-channel="pan"]').value = '0'; row.querySelector('[data-channel="mute"]').checked = false; row.querySelector('[data-channel="solo"]').checked = false; saveMixer(); if (audioContext) applyLiveMixerControls(); }); return row; }
+function openMixer(visible = true) { const dialog = $('mixer-settings'); if (!visible) { if (dialog.open) dialog.close(); syncApplicationMenuState(); return; } $('master-volume').value = mixerState.master.volume; $('master-pan').value = mixerState.master.pan; $('master-mute').checked = mixerState.master.mute; $('master-solo').checked = mixerState.soloPiano; $('metronome-toggle').checked = mixerState.metronome; const channels = $('part-channels'); channels.replaceChildren(...(currentScore?.parts || []).map((part, index) => { const state = mixerState.channels[index] || { volume: 1, pan: 0, mute: false, solo: false }; mixerState.channels[index] = state; return mixerChannelRow(part, index, state); })); refreshSoundfontStatus(); if (!dialog.open) dialog.show(); syncApplicationMenuState(); }
 const openMixerBase = openMixer;
-openMixer = () => { $('soundfont-channels-select').value = String(mixerState.soundfont.channels); return openMixerBase(); };
-$('mixer-button').addEventListener('click', openMixer);
+openMixer = (visible = true) => { if (visible) $('soundfont-channels-select').value = String(mixerState.soundfont.channels); return openMixerBase(visible); };
+$('mixer-button').addEventListener('click', () => openMixer(!$('mixer-settings').open));
 $('mixer-button').addEventListener('click', refreshAudioOutputs);
 $('mixer-button').addEventListener('click', () => { if (!audioDeviceChangeBound && navigator.mediaDevices?.addEventListener) { navigator.mediaDevices.addEventListener('devicechange', refreshAudioOutputs); audioDeviceChangeBound = true; } });
 $('audio-output-select').addEventListener('change', async () => { mixerState.outputDeviceId = $('audio-output-select').value || null; audioBackend.outputDeviceId = mixerState.outputDeviceId; try { if (audioContext) await audioBackend.setOutputDevice(mixerState.outputDeviceId); } catch { mixerState.outputDeviceId = null; audioBackend.outputDeviceId = null; $('audio-output-select').value = ''; } saveMixer(); });
@@ -520,11 +902,13 @@ $('settings-button').addEventListener('click', openScoreSettings);
 $('score-apply').addEventListener('click', applyScoreSettingsFromButton);
 $('preferences-button').addEventListener('click', () => { $('language-select').value = language; $('preferences-dialog').showModal(); });
 $('language-select').addEventListener('change', (event) => saveLanguagePreference(event.target.value));
-$('history-button').addEventListener('click', () => { renderHistory(); $('history-dialog').showModal(); });
+$('history-button').addEventListener('click', () => { const dialog = $('history-dialog'); if (dialog.open) dialog.close(); else { renderHistory(); dialog.show(); } syncApplicationMenuState(); });
+$('mixer-settings').addEventListener('close', syncApplicationMenuState);
+$('history-dialog').addEventListener('close', syncApplicationMenuState);
  $('diagnostics-export').addEventListener('click', async () => { if (!lastDiagnosticsReport) return; try { const saved = await window.acorde.saveSupportBundle({ suggestedName: 'acorde-support-bundle.json', diagnostics: [lastDiagnosticsReport] }); if (saved) $('file-name').textContent = saved.split(/[\\/]/).pop(); } catch (error) { uiAlert(`support bundleを書き出せませんでした: ${userFacingError(error)}`); } });
-$('shortcuts-button').addEventListener('click', () => $('shortcuts-dialog').showModal());
+$('shortcuts-button').addEventListener('click', () => { renderShortcutEditor(); $('shortcuts-dialog').showModal(); });
 $('template-button').addEventListener('click', () => $('template-dialog').showModal());
-$('template-form').addEventListener('submit', async (event) => { event.preventDefault(); if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore($('template-select').value); currentScore = result.score; selectedAddress = null; selectedRange = null; activePartIndex = 0; activeVoiceIndex = 0; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); updateRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; $('template-dialog').close(); clearDirty(); } catch (error) { uiAlert(`テンプレートから新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
+$('template-form').addEventListener('submit', async (event) => { event.preventDefault(); if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore($('template-select').value); currentScore = result.score; selectedAddress = null; selectedRange = null; activePartIndex = 0; activeVoiceIndex = 0; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); commitRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; $('template-dialog').close(); clearDirty(); } catch (error) { uiAlert(`テンプレートから新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
 $('time-select').addEventListener('change', async () => { if (!currentScore) return; const [numerator, denominator] = $('time-select').value.split('/').map(Number); try { await applyCommand({ type: 'set_time_signature', numerator, denominator }, 'SetTimeSignature'); } catch (error) { uiAlert(`拍子を変更できませんでした: ${userFacingError(error)}`); updateScoreHeader(); } });
 $('key-select').addEventListener('change', async () => { if (!currentScore) return; try { await applyCommand({ type: 'set_key_signature', fifths: Number($('key-select').value) }, 'SetKeySignature'); } catch (error) { uiAlert(`調号を変更できませんでした: ${userFacingError(error)}`); updateScoreHeader(); } });
 $('add-measure-button').addEventListener('click', async () => { if (!currentScore) return; try { await applyCommand({ type: 'add_measure', after_index: currentScore.parts[0].staves[0].measures.length - 1 }, 'AddMeasure'); } catch (error) { uiAlert(`小節を追加できませんでした: ${userFacingError(error)}`); } });
@@ -562,25 +946,26 @@ function installNavigationControls() { const navigation = document.createElement
 installNavigationControls();
 function installExpressionControls() { const expression = document.createElement('button'); expression.id = 'expression-button'; expression.className = 'quiet'; expression.textContent = 'Expression'; const cue = document.createElement('button'); cue.id = 'cue-button'; cue.className = 'quiet'; cue.textContent = 'Cue'; $('score-meta').insertBefore(expression, $('mixer-button')); $('score-meta').insertBefore(cue, $('mixer-button')); expression.addEventListener('click', async () => { if (!currentScore || !selectedAddress) return; const measure = selectedAddress.measure; const current = currentScore.parts?.[selectedAddress.part]?.staves?.[selectedAddress.staff]?.measures?.[measure]?.expression_text || ''; const text = await uiPrompt(`Expression for measure ${measure + 1}`, current); if (text === null) return; try { await applyCommand({ type: 'set_expression_text', measure_index: measure, text: text.trim() || null }, 'SetExpressionText'); } catch (error) { uiAlert(`表現記号を変更できませんでした: ${userFacingError(error)}`); } }); cue.addEventListener('click', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; const item = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.voices?.[voice]?.[note]; if (!item) return; try { await applyCommand({ type: 'set_cue', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, is_cue: !item.is_cue }, 'SetCue'); } catch (error) { uiAlert(`キュー音符を変更できませんでした: ${userFacingError(error)}`); } }); }
 installExpressionControls();
+async function openTextStyleEditor(initialStyle = null) {
+  if (!currentScore || !selectedAddress) return;
+  const style = initialStyle || await uiPrompt('Text style: Expression, Technique, RehearsalMark, or Generic', 'Expression');
+  if (style === null) return;
+  const normalized = style.trim().toLowerCase();
+  const styleName = normalized === 'expression' ? 'Expression' : normalized === 'technique' ? 'Technique' : normalized === 'rehearsalmark' || normalized === 'rehearsal mark' ? 'RehearsalMark' : normalized === 'generic' ? 'Generic' : null;
+  if (!styleName) return uiAlert('Text styleは Expression / Technique / RehearsalMark / Generic のいずれかです。');
+  const { part, staff, measure, voice, note } = selectedAddress;
+  const measureData = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure];
+  const genericIndex = styleName === 'Generic' ? (measureData?.texts || []).findIndex((item) => item?.style === 'Generic') : -1;
+  const current = styleName === 'Technique' ? measureData?.voices?.[voice]?.[note]?.technique_text || '' : styleName === 'RehearsalMark' ? measureData?.rehearsal_mark || '' : styleName === 'Generic' ? (genericIndex >= 0 ? measureData.texts[genericIndex]?.text || '' : '') : measureData?.expression_text || '';
+  const text = await uiPrompt(`${styleName} text (blank clears)`, current); if (text === null) return;
+  try {
+    const command = styleName === 'Technique' ? { type: 'set_technique_text', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, text: text.trim() || null } : styleName === 'RehearsalMark' ? { type: 'set_rehearsal_mark', measure_index: measure, text: text.trim() || null } : styleName === 'Generic' ? { type: 'set_measure_text', part_index: part, staff_index: staff, measure_index: measure, text_index: genericIndex >= 0 ? genericIndex : (measureData?.texts || []).length, text: text.trim() ? { style: 'Generic', text: text.trim() } : null } : { type: 'set_expression_text', measure_index: measure, text: text.trim() || null };
+    await applyCommand(command, `SetTextStyle:${styleName}`);
+  } catch (error) { uiAlert(`Text styleを変更できませんでした: ${userFacingError(error)}`); }
+}
 function installTextStyleEditor() {
   const button = document.createElement('button'); button.id = 'text-style-button'; button.className = 'quiet'; button.textContent = 'Text style'; $('score-meta').insertBefore(button, $('mixer-button'));
-  button.addEventListener('click', async () => {
-    if (!currentScore || !selectedAddress) return;
-    const style = await uiPrompt('Text style: Expression, Technique, RehearsalMark, or Generic', 'Expression');
-    if (style === null) return;
-    const normalized = style.trim().toLowerCase();
-    const styleName = normalized === 'expression' ? 'Expression' : normalized === 'technique' ? 'Technique' : normalized === 'rehearsalmark' || normalized === 'rehearsal mark' ? 'RehearsalMark' : normalized === 'generic' ? 'Generic' : null;
-    if (!styleName) return uiAlert('Text styleは Expression / Technique / RehearsalMark / Generic のいずれかです。');
-    const { part, staff, measure, voice, note } = selectedAddress;
-    const measureData = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure];
-    const genericIndex = styleName === 'Generic' ? (measureData?.texts || []).findIndex((item) => item?.style === 'Generic') : -1;
-    const current = styleName === 'Technique' ? measureData?.voices?.[voice]?.[note]?.technique_text || '' : styleName === 'RehearsalMark' ? measureData?.rehearsal_mark || '' : styleName === 'Generic' ? (genericIndex >= 0 ? measureData.texts[genericIndex]?.text || '' : '') : measureData?.expression_text || '';
-    const text = await uiPrompt(`${styleName} text (blank clears)`, current); if (text === null) return;
-    try {
-      const command = styleName === 'Technique' ? { type: 'set_technique_text', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, text: text.trim() || null } : styleName === 'RehearsalMark' ? { type: 'set_rehearsal_mark', measure_index: measure, text: text.trim() || null } : styleName === 'Generic' ? { type: 'set_measure_text', part_index: part, staff_index: staff, measure_index: measure, text_index: genericIndex >= 0 ? genericIndex : (measureData?.texts || []).length, text: text.trim() ? { style: 'Generic', text: text.trim() } : null } : { type: 'set_expression_text', measure_index: measure, text: text.trim() || null };
-      await applyCommand(command, `SetTextStyle:${styleName}`);
-    } catch (error) { uiAlert(`Text styleを変更できませんでした: ${userFacingError(error)}`); }
-  });
+  button.addEventListener('click', () => openTextStyleEditor());
 }
 installTextStyleEditor();
 function installNoteAppearanceControls() { const head = document.createElement('button'); head.id = 'note-head-button'; head.className = 'quiet'; head.textContent = 'Notehead'; const fingering = document.createElement('button'); fingering.id = 'fingering-button'; fingering.className = 'quiet'; fingering.textContent = 'Fingering'; $('score-meta').insertBefore(head, $('mixer-button')); $('score-meta').insertBefore(fingering, $('mixer-button')); head.addEventListener('click', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; const value = await uiPrompt('Notehead: Normal, Diamond, X, Triangle', 'Normal'); if (value === null) return; const normalized = value.trim().toLowerCase(); const noteHead = normalized === 'diamond' ? 'Diamond' : normalized === 'x' ? 'X' : normalized === 'triangle' ? 'Triangle' : normalized === 'normal' ? 'Normal' : null; if (!noteHead) return uiAlert('Noteheadは Normal / Diamond / X / Triangle のいずれかです。'); try { await applyCommand({ type: 'set_note_head', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, note_head: noteHead }, 'SetNoteHead'); } catch (error) { uiAlert(`符頭を変更できませんでした: ${userFacingError(error)}`); } }); fingering.addEventListener('click', async () => { if (!currentScore || !selectedAddress) return; const { part, staff, measure, voice, note } = selectedAddress; const item = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.voices?.[voice]?.[note]; const value = await uiPrompt('Fingering: blank clears, 0-5', item?.fingering == null ? '' : String(item.fingering)); if (value === null) return; const fingeringValue = value.trim() ? Number(value) : null; if (fingeringValue !== null && (!Number.isInteger(fingeringValue) || fingeringValue < 0 || fingeringValue > 5)) return uiAlert('Fingeringは0〜5の整数です。'); try { await applyCommand({ type: 'set_fingering', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, fingering: fingeringValue }, 'SetFingering'); } catch (error) { uiAlert(`運指を変更できませんでした: ${userFacingError(error)}`); } }); }
@@ -658,6 +1043,11 @@ function installMuseScoreWorkspaceLayout() {
   const playback = document.createElement('div'); playback.className = 'musescore-playback'; playback.setAttribute('aria-label', 'Playback toolbar'); ['play-button', 'loop-button', 'bpm-select'].forEach((id) => { const control = $(id); if (control) playback.append(control); });
   topbar.insertBefore(scoreActions, topActions); topbar.insertBefore(playback, topActions);
   const zoom = document.createElement('div'); zoom.className = 'status-zoom'; zoom.setAttribute('aria-label', 'Zoom controls'); ['zoom-out-button', 'zoom-value', 'zoom-in-button'].forEach((id) => { const control = $(id); if (control) zoom.append(control); }); transport.append(zoom);
+  const viewMode = document.createElement('select'); viewMode.id = 'score-view-mode'; viewMode.setAttribute('aria-label', 'Score view mode'); viewMode.innerHTML = '<option value="page">Page view</option><option value="continuous">Continuous view</option>'; viewMode.addEventListener('change', async () => { document.querySelector('.score-area')?.classList.toggle('continuous-view', viewMode.value === 'continuous'); viewportRenderWidth = 0; if (!currentScore) return; try { await renderAndUpdateCurrentScore(); } catch (error) { uiAlert(`表示モードを変更できませんでした: ${userFacingError(error)}`); } }); transport.append(viewMode);
+  const navigator = document.createElement('nav'); navigator.id = 'navigator-panel'; navigator.className = 'navigator-panel'; navigator.setAttribute('aria-label', 'Score navigator'); navigator.innerHTML = '<div class="navigator-heading"><strong>Navigator</strong><span id="navigator-summary" class="muted"></span><label>Measure <input id="navigator-measure-input" type="number" min="1" value="1" /></label><button id="navigator-go-button" type="button" class="quiet">Go</button></div><div id="navigator-measures" class="navigator-measures" aria-label="Measure overview"></div>';
+  editor.insertBefore(navigator, transport);
+  const goToNavigatorMeasure = () => { const measures = activeMeasures(); const value = Number($('navigator-measure-input')?.value); if (Number.isInteger(value) && value >= 1 && value <= measures.length) selectMeasureRange(value - 1, value - 1); };
+  $('navigator-go-button')?.addEventListener('click', goToNavigatorMeasure); $('navigator-measure-input')?.addEventListener('change', goToNavigatorMeasure); renderNavigator();
 
   const rail = document.querySelector('.left-rail'); const footer = rail?.querySelector('.rail-footer');
   if (rail && footer) {
@@ -668,13 +1058,86 @@ function installMuseScoreWorkspaceLayout() {
     const palettesPanel = document.createElement('div'); palettesPanel.className = 'sidebar-panel sidebar-palettes'; palettesPanel.id = 'sidebar-palettes'; palettesPanel.innerHTML = '<div class="rail-heading"><span>PALETTES</span></div>';
     const paletteGroups = { Basic: [['♩ Note', 'note-tool'], ['𝅽 Rest', 'rest-tool'], ['⌒ Slur', 'slur-tool'], ['⌢ Tie', 'tie-tool']], Text: [['Lyrics', 'lyric-button'], ['Chord symbol', 'chord-button'], ['Tempo', 'measure-tempo-button'], ['Expression', 'expression-button']], Lines: [['Hairpin', 'hairpin-button'], ['Pedal', 'pedal-button'], ['Ottava', 'ottava-button'], ['Glissando', 'glissando-button']], Layout: [['Page break', 'page-break-button'], ['System break', 'system-break-button'], ['Multi-rest', 'multi-rest-button']] };
     Object.entries(paletteGroups).forEach(([name, items]) => { const section = document.createElement('section'); section.className = 'palette-section'; const heading = document.createElement('h2'); heading.textContent = name; section.append(heading); items.forEach(([label, targetId]) => { const button = document.createElement('button'); button.className = 'palette-item'; button.textContent = label; button.dataset.target = targetId; button.addEventListener('click', () => { const target = $(targetId); if (target && !target.disabled) target.click(); }); section.append(button); }); palettesPanel.append(section); });
-    const tabs = document.createElement('div'); tabs.className = 'sidebar-tabs'; tabs.setAttribute('role', 'tablist'); const activate = (name) => { const palettes = name === 'palettes'; palettesPanel.classList.toggle('hidden', !palettes); scoresPanel.classList.toggle('hidden', palettes); [...tabs.children].forEach((button) => { const active = button.dataset.sidebar === name; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1; }); }; ['Palettes', 'Scores'].forEach((name) => { const button = document.createElement('button'); button.textContent = name; button.dataset.sidebar = name.toLowerCase(); button.setAttribute('role', 'tab'); button.addEventListener('click', () => activate(button.dataset.sidebar)); tabs.append(button); });
+    const tabs = document.createElement('div'); tabs.className = 'sidebar-tabs'; tabs.setAttribute('role', 'tablist'); const activate = (name) => { const palettes = name === 'palettes'; palettesPanel.classList.toggle('hidden', !palettes); scoresPanel.classList.toggle('hidden', palettes); [...tabs.children].forEach((button) => { const active = button.dataset.sidebar === name; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1; }); syncApplicationMenuState(); }; ['Palettes', 'Scores'].forEach((name) => { const button = document.createElement('button'); button.textContent = name; button.dataset.sidebar = name.toLowerCase(); button.setAttribute('role', 'tab'); button.addEventListener('click', () => activate(button.dataset.sidebar)); tabs.append(button); });
     rail.prepend(tabs, palettesPanel, scoresPanel); activate('palettes'); window.activateComposerSidebar = activate;
   }
   const proxy = (sourceId, targetId) => $(sourceId)?.addEventListener('click', () => $(targetId)?.click()); proxy('properties-score-button', 'settings-button'); proxy('properties-text-button', 'text-style-button'); proxy('properties-history-button', 'history-button'); $('properties-parts-button')?.addEventListener('click', () => { const group = document.querySelector('.meta-group-parts'); if (group) group.open = true; });
 }
 installMuseScoreWorkspaceLayout();
-function installQuickStartGuide() { const guide = $('first-use-guide'); const dismiss = $('dismiss-guide'); if (!guide || !dismiss) return; if (localStorage.getItem('acorde-composer.quick-start-dismissed') === '1') guide.classList.add('hidden'); dismiss.addEventListener('click', () => { guide.classList.add('hidden'); localStorage.setItem('acorde-composer.quick-start-dismissed', '1'); }); }
+function captureWorkspaceState() {
+  const leftRail = document.querySelector('.left-rail');
+  const rightPanel = document.querySelector('.right-panel');
+  const activeSidebar = document.querySelector('.sidebar-tabs [aria-selected="true"]')?.dataset.sidebar || 'palettes';
+  const activeRightPanel = document.querySelector('.panel-tab.active')?.dataset.panel || 'properties';
+  return window.AcordeWorkspaceState.normalize({
+    version: window.AcordeWorkspaceState.VERSION,
+    leftRailVisible: !leftRail?.classList.contains('hidden'),
+    rightPanelVisible: !rightPanel?.classList.contains('hidden'),
+    palettesVisible: !leftRail?.classList.contains('hidden') && activeSidebar === 'palettes',
+    propertiesVisible: !rightPanel?.classList.contains('hidden') && activeRightPanel === 'properties',
+    mixerVisible: Boolean($('mixer-settings')?.open),
+    historyVisible: Boolean($('history-dialog')?.open),
+    playbackControlsVisible: !document.querySelector('.musescore-playback')?.classList.contains('hidden'),
+    noteInputVisible: !document.querySelector('.editor-toolbar')?.classList.contains('hidden'),
+    statusBarVisible: !document.querySelector('.transport')?.classList.contains('hidden'),
+    navigatorVisible: !$('navigator-panel')?.classList.contains('hidden'),
+    activeSidebar,
+    activeRightPanel,
+  });
+}
+function applyWorkspaceState(value) {
+  const state = window.AcordeWorkspaceState.normalize(value);
+  window.activateComposerSidebar?.(state.activeSidebar);
+  document.querySelector('.left-rail')?.classList.toggle('hidden', !state.leftRailVisible);
+  document.querySelector(`.panel-tab[data-panel="${state.activeRightPanel}"]`)?.click();
+  document.querySelector('.right-panel')?.classList.toggle('hidden', !state.rightPanelVisible);
+  document.querySelector('.musescore-playback')?.classList.toggle('hidden', !state.playbackControlsVisible);
+  document.querySelector('.editor-toolbar')?.classList.toggle('hidden', !state.noteInputVisible);
+  document.querySelector('.transport')?.classList.toggle('hidden', !state.statusBarVisible);
+  $('navigator-panel')?.classList.toggle('hidden', !state.navigatorVisible);
+  openMixer(state.mixerVisible);
+  const historyDialog = $('history-dialog');
+  if (state.historyVisible && !historyDialog.open) { renderHistory(); historyDialog.show(); }
+  if (!state.historyVisible && historyDialog.open) historyDialog.close();
+  return state;
+}
+function persistWorkspaceFromDom() {
+  if (!workspacePersistenceReady || !window.AcordeWorkspaceState) return;
+  try { window.AcordeWorkspaceState.save(browserStorage(), WORKSPACE_KEY, captureWorkspaceState()); } catch {}
+}
+function restoreWorkspaceState() {
+  let state = window.AcordeWorkspaceState.DEFAULT;
+  try { state = window.AcordeWorkspaceState.load(browserStorage(), WORKSPACE_KEY); } catch {}
+  workspacePersistenceReady = false;
+  applyWorkspaceState(state);
+  workspacePersistenceReady = true;
+  syncApplicationMenuState();
+}
+function resetWorkspaceState() {
+  workspacePersistenceReady = false;
+  let state = window.AcordeWorkspaceState.DEFAULT;
+  try { state = window.AcordeWorkspaceState.reset(browserStorage(), WORKSPACE_KEY); } catch {}
+  applyWorkspaceState(state);
+  workspacePersistenceReady = true;
+  syncApplicationMenuState();
+}
+restoreWorkspaceState();
+function installAdaptiveViewportRendering() {
+  const paper = document.querySelector('.score-paper');
+  if (!paper || typeof ResizeObserver !== 'function') return;
+  const observer = new ResizeObserver(() => {
+    const nextWidth = currentRenderOptions().width;
+    if (!currentScore || nextWidth === viewportRenderWidth) return;
+    viewportRenderWidth = nextWidth;
+    clearTimeout(viewportRenderTimer);
+    viewportRenderTimer = setTimeout(async () => {
+      try { await renderAndUpdateCurrentScore(); } catch (error) { console.error(`adaptive score render failed: ${userFacingError(error)}`); }
+    }, 120);
+  });
+  observer.observe(paper);
+}
+installAdaptiveViewportRendering();
+function installQuickStartGuide() { const guide = $('first-use-guide'); const dismiss = $('dismiss-guide'); if (!guide || !dismiss) return; if (storedValue('acorde-composer.quick-start-dismissed') === '1') guide.classList.add('hidden'); dismiss.addEventListener('click', () => { guide.classList.add('hidden'); storeValue('acorde-composer.quick-start-dismissed', '1'); }); }
 installQuickStartGuide();
 function updateSoundfontIndicator(label) { let indicator = $('soundfont-indicator'); if (!indicator) { indicator = document.createElement('span'); indicator.id = 'soundfont-indicator'; indicator.className = 'soundfont-indicator'; indicator.setAttribute('role', 'status'); indicator.setAttribute('aria-live', 'polite'); document.querySelector('.transport')?.append(indicator); } indicator.textContent = `SoundFont: ${label}`; indicator.setAttribute('aria-label', `SoundFont status: ${label}`); indicator.className = `soundfont-indicator ${label.startsWith('active') ? 'active' : 'fallback'}`; }
 updateSoundfontIndicator(mixerState.soundfont.path ? 'configured' : 'fallback'); updateEngineIndicator('checking');
@@ -693,33 +1156,34 @@ function installUiSemantics() {
 }
 installUiSemantics();
 async function dispatchApplicationMenuCommand(command) {
-  const buttonTargets = {
-    'file:new': 'template-button', 'file:open': 'open-button', 'file:recent': 'recent-files-button', 'file:save': 'save-button',
-    'file:export-midi': 'midi-save-button', 'file:export-abc': 'abc-save-button', 'file:export-svg': 'svg-save-button', 'file:export-pdf': 'pdf-save-button', 'file:print': 'print-button',
-    'edit:undo': 'undo-button', 'edit:redo': 'redo-button', 'edit:history': 'history-button',
-    'view:mixer': 'mixer-button', 'view:parts': 'part-view-button', 'view:zoom-in': 'zoom-in-button', 'view:zoom-out': 'zoom-out-button',
-    'add:note': 'note-tool', 'add:rest': 'rest-tool', 'add:measure': 'add-measure-button', 'add:delete-measure': 'delete-measure-button',
-    'add:lyrics': 'lyric-button', 'add:chord': 'chord-button', 'add:rehearsal': 'rehearsal-button', 'add:tempo': 'measure-tempo-button', 'add:expression': 'expression-button',
-    'add:slur': 'slur-tool', 'add:tie': 'tie-tool', 'add:hairpin': 'hairpin-button', 'add:pedal': 'pedal-button', 'add:ottava': 'ottava-button', 'add:glissando': 'glissando-button', 'add:trill': 'trill-button',
-    'format:score-properties': 'settings-button', 'format:text-style': 'text-style-button', 'format:page-break': 'page-break-button', 'format:system-break': 'system-break-button', 'format:multi-rest': 'multi-rest-button',
-    'tools:midi-input': 'midi-input-button', 'tools:playback': 'play-button', 'help:shortcuts': 'shortcuts-button', 'app:preferences': 'preferences-button',
-  };
-  const target = buttonTargets[command] && $(buttonTargets[command]);
+  const definition = window.AcordeCommandRegistry?.resolveCommand(command);
+  if (!definition) return;
+  const target = definition.buttonTarget && $(definition.buttonTarget);
   if (target) { target.click(); return; }
   const revealMetaGroup = (name) => { const group = document.querySelector(`.meta-group-${name}`); if (!group) return; group.open = true; group.scrollIntoView({ block: 'nearest' }); group.querySelector('summary')?.focus(); };
-  if (command === 'file:parts' || command === 'view:instruments') { revealMetaGroup('parts'); return; }
-  if (command === 'edit:cut') { await copySelected(); await deleteSelected(); return; }
-  if (command === 'edit:copy') { copySelected(); return; }
-  if (command === 'edit:paste') { pasteNote(); return; }
-  if (command === 'edit:delete') { deleteSelected(); return; }
-  if (command === 'tools:transpose-up') { transposeSelected(1); return; }
-  if (command === 'tools:transpose-down') { transposeSelected(-1); return; }
-  if (command === 'view:palettes') { const rail = document.querySelector('.left-rail'); if (rail) { rail.hidden = false; window.activateComposerSidebar?.('palettes'); } return; }
-  if (command === 'view:properties') { document.querySelector('.panel-tab[data-panel="properties"]')?.click(); return; }
-  if (command === 'view:note-input-toolbar') { const toolbar = document.querySelector('.editor-toolbar'); if (toolbar) toolbar.hidden = !toolbar.hidden; return; }
-  if (command === 'view:playback-toolbar') { const toolbar = document.querySelector('.transport'); if (toolbar) toolbar.hidden = !toolbar.hidden; return; }
-  if (command === 'view:ai') document.querySelector('.panel-tab[data-panel="ai"]')?.click();
-  if (command === 'view:omr') document.querySelector('.panel-tab[data-panel="omr"]')?.click();
+  const showRightPanel = (name) => { const panel = document.querySelector('.right-panel'); panel?.classList.remove('hidden'); document.querySelector(`.panel-tab[data-panel="${name}"]`)?.click(); };
+  const rendererCommandHandlers = {
+    'close-window': async () => { if (!dirty || await uiConfirm('Close this score and discard unsaved changes?')) await window.acorde.closeWindow?.(); },
+    'show-parts': () => revealMetaGroup('parts'), 'save-as': () => saveCurrentDocument(true),
+    cut: async () => { await copySelected(); await deleteSelected(); }, copy: () => copySelected(), paste: () => pasteNote(), delete: () => deleteSelected(),
+    'select-all': () => selectAllMeasures(), 'select-section': () => selectCurrentSection(), 'find-go-to': () => findOrGoToMeasure(), 'clear-recent': () => window.acorde.clearRecentFiles?.(),
+    'recent-score': () => openRecentScoreAt(definition.recentIndex), 'open-export': () => { const menu = $('export-menu'); if (menu) menu.open = true; $('page-preset')?.focus(); },
+    tuplet: () => applyTupletValue(TUPLET_MENU_PRESETS[definition.tuplet]), 'staff-text': () => openTextStyleEditor('Generic'),
+    dynamics: () => { const details = $('dynamic-select')?.closest('details'); if (details) details.open = true; $('dynamic-select')?.focus(); }, 'technique-text': () => openTextStyleEditor('Technique'),
+    hairpin: () => { $('hairpin-kind').value = command === 'add:crescendo' ? 'Crescendo' : 'Decrescendo'; $('hairpin-tool').click(); },
+    ottava: () => { $('ottava-kind').value = command === 'add:ottava-alta' ? 'Va8' : 'Vb8'; $('ottava-button').click(); }, transpose: () => openTransposeDialog(),
+    'toggle-palettes': () => { const rail = document.querySelector('.left-rail'); if (!rail) return; const visible = !rail.classList.contains('hidden') && !$('sidebar-palettes')?.classList.contains('hidden'); rail.classList.toggle('hidden', visible); if (!visible) window.activateComposerSidebar?.('palettes'); syncApplicationMenuState(); },
+    'show-layout': () => revealMetaGroup('layout'),
+    'toggle-properties': () => { const panel = document.querySelector('.right-panel'); const tab = document.querySelector('.panel-tab[data-panel="properties"]'); const visible = panel && !panel.classList.contains('hidden') && tab?.classList.contains('active'); panel?.classList.toggle('hidden', Boolean(visible)); if (!visible) showRightPanel('properties'); syncApplicationMenuState(); },
+    'toggle-navigator': () => { const panel = $('navigator-panel'); panel?.classList.toggle('hidden'); if (panel && !panel.classList.contains('hidden')) renderNavigator(); syncApplicationMenuState(); },
+    'toggle-note-input-toolbar': () => { document.querySelector('.editor-toolbar')?.classList.toggle('hidden'); syncApplicationMenuState(); },
+    'toggle-playback-toolbar': () => { document.querySelector('.musescore-playback')?.classList.toggle('hidden'); syncApplicationMenuState(); },
+    'toggle-status-bar': () => { document.querySelector('.transport')?.classList.toggle('hidden'); syncApplicationMenuState(); },
+    'restore-workspace': () => restoreWorkspaceState(), 'reset-layout': () => resetWorkspaceState(), 'page-settings': () => openPageSettings(), 'layout-density': () => openLayoutDensity(),
+    'show-ai': () => showRightPanel('ai'), 'show-omr': () => showRightPanel('omr'), 'select-tool': () => { contextTarget = null; selectTool('select'); },
+    'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1),
+  };
+  return rendererCommandHandlers[definition.handler]?.();
 }
 window.acorde.onMenuCommand?.(dispatchApplicationMenuCommand);
 const refreshSoundfontStatusBase = refreshSoundfontStatus;

@@ -9,6 +9,14 @@ const TEXT_STYLES = new Set(['Expression', 'Technique', 'Lyrics', 'ChordSymbol',
 const SPANNER_KINDS = new Set(['Slur', 'Glissando', 'TrillLine', 'Pedal', 'Ottava']);
 const MAX_STYLED_TEXT_LENGTH = 4096;
 const MAX_SPANNER_STRING_LENGTH = 1024;
+const ENGINE_DURATIONS = Object.freeze({ whole: 'Whole', half: 'Half', quarter: 'Quarter', eighth: 'Eighth', sixteenth: 'Sixteenth', thirtysecond: 'ThirtySecond', sixtyfourth: 'SixtyFourth' });
+
+function normalizeCommandForEngine(command) {
+  if (command?.type === 'batch') return { ...command, commands: command.commands.map(normalizeCommandForEngine) };
+  if (typeof command?.duration !== 'string') return command;
+  const duration = ENGINE_DURATIONS[command.duration.replace(/[^a-z]/gi, '').toLowerCase()];
+  return duration ? { ...command, duration } : command;
+}
 
 function assertObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label} must be an object`);
@@ -121,4 +129,4 @@ function describeCommand(command) {
   return `${labels[command.type] || command.type}${detail ? `: ${detail}` : ''}${target ? ` (${target})` : ''}`;
 }
 
-module.exports = { COMMAND_TYPES, assertCommand, describeCommand };
+module.exports = { COMMAND_TYPES, assertCommand, describeCommand, normalizeCommandForEngine };

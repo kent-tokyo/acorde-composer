@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { assertCommand, describeCommand } = require('./command-schema.cjs');
+const { assertCommand, describeCommand, normalizeCommandForEngine } = require('./command-schema.cjs');
 
 test('accepts supported nested command batches and describes operations', () => {
   const command = { type: 'batch', label: 'AI proposal', commands: [
@@ -9,6 +9,16 @@ test('accepts supported nested command batches and describes operations', () => 
   ] };
   assert.doesNotThrow(() => assertCommand(command));
   assert.deepEqual(describeCommand(command), ['Add note: C4 (part 1 · staff 1 · measure 1)', 'Change duration: half (part 1 · staff 1 · measure 1)']);
+});
+
+test('normalizes legacy UI duration names at the engine boundary', () => {
+  const command = { type: 'batch', commands: [
+    { type: 'add_note', duration: 'quarter' },
+    { type: 'set_duration', duration: 'thirty-second' },
+  ] };
+  const normalized = normalizeCommandForEngine(command);
+  assert.deepEqual(normalized.commands.map((item) => item.duration), ['Quarter', 'ThirtySecond']);
+  assert.equal(command.commands[0].duration, 'quarter', 'proposal input is not mutated');
 });
 
 test('rejects unknown operations, invalid indexes, and empty batches', () => {

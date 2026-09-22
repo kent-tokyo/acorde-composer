@@ -14,7 +14,7 @@
       events.forEach((item) => {
         this.enforcePolyphony();
         if (item.decoded_sample) { this.scheduleDecodedSample(item.decoded_sample, item, start, channelGain, channelKey); return; }
-        const oscillator = this.context.createOscillator(); const gain = this.context.createGain(); oscillator.type = item.is_metronome ? 'square' : 'sine'; oscillator.frequency.value = item.is_metronome ? 1200 : 440 * 2 ** ((item.pitch_midi - 69) / 12); gain.gain.setValueAtTime(Math.max(0.03, item.velocity / 1270), start + item.time_secs); gain.gain.exponentialRampToValueAtTime(0.001, start + item.time_secs + Math.max(0.04, item.duration_secs)); oscillator.connect(gain).connect(channelGain); oscillator.start(start + item.time_secs); oscillator.stop(start + item.time_secs + Math.max(0.05, item.duration_secs)); this.nodes.add(oscillator); oscillator.addEventListener('ended', () => this.nodes.delete(oscillator));
+        const oscillator = this.context.createOscillator(); const gain = this.context.createGain(); oscillator.type = item.is_metronome ? 'square' : 'sine'; oscillator.frequency.value = item.is_metronome ? 1200 : 440 * 2 ** ((item.pitch_midi - 69) / 12); gain.gain.setValueAtTime(Math.max(0.03, item.velocity / 1270), start + item.time_secs); gain.gain.exponentialRampToValueAtTime(0.001, start + item.time_secs + Math.max(0.04, item.duration_secs)); oscillator.connect(gain).connect(channelGain); oscillator.start(start + item.time_secs); oscillator.stop(start + item.time_secs + Math.max(0.05, item.duration_secs)); this.nodes.add(oscillator); oscillator.addEventListener('ended', () => { this.nodes.delete(oscillator); try { oscillator.disconnect(); } catch {} try { gain.disconnect(); } catch {} });
       });
     }
     scheduleDecodedSample(sample, event, start, destination = this.master, channelKey = null) {
@@ -58,7 +58,7 @@
       const sustained = (Boolean(event.sustain) || this.sustainPedals.get(channelKey) === true) && channelKey !== null;
       if (!sustained) source.stop(when + duration);
       if (sustained) { if (!this.sustainNodes.has(channelKey)) this.sustainNodes.set(channelKey, new Set()); this.sustainNodes.get(channelKey).add(source); }
-      this.nodes.add(source); source.addEventListener('ended', () => { this.nodes.delete(source); this.sustainNodes.get(channelKey)?.delete(source); });
+      this.nodes.add(source); source.addEventListener('ended', () => { this.nodes.delete(source); this.sustainNodes.get(channelKey)?.delete(source); try { source.disconnect(); } catch {} try { gain.disconnect(); } catch {} });
       return source;
     }
     releaseSustain(channelKey = null) {

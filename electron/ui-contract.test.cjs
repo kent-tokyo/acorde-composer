@@ -2,11 +2,13 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const commandRegistry = require('../src/command-registry.js');
 
 const root = path.resolve(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'src/app.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'src/index.html'), 'utf8');
 const style = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8');
+const sectionNavigation = fs.readFileSync(path.join(root, 'src/section-navigation.js'), 'utf8');
 const packageManifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const multiVoiceFixture = fs.readFileSync(path.join(root, 'qa/fixtures/multivoice-ui.musicxml'), 'utf8');
 const advancedNotationFixture = fs.readFileSync(path.join(root, 'qa/fixtures/notation-advanced.musicxml'), 'utf8');
@@ -17,6 +19,10 @@ test('editor UI exposes truthful save state and accessible core actions', () => 
   assert.match(app, /updateSaveStatus/);
   assert.match(app, /Unsaved changes/);
   assert.match(app, /Save failed/);
+  assert.match(app, /async function saveCurrentDocument\(saveAs = false\)/);
+  assert.match(app, /window\.acorde\.saveDocument/);
+  assert.doesNotMatch(app, /window\.acorde\.saveScore =/);
+  assert.doesNotMatch(app, /window\.acorde\.saveMidi =/);
   assert.match(app, /function persistAutosave\(\)/);
   assert.match(app, /setTimeout\(persistAutosave, 150\)/);
   assert.match(app, /aria-label.*Undo/);
@@ -34,9 +40,40 @@ test('editor UI exposes truthful save state and accessible core actions', () => 
 
 test('score changes emit one update notification per render', () => {
   assert.equal((app.match(/new Event\('score-changed'\)/g) || []).length, 1);
-  assert.match(app, /updateRenderedScore\(await window\.acorde\.renderCurrent\(900\)\)/);
-  assert.equal((app.match(/addEventListener\('score-changed'/g) || []).length, 1);
+  assert.match(app, /async function renderCurrentScore\(\)/);
+  assert.match(index, /render-coordinator\.js/);
+  assert.match(app, /function renderAndUpdateCurrentScore\(\)/);
+  assert.doesNotMatch(app, /updateRenderedScore\(await renderCurrentScore\(\)\)/);
+  assert.ok((app.match(/addEventListener\('score-changed'/g) || []).length >= 1);
   assert.match(app, /function syncEditorAfterScoreChange\(\)/);
+});
+
+test('renderer treats imported/provider text as text rather than HTML and isolates browser persistence', () => {
+  assert.match(index, /safe-storage\.js/);
+  assert.match(app, /const safeStorage = window\.AcordeSafeStorage/);
+  assert.match(app, /function sanitizedScoreSvg\(svg\)/);
+  assert.match(app, /script, foreignObject, iframe, object, embed/);
+  assert.match(app, /\$\('score'\)\.replaceChildren\(sanitizedScoreSvg\(svg\)\)/);
+  assert.match(app, /kind\.textContent = String\(item\.kind/);
+  assert.match(app, /title\.textContent = String\(part\?\.name/);
+  assert.doesNotMatch(app, /row\.innerHTML = `<strong>\$\{item\.kind/);
+  assert.doesNotMatch(app, /row\.innerHTML = `<strong>\$\{part\.name/);
+  assert.doesNotMatch(app, /\$\('diagnostics'\)\.innerHTML/);
+  assert.doesNotMatch(app, /\$\('score'\)\.innerHTML = svg/);
+});
+
+test('part controls operate through one active-part implementation', () => {
+  assert.match(app, /function installActivePartControls\(\)/);
+  assert.match(app, /installActivePartControls\(\);/);
+  assert.doesNotMatch(app, /installPartControls\(\);/);
+  assert.doesNotMatch(app, /installPartSelector\(\);/);
+});
+
+test('SVG export replaces legacy listeners with one diagnostics-aware handler', () => {
+  assert.match(app, /function installSingleSvgExport\(\)/);
+  assert.match(app, /previous\.cloneNode\(true\); previous\.replaceWith\(button\)/);
+  assert.match(app, /installSingleSvgExport\(\);/);
+  assert.doesNotMatch(app, /installRenderDiagnostics\(\);/);
 });
 
 test('mixer persistence skips unchanged synchronous localStorage writes', () => {
@@ -63,6 +100,59 @@ test('application preferences expose persisted English, Japanese, and Chinese la
   assert.match(app, /saveLanguagePreference/);
   assert.doesNotMatch(app, /\['language-label', copy\.language\]/);
   assert.match(app, /setLabelText\('language-label', copy\.language\)/);
+});
+
+test('workspace visibility is versioned, restored, and reset from the View menu', () => {
+  assert.match(index, /workspace-state\.js/);
+  assert.match(app, /acorde-composer\.workspace\.v1/);
+  assert.match(app, /function captureWorkspaceState\(\)/);
+  assert.match(app, /function applyWorkspaceState\(value\)/);
+  assert.match(app, /function restoreWorkspaceState\(\)/);
+  assert.match(app, /function resetWorkspaceState\(\)/);
+  assert.match(app, /ResizeObserver/);
+  assert.match(app, /openMixer = \(visible = true\)[\s\S]*openMixerBase\(visible\)/);
+});
+
+test('score right-click routes native context actions through existing commands', () => {
+  assert.match(app, /addEventListener\('contextmenu'/);
+  assert.match(app, /showScoreContextMenu/);
+  assert.match(app, /data-acorde-kind="measure-text"/);
+  assert.match(app, /DeleteMeasureText/);
+  assert.match(app, /PasteMeasureText/);
+  assert.match(app, /const voice = voices\[voiceIndex\] \|\| \[\]/);
+  assert.match(app, /setAttribute\('aria-label', `Measure/);
+  assert.match(app, /acorde-measure-hit-area/);
+  assert.match(app, /interactiveSvg\.setAttribute\('role', 'group'\)/);
+  assert.match(fs.readFileSync(path.join(root, 'src\/style.css'), 'utf8'), /pointer-events:bounding-box/);
+});
+
+test('adaptive rendering supplies width and measure density to the engine', () => {
+  assert.match(index, /render-policy\.js/);
+  assert.match(app, /AcordeRenderPolicy\.options/);
+  assert.match(app, /renderCurrent\(options\.width, options\)/);
+  const main = fs.readFileSync(path.join(root, 'electron/main.cjs'), 'utf8');
+  assert.match(main, /measures_per_system: measuresPerSystem/);
+});
+
+test('Format routes open real page and display-only layout settings', () => {
+  assert.match(index, /id="page-layout-dialog"/);
+  assert.match(index, /id="layout-density-dialog"/);
+  assert.match(index, /id="layout-density-select"/);
+  assert.match(app, /function openPageSettings\(\)/);
+  assert.match(app, /function applyPageSettings\(\)/);
+  assert.match(app, /function applyLayoutDensity\(nextDensity\)/);
+  assert.match(app, /acorde-composer\.layout-density\.v1/);
+  assert.match(app, /AcordeRenderPolicy\.options\(available, layoutDensity\)/);
+  assert.equal(commandRegistry.resolveCommand('format:page-settings').handler, 'page-settings');
+  assert.equal(commandRegistry.resolveCommand('format:layout-density').handler, 'layout-density');
+});
+
+test('score viewport exposes page and continuous modes with adaptive rerendering', () => {
+  const style = fs.readFileSync(path.join(root, 'src/style.css'), 'utf8');
+  assert.match(app, /id = 'score-view-mode'/);
+  assert.match(app, /Page view[\s\S]*Continuous view/);
+  assert.match(app, /continuous-view[\s\S]*renderAndUpdateCurrentScore/);
+  assert.match(style, /\.score-area\.continuous-view \.score-paper/);
 });
 
 test('editor labels use the English UI contract and route prompt/alert/confirm through the shared modal', () => {
@@ -113,6 +203,32 @@ test('selection-dependent actions are disabled until a score selection exists', 
   assert.match(app, /Select a note or measure first/);
 });
 
+test('MuseScore-style Find / Go to selects a rendered measure range', () => {
+  assert.match(index, /measure-navigation\.js/);
+  assert.match(index, /Other built-in shortcuts/);
+  assert.match(app, /async function findOrGoToMeasure\(\)/);
+  assert.match(app, /AcordeMeasureNavigation\?\.parseMeasureRange/);
+  assert.match(app, /function selectMeasureRange\(start, end\)/);
+  assert.match(app, /selectedRange = \[start, end\]/);
+  assert.match(app, /scrollIntoView\(\{ block: 'center', inline: 'center' \}\)/);
+});
+
+test('Navigator and configurable shortcuts use Composer UI state without inventing score semantics', () => {
+  assert.match(app, /function renderNavigator\(\)/);
+  assert.match(app, /id = 'navigator-panel'/);
+  assert.match(app, /'toggle-navigator'/);
+  assert.match(index, /id="shortcut-editor"/);
+  assert.match(app, /function installShortcutEditor\(\)/);
+  assert.match(app, /acorde-composer\.shortcuts\.v1/);
+  assert.match(app, /findShortcutConflict/);
+  assert.match(app, /function currentSectionRange\(\)/);
+  assert.match(index, /section-navigation\.js/);
+  assert.match(sectionNavigation, /section_break/);
+  assert.doesNotMatch(sectionNavigation, /system_break/);
+  assert.equal(commandRegistry.resolveCommand('view:navigator').handler, 'toggle-navigator');
+  assert.equal(commandRegistry.resolveCommand('edit:select-section').handler, 'select-section');
+});
+
 test('editor UI groups dense metadata controls and explains first use', () => {
   assert.match(index, /id="first-use-guide"/);
   assert.match(index, /Quick start/);
@@ -137,7 +253,7 @@ test('editor UI keeps export actions in a secondary menu and exposes voice state
   assert.match(app, /setAttribute\('role', 'status'\)/);
   assert.match(app, /exportMenu\.id = 'export-menu'/);
   assert.match(app, /const exportIds = \[/);
-  assert.match(app, /status\.textContent = count > 1/);
+  assert.match(app, /status\.textContent = slots\.length > 1/);
   assert.match(style, /\.export-menu summary/);
   assert.match(style, /\.voice-status/);
 });
@@ -192,16 +308,24 @@ test('editor UI exposes SoundFont readiness beside playback controls', () => {
 
 test('multiple-voice UI contract keeps fixture structure and voice-aware controls', () => {
   assert.match(index, /id="voice-select"/);
+  assert.match(index, /voice-selection\.js/);
   assert.match(app, /function voiceCount\(\)/);
+  assert.match(app, /function activeVoiceSlots\(\)/);
+  assert.match(app, /AcordeVoiceSelection\.sourceNumber/);
+  assert.match(app, /function stepActiveVoice\(direction\)/);
   assert.match(app, /function refreshVoiceSelector\(\)/);
   assert.match(app, /voice: voiceIndex/);
-  assert.match(app, /key === '\[' \|\| key === '\]'/);
+  assert.equal(commandRegistry.commandForKeyboardEvent({ key: '[' }), 'voice:previous');
+  assert.equal(commandRegistry.commandForKeyboardEvent({ key: ']' }), 'voice:next');
   assert.match(multiVoiceFixture, /<backup><duration>1920<\/duration><\/backup>/);
   assert.match(multiVoiceFixture, /<forward><duration>960<\/duration><voice>1<\/voice><\/forward>/);
   const notes = multiVoiceFixture.match(/<note>[\s\S]*?<\/note>/g) || [];
   assert.equal(notes.filter((note) => /<voice>1<\/voice>/.test(note)).length, 2);
   assert.equal(notes.filter((note) => /<voice>2<\/voice>/.test(note)).length, 2);
   assert.match(multiVoiceFixture, /<rest\/>/);
+  assert.match(fs.readFileSync(path.join(root, 'electron/multivoice-workflow.test.cjs'), 'utf8'), /voice: 1/);
+  assert.match(fs.readFileSync(path.join(root, 'electron/multivoice-workflow.test.cjs'), 'utf8'), /source_voice_numbers/);
+  assert.match(fs.readFileSync(path.join(root, 'electron/multivoice-workflow.test.cjs'), 'utf8'), /playback_events/);
 });
 
 test('notation UI exposes advanced spanners and explicit ABC loss diagnostics', () => {
@@ -224,10 +348,12 @@ test('cross-staff multi-voice workflow keeps address, edit, save, and reload bou
   assert.match(app, /serializeMusicxmlReport/);
 });
 
-test('voice counting avoids intermediate arrays on score-change updates', () => {
+test('voice selection derives populated slots without intermediate score arrays', () => {
   const source = app.match(/function voiceCount\(\) \{[^\n]+/u)?.[0] || '';
-  assert.match(source, /for \(const staff of staves\)/);
-  assert.doesNotMatch(source, /flatMap|\.map\(/);
+  const voiceSelection = fs.readFileSync(path.join(root, 'src', 'voice-selection.js'), 'utf8');
+  assert.match(source, /return activeVoiceSlots\(\)\.length/);
+  assert.match(voiceSelection, /for \(const staff of score\?\.parts/);
+  assert.doesNotMatch(voiceSelection, /flatMap/);
 });
 
 test('playback highlight advances with a cursor instead of filtering every animation frame', () => {
@@ -292,6 +418,14 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(app, /className = 'musescore-playback'/);
   assert.match(app, /className = 'sidebar-panel sidebar-palettes'/);
   assert.match(app, /className = 'status-zoom'/);
+  assert.match(app, /className = 'navigator-panel'/);
+  assert.match(app, /rendererCommandHandlers/);
+  assert.match(app, /'toggle-palettes':[\s\S]*classList\.toggle\('hidden'/);
+  assert.match(app, /'toggle-note-input-toolbar':[\s\S]*classList\.toggle\('hidden'/);
+  assert.match(app, /'reset-layout': \(\) => resetWorkspaceState\(\)/);
+  assert.equal(commandRegistry.resolveCommand('view:palettes').handler, 'toggle-palettes');
+  assert.equal(commandRegistry.resolveCommand('view:note-input-toolbar').handler, 'toggle-note-input-toolbar');
+  assert.equal(commandRegistry.resolveCommand('view:reset-layout').handler, 'reset-layout');
   assert.match(style, /MuseScore-oriented workspace/);
   assert.match(style, /\.sidebar-tabs/);
   assert.match(style, /\.properties-actions/);

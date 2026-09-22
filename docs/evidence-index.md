@@ -4,10 +4,11 @@
 
 | 主張 | 実装 | 検証 | artifact / fixture | 判定 |
 | --- | --- | --- | --- | --- |
-| Acordeだけを音楽処理依存にする | `engine/Cargo.toml`、`package.json` | `electron/package-contract.test.cjs` | `engine/Cargo.lock` | local |
+| Acordeだけを音楽処理依存にする | `engine/Cargo.toml`、`package.json` | `electron/package-contract.test.cjs` | `engine/Cargo.lock` (`acorde` 1.2.2) | local |
 | 複数voiceを保持して保存・再読込する | `src/app.js`、engine IPC | `electron/ui-contract.test.cjs` | `qa/fixtures/multivoice-ui.musicxml` | macOS smoke済み |
+| cross-staffをpackaged編集する | Composer advanced notation UI | `electron/ui-contract.test.cjs` | `qa/fixtures/notation/cross-staff.musicxml` | upstream staff materialization待ち (#81) |
 | 外部入力を直接Scoreへ適用しない | `electron/ai-provider-boundary.cjs`、`electron/omr-boundary.cjs` | provider / OMR boundary tests | deterministic fixtures | local |
-| SoundFont sampleをboundedに再生する | `electron/soundfont-playback.cjs`、`src/audio-backend.js` | `electron/soundfont-playback.test.cjs`、`electron/audio-backend.test.cjs` | PCM fixture | local |
+| SoundFont sampleをboundedに再生する | `electron/soundfont-playback.cjs`、`src/audio-backend.js` | `electron/soundfont-playback.test.cjs`、`electron/audio-backend.test.cjs` | CC0 SF2 / SF3 fixture | local (64 MiB inline IPC) |
 | artifactの改変を検出する | `scripts/create-release-artifact-manifest.cjs` | `electron/release-artifact-manifest.test.cjs` | `dist/release-artifact-manifest.json` | local |
 | QAの未検証を合格扱いしない | `scripts/run-release-qa.cjs`、`electron/release-qa.cjs` | `electron/release-qa-cli.test.cjs` | `qa/release-qa-results.json` | local |
 | macOS arm64 packaged appにengineを同梱する | `package.json`、`scripts/build-engine.cjs` | `electron/package-contract.test.cjs`、`npm run pack` | `dist/mac-arm64` | local |

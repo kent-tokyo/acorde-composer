@@ -17,13 +17,13 @@
 
 音乐处理只使用 `acorde`。Score 模型、MusicXML／MIDI／ABC 输入输出、编辑 command、布局、SVG 渲染和 PlaybackEvent 都通过 `acorde` API 完成。不使用 Tone.js、VexFlow、music21 等其他音乐库。
 
-当前使用 `acorde` v1.2.0 的 5 个 crate，并通过 path dependency 和 version pin 固定。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
+当前使用 `acorde` v1.2.2 的 5 个 crate，并通过 path dependency 和 version pin 固定。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
 
 ## 当前版本
 
-**Acorde Composer v0.1.14**（`acorde v1.2.0`）
+已发布版本为 **Acorde Composer v0.1.14**（`acorde v1.2.0`）；开发树使用 `acorde v1.2.2`。
 
-AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。v0.1.14 加入了接近 MuseScore 的菜单顺序与工作区布局，以及 Acorde v1.2.0 的 channel-aware SoundFont PCM 路径。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界之外。
+AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界内。
 
 ## 从现有乐谱软件迁移
 
@@ -33,7 +33,7 @@ AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreComm
 
 ## 重要限制
 
-Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。完整的多声部编辑、实际 SoundFont zone materialization、MuseSounds 类高品质音源、实际 OMR provider 和已签名 installer 都属于独立验证门槛。SoundFont asset、外部音源和 provider 的许可证及再分发条件需要另行确认。
+Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff 的 packaged 编辑和大 SoundFont 传输仍依赖上游支持。
 
 ## 开发
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-当前已验证 Node 210 项、Rust unit test 24 项。`npm run check:candidate` 会按固定顺序运行 Node、静态检查、fixture、Playground、Rust test、clippy 和差分检查；需要机器可读的分阶段结果时可运行`npm run check:candidate:json`，需要包含依赖 provenance 的正式候选判定时可运行`npm run check:candidate:strict`。JSON 中`valid`表示本地验证，`releaseReady`表示正式候选是否就绪。实际 SF3 fixture 会验证非零 PCM materialization，spanner 回归会验证 glissando／cross-staff round-trip。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md) 和 [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)。
+截至 2026-09-23，Node 261 项和 Rust unit test 25 项通过。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
 
 性能 profile 还保存 parse→serialize 测量以及 harness RSS／CPU 证据。可通过 feature matrix 和 evidence index 追踪已实现范围与外部依赖的剩余任务。
 

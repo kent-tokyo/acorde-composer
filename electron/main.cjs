@@ -7,7 +7,7 @@ const { assertScoreSize, assertEngineRequestSize } = require('./limits.cjs');
 const { inspectSoundfontAsset } = require('./soundfont-asset.cjs');
 const { buildNewScoreXml } = require('./templates.cjs');
 const { addComposerImportWarnings } = require('./import-diagnostics.cjs');
-const { assertCommand } = require('./command-schema.cjs');
+const { assertCommand, normalizeCommandForEngine } = require('./command-schema.cjs');
 const { assessOmrProposal, createOmrReviewQueue, findOmrItemAtPoint, normalizeOmrRunResult, runExternalOmrProvider, transitionOmrItem } = require('./omr-boundary.cjs');
 const { buildAiRequest, createAiRateLimiter, normalizeAiResponse, runExternalAiProvider } = require('./ai-provider-boundary.cjs');
 const { assessProviderConfig, normalizeProviderConfig } = require('./provider-config.cjs');
@@ -16,16 +16,25 @@ const { attachResolvedLayers, attachResolvedSample, attachResolvedSnapshot } = r
 const { inspectOmrInputWithHeader } = require('./omr-input.cjs');
 const { serializeSupportBundle } = require('./support-bundle.cjs');
 const { supportBundleSaveDialogOptions, supportBundleSaveResult } = require('./support-bundle-path.cjs');
-const { buildApplicationMenuTemplate } = require('./application-menu.cjs');
+const { buildApplicationMenuTemplate, normalizeMenuLanguage } = require('./application-menu.cjs');
+const { normalizeShortcutOverrides } = require('../src/command-registry.js');
+const { DocumentSaveTargets, ensureMusicXmlPath } = require('./document-save-target.cjs');
+const { buildScoreContextMenuTemplate } = require('./score-context-menu.cjs');
+const { EngineSessionManager } = require('./engine-session-manager.cjs');
 
-let engine;
+const DEFAULT_MENU_STATE = Object.freeze({ hasScore: false, hasSelection: false, canUndo: false, canRedo: false, palettesVisible: true, propertiesVisible: true, historyVisible: false, mixerVisible: false, playbackControlsVisible: true, noteInputVisible: true, statusBarVisible: true, navigatorVisible: true, sectionSelectionAvailable: false, shortcutOverrides: {} });
+const applicationMenuLanguages = new Map();
+const applicationMenuStates = new Map();
+const applicationMenuRevisions = new Map();
 const aiRateLimiter = createAiRateLimiter();
+const documentSaveTargets = new DocumentSaveTargets();
 const RECENT_FILES_LIMIT = 8;
 const MAX_PENDING_ENGINE_REQUESTS = 64;
 function recentFilesPath() { return path.join(app.getPath('userData'), 'recent-files.json'); }
 async function readRecentFiles() { try { const value = JSON.parse(await fs.readFile(recentFilesPath(), 'utf8')); return Array.isArray(value) ? value.filter((item) => item?.path).slice(0, RECENT_FILES_LIMIT) : []; } catch { return []; } }
 async function rememberRecentFile(filePath) { const items = (await readRecentFiles()).filter((item) => item.path !== filePath); items.unshift({ path: filePath, name: path.basename(filePath), openedAt: new Date().toISOString() }); await fs.mkdir(app.getPath('userData'), { recursive: true }); await fs.writeFile(recentFilesPath(), JSON.stringify(items.slice(0, RECENT_FILES_LIMIT)), 'utf8'); }
-function startEngine() {
+async function clearRecentFiles() { await fs.mkdir(app.getPath('userData'), { recursive: true }); await fs.writeFile(recentFilesPath(), '[]', 'utf8'); }
+function startEngineSession() {
   const packagedPath = path.join(process.resourcesPath, 'engine', `acorde-composer-engine${process.platform === 'win32' ? '.exe' : ''}`);
   const enginePath = process.env.ACORDE_ENGINE_BIN || (app.isPackaged ? packagedPath : null);
   if (app.isPackaged && !process.env.ACORDE_ENGINE_BIN && !require('node:fs').existsSync(packagedPath)) {
@@ -35,7 +44,8 @@ function startEngine() {
     ? spawn(enginePath, [], { stdio: ['pipe', 'pipe', 'pipe'] })
     : spawn('cargo', ['run', '--quiet', '--manifest-path', path.join(__dirname, '../engine/Cargo.toml')], { stdio: ['pipe', 'pipe', 'pipe'] });
   const pending = [];
-  const failPending = (message) => { while (pending.length) pending.shift().reject(new Error(message)); engine = null; };
+  let closed = false;
+  const failPending = (message) => { while (pending.length) pending.shift().reject(new Error(message)); };
   readline.createInterface({ input: child.stdout }).on('line', (line) => {
     const item = pending.shift();
     if (!item) return;
@@ -51,10 +61,41 @@ function startEngine() {
   child.stderr.on('data', (data) => console.error(`[acorde-engine] ${data}`));
   child.stdin.on('error', (error) => { console.error(`[acorde-engine] stdin failed: ${error.message}`); failPending('acorde engine input failed'); });
   child.on('error', (error) => { console.error(`[acorde-engine] spawn failed: ${error.message}`); failPending('acorde engine failed to start'); });
-  child.on('exit', (code, signal) => { console.error(`[acorde-engine] exited code=${code} signal=${signal || 'none'}`); failPending('acorde engine stopped'); });
-  return (request) => new Promise((resolve, reject) => { const payload = JSON.stringify(request); try { assertEngineRequestSize(Buffer.byteLength(payload)); } catch (error) { return reject(error); } if (pending.length >= MAX_PENDING_ENGINE_REQUESTS) return reject(new Error('acorde engine request queue is full')); pending.push({ resolve, reject }); try { child.stdin.write(`${payload}\n`); } catch { pending.pop(); reject(new Error('acorde engine input failed')); } });
+  child.on('exit', (code, signal) => { if (!closed) console.error(`[acorde-engine] exited code=${code} signal=${signal || 'none'}`); failPending('acorde engine stopped'); });
+  return {
+    request: (request) => new Promise((resolve, reject) => { const payload = JSON.stringify(request); try { assertEngineRequestSize(Buffer.byteLength(payload)); } catch (error) { return reject(error); } if (pending.length >= MAX_PENDING_ENGINE_REQUESTS) return reject(new Error('acorde engine request queue is full')); pending.push({ resolve, reject }); try { child.stdin.write(`${payload}\n`); } catch { pending.pop(); reject(new Error('acorde engine input failed')); } }),
+    close: () => { if (closed) return; closed = true; failPending('acorde engine session closed'); child.kill(); },
+  };
 }
-function callEngine(request) { engine ||= startEngine(); return engine(request); }
+const engineSessions = new EngineSessionManager(() => startEngineSession());
+function callEngine(ownerId, request) { return engineSessions.request(ownerId, request); }
+function callEventEngine(event, request) { return callEngine(ownerId(event), request); }
+function ownerId(event) { return event?.sender?.id; }
+function menuLanguageFor(window) { return applicationMenuLanguages.get(window.webContents.id) || 'en'; }
+function menuStateFor(window) { return applicationMenuStates.get(window.webContents.id) || DEFAULT_MENU_STATE; }
+
+async function installApplicationMenu(window, language = menuLanguageFor(window)) {
+  const windowId = window.webContents.id;
+  const revision = (applicationMenuRevisions.get(windowId) || 0) + 1;
+  applicationMenuRevisions.set(windowId, revision);
+  const normalizedLanguage = normalizeMenuLanguage(language);
+  applicationMenuLanguages.set(windowId, normalizedLanguage);
+  const recentFiles = await readRecentFiles();
+  if (revision !== applicationMenuRevisions.get(windowId) || window.isDestroyed()) return;
+  const sendMenuCommand = (command) => {
+    if (!window.isDestroyed()) window.webContents.send('menu:command', command);
+  };
+  const template = buildApplicationMenuTemplate({
+    send: sendMenuCommand,
+    platform: process.platform,
+    language: normalizedLanguage,
+    recentFiles,
+    menuState: menuStateFor(window),
+    openDocumentation: () => shell.openExternal('https://github.com/kent-tokyo/acorde-composer#readme'),
+    openMuseScoreReference: () => shell.openExternal('https://handbook.musescore.org/navigation/the-user-interface'),
+  });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -69,61 +110,147 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  const windowId = window.webContents.id;
   window.loadFile(path.join(__dirname, '../src/index.html'));
-  const sendMenuCommand = (command) => {
-    if (!window.isDestroyed()) window.webContents.send('menu:command', command);
-  };
-  const template = buildApplicationMenuTemplate({
-    send: sendMenuCommand,
-    platform: process.platform,
-    openHandbook: () => shell.openExternal('https://handbook.musescore.org/navigation/the-user-interface'),
+  window.on('focus', () => { void installApplicationMenu(window); });
+  window.on('closed', () => {
+    engineSessions.release(windowId);
+    documentSaveTargets.clear(windowId);
+    applicationMenuLanguages.delete(windowId);
+    applicationMenuStates.delete(windowId);
+    applicationMenuRevisions.delete(windowId);
   });
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  void installApplicationMenu(window);
   return window;
 }
 
-async function openScorePath(filePath) {
+ipcMain.handle('app:setLanguage', async (event, { language } = {}) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) throw new Error('No Composer window is available for menu localization');
+  await installApplicationMenu(window, language);
+  return menuLanguageFor(window);
+});
+
+ipcMain.handle('app:setMenuState', async (event, state = {}) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) throw new Error('No Composer window is available for menu state synchronization');
+  const next = {
+    hasScore: state.hasScore === true,
+    hasSelection: state.hasSelection === true,
+    canUndo: state.canUndo === true,
+    canRedo: state.canRedo === true,
+    palettesVisible: state.palettesVisible !== false,
+    propertiesVisible: state.propertiesVisible !== false,
+    historyVisible: state.historyVisible === true,
+    mixerVisible: state.mixerVisible === true,
+    playbackControlsVisible: state.playbackControlsVisible !== false,
+    noteInputVisible: state.noteInputVisible !== false,
+    statusBarVisible: state.statusBarVisible !== false,
+    navigatorVisible: state.navigatorVisible !== false,
+    sectionSelectionAvailable: state.sectionSelectionAvailable === true,
+    shortcutOverrides: normalizeShortcutOverrides(state.shortcutOverrides),
+  };
+  const windowId = event.sender.id;
+  if (JSON.stringify(next) === JSON.stringify(applicationMenuStates.get(windowId) || DEFAULT_MENU_STATE)) return next;
+  applicationMenuStates.set(windowId, next);
+  await installApplicationMenu(window);
+  return next;
+});
+
+ipcMain.handle('app:closeWindow', async (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) return false;
+  window.close();
+  return true;
+});
+
+ipcMain.handle('app:clearRecentFiles', async (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  await clearRecentFiles();
+  if (window) await installApplicationMenu(window);
+  return true;
+});
+
+ipcMain.handle('app:showScoreContextMenu', async (event, state = {}) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) return false;
+  const send = (command) => {
+    if (!window.isDestroyed()) window.webContents.send('menu:command', command);
+  };
+  const template = buildScoreContextMenuTemplate({ send, state, language: menuLanguageFor(window) });
+  Menu.buildFromTemplate(template).popup({ window });
+  return true;
+});
+
+async function openScorePath(owner, filePath) {
   const extension = path.extname(filePath).toLowerCase();
   const binary = extension === '.mid' || extension === '.midi' || extension === '.mxl';
   const fileData = await fs.readFile(filePath);
   assertScoreSize(fileData.byteLength);
   const content = binary ? null : fileData.toString('utf8');
   let report = extension === '.abc'
-    ? await callEngine({ op: 'parse_abc_report', text: content })
+    ? await callEngine(owner, { op: 'parse_abc_report', text: content })
     : extension === '.mxl'
-    ? await callEngine({ op: 'parse_mxl_report', data: [...fileData] })
+    ? await callEngine(owner, { op: 'parse_mxl_report', data: [...fileData] })
       : binary
-        ? await callEngine({ op: 'parse_midi_report', data: [...fileData] })
-        : await callEngine({ op: 'parse_musicxml_report', xml: content });
+        ? await callEngine(owner, { op: 'parse_midi_report', data: [...fileData] })
+        : await callEngine(owner, { op: 'parse_musicxml_report', xml: content });
   if (!binary && extension !== '.abc') report = addComposerImportWarnings(report, content);
   const score = report.score;
-  await callEngine({ op: 'load_score', score });
-  const svg = await callEngine({ op: 'render_current', width: 900 });
+  await callEngine(owner, { op: 'load_score', score });
+  const svg = await callEngine(owner, { op: 'render_current', width: 900 });
   await rememberRecentFile(filePath);
+  const window = BrowserWindow.getAllWindows().find((candidate) => candidate.webContents.id === owner);
+  if (window) await installApplicationMenu(window);
   return { filePath, content, format: extension === '.abc' ? 'abc' : extension === '.mxl' ? 'mxl' : binary ? 'midi' : 'musicxml', score, report, svg };
 }
 
-ipcMain.handle('file:open', async () => {
-  const result = await dialog.showOpenDialog({
+ipcMain.handle('file:open', async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender), {
     properties: ['openFile'],
     filters: [{ name: 'Music score', extensions: ['musicxml', 'xml', 'mxl', 'mid', 'midi', 'abc'] }],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
-  return openScorePath(result.filePaths[0]);
+  const opened = await openScorePath(ownerId(event), result.filePaths[0]);
+  documentSaveTargets.trackOpened(event.sender.id, opened.filePath);
+  return opened;
 });
-ipcMain.handle('file:openPath', async (_event, { filePath }) => {
+ipcMain.handle('file:openPath', async (event, { filePath }) => {
   const items = await readRecentFiles();
   if (!Number.isInteger(filePath) || filePath < 0 || filePath >= items.length) throw new Error('Recent file index is invalid');
-  return openScorePath(items[filePath].path);
+  const opened = await openScorePath(ownerId(event), items[filePath].path);
+  documentSaveTargets.trackOpened(event.sender.id, opened.filePath);
+  return opened;
 });
 ipcMain.handle('file:recent', async () => (await readRecentFiles()).map(({ name, path: filePath, openedAt }) => ({ name, path: filePath, openedAt })));
 
-ipcMain.handle('file:new', async (_event, { template = 'piano' } = {}) => {
+ipcMain.handle('file:new', async (event, { template = 'piano' } = {}) => {
   const xml = buildNewScoreXml(template);
-  const report = await callEngine({ op: 'parse_musicxml_report', xml });
-  await callEngine({ op: 'load_score', score: report.score });
-  const svg = await callEngine({ op: 'render_current', width: 900 });
+  const owner = ownerId(event);
+  const report = await callEngine(owner, { op: 'parse_musicxml_report', xml });
+  await callEngine(owner, { op: 'load_score', score: report.score });
+  const svg = await callEngine(owner, { op: 'render_current', width: 900 });
+  documentSaveTargets.clear(event.sender.id);
   return { score: report.score, report, svg };
+});
+
+ipcMain.handle('file:saveDocument', async (event, { suggestedName, content, saveAs = false } = {}) => {
+  if (typeof content !== 'string') throw new TypeError('MusicXML document content is required');
+  const ownerId = event.sender.id;
+  let filePath = saveAs ? null : documentSaveTargets.get(ownerId);
+  if (!filePath) {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    const result = await dialog.showSaveDialog(window, {
+      defaultPath: suggestedName || 'score.musicxml',
+      filters: [{ name: 'MusicXML score', extensions: ['musicxml', 'xml'] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    filePath = ensureMusicXmlPath(result.filePath);
+  }
+  await fs.writeFile(filePath, content, 'utf8');
+  documentSaveTargets.set(ownerId, filePath);
+  await rememberRecentFile(filePath);
+  return filePath;
 });
 
 ipcMain.handle('file:save', async (_event, { suggestedName, content }) => {
@@ -151,23 +278,23 @@ ipcMain.handle('file:savePdf', async (_event, { suggestedName, pageSize, landsca
   return result.filePath;
 });
 
-ipcMain.handle('engine:serializeMusicxml', async (_event, { score }) => callEngine({ op: 'serialize_musicxml', score }));
-ipcMain.handle('engine:renderSvg', async (_event, { score, width, staffSize, measuresPerSystem, interactive }) => callEngine({ op: 'render_svg', score, width, staff_size: staffSize, measures_per_system: measuresPerSystem, interactive }));
-ipcMain.handle('engine:renderSvgMetadata', async (_event, { score, width, staffSize, measuresPerSystem, interactive }) => callEngine({ op: 'render_svg_metadata', score, width, staff_size: staffSize, measures_per_system: measuresPerSystem, interactive }));
-ipcMain.handle('engine:applyCommand', async (_event, payload) => {
+ipcMain.handle('engine:serializeMusicxml', async (event, { score }) => callEventEngine(event, { op: 'serialize_musicxml', score }));
+ipcMain.handle('engine:renderSvg', async (event, { score, width, staffSize, measuresPerSystem, interactive }) => callEventEngine(event, { op: 'render_svg', score, width, staff_size: staffSize, measures_per_system: measuresPerSystem, interactive }));
+ipcMain.handle('engine:renderSvgMetadata', async (event, { score, width, staffSize, measuresPerSystem, interactive }) => callEventEngine(event, { op: 'render_svg_metadata', score, width, staff_size: staffSize, measures_per_system: measuresPerSystem, interactive }));
+ipcMain.handle('engine:applyCommand', async (event, payload) => {
   assertCommand(payload?.command);
-  return callEngine({ op: 'apply_command', ...payload });
+  return callEventEngine(event, { op: 'apply_command', ...payload, command: normalizeCommandForEngine(payload.command) });
 });
-ipcMain.handle('engine:undo', async () => callEngine({ op: 'undo' }));
-ipcMain.handle('engine:redo', async () => callEngine({ op: 'redo' }));
-ipcMain.handle('engine:renderCurrent', async (_event, { width }) => callEngine({ op: 'render_current', width }));
-ipcMain.handle('engine:loadScore', async (_event, { score }) => callEngine({ op: 'load_score', score }));
-ipcMain.handle('engine:extractPart', async (_event, { score, partIndex }) => callEngine({ op: 'extract_part', score, part_index: partIndex }));
-ipcMain.handle('engine:serializeCurrent', async () => callEngine({ op: 'serialize_current' }));
-ipcMain.handle('engine:serializeMidi', async (_event, { score }) => callEngine({ op: 'serialize_midi', score }));
-ipcMain.handle('engine:serializeMusicxmlReport', async (_event, { score }) => callEngine({ op: 'serialize_musicxml_report', score }));
-ipcMain.handle('engine:serializeAbcReport', async (_event, { score }) => callEngine({ op: 'serialize_abc_report', score }));
-ipcMain.handle('engine:serializeMidiReport', async (_event, { score }) => callEngine({ op: 'serialize_midi_report', score }));
+ipcMain.handle('engine:undo', async (event) => callEventEngine(event, { op: 'undo' }));
+ipcMain.handle('engine:redo', async (event) => callEventEngine(event, { op: 'redo' }));
+ipcMain.handle('engine:renderCurrent', async (event, { width, staffSize, measuresPerSystem, interactive }) => callEventEngine(event, { op: 'render_current', width, staff_size: staffSize, measures_per_system: measuresPerSystem, interactive }));
+ipcMain.handle('engine:loadScore', async (event, { score }) => callEventEngine(event, { op: 'load_score', score }));
+ipcMain.handle('engine:extractPart', async (event, { score, partIndex }) => callEventEngine(event, { op: 'extract_part', score, part_index: partIndex }));
+ipcMain.handle('engine:serializeCurrent', async (event) => callEventEngine(event, { op: 'serialize_current' }));
+ipcMain.handle('engine:serializeMidi', async (event, { score }) => callEventEngine(event, { op: 'serialize_midi', score }));
+ipcMain.handle('engine:serializeMusicxmlReport', async (event, { score }) => callEventEngine(event, { op: 'serialize_musicxml_report', score }));
+ipcMain.handle('engine:serializeAbcReport', async (event, { score }) => callEventEngine(event, { op: 'serialize_abc_report', score }));
+ipcMain.handle('engine:serializeMidiReport', async (event, { score }) => callEventEngine(event, { op: 'serialize_midi_report', score }));
 ipcMain.handle('file:saveMidi', async (_event, { suggestedName, data }) => {
   const result = await dialog.showSaveDialog({ defaultPath: suggestedName || 'score.mid', filters: [{ name: 'MIDI', extensions: ['mid'] }] });
   if (result.canceled || !result.filePath) return null;
@@ -199,11 +326,11 @@ ipcMain.handle('file:readSoundfont', async (_event, { filePath }) => {
   if (!asset.exists) throw new Error(`SoundFont asset is not loadable: ${asset.reason}`);
   return fs.readFile(filePath);
 });
-ipcMain.handle('engine:playbackEvents', async (_event, { score, bpm, loopRegion }) => callEngine({ op: 'playback_events', score, bpm, loop_region: loopRegion }));
-ipcMain.handle('engine:playbackPosition', async (_event, { elapsedSecs, bpm }) => callEngine({ op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
-ipcMain.handle('engine:inspectSoundfont', async (_event, { data, provider_version: providerVersion, bank, program }) => callEngine({ op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
-ipcMain.handle('engine:decodeSoundfontSample', async (_event, { format, data, startFrame, endFrame, sampleRate, channels }) => callEngine({ op: 'decode_soundfont_sample', format, data, start_frame: startFrame, end_frame: endFrame, sample_rate: sampleRate, channels }));
-ipcMain.handle('engine:prepareSoundfontPlayback', async (_event, { data, providerVersion, bank, program, channels, events }) => callEngine({ op: 'prepare_soundfont_playback', data, provider_version: providerVersion, bank, program, channels, events }));
+ipcMain.handle('engine:playbackEvents', async (event, { score, bpm, loopRegion }) => callEventEngine(event, { op: 'playback_events', score, bpm, loop_region: loopRegion }));
+ipcMain.handle('engine:playbackPosition', async (event, { elapsedSecs, bpm }) => callEventEngine(event, { op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
+ipcMain.handle('engine:inspectSoundfont', async (event, { data, provider_version: providerVersion, bank, program }) => callEventEngine(event, { op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
+ipcMain.handle('engine:decodeSoundfontSample', async (event, { format, data, startFrame, endFrame, sampleRate, channels }) => callEventEngine(event, { op: 'decode_soundfont_sample', format, data, start_frame: startFrame, end_frame: endFrame, sample_rate: sampleRate, channels }));
+ipcMain.handle('engine:prepareSoundfontPlayback', async (event, { data, providerVersion, bank, program, channels, events }) => callEventEngine(event, { op: 'prepare_soundfont_playback', data, provider_version: providerVersion, bank, program, channels, events }));
 ipcMain.handle('soundfont:normalizeDecodedSample', async (_event, sample) => normalizeDecodedSample(sample));
 ipcMain.handle('soundfont:attachResolvedSample', async (_event, { events, zones, samplesById, bank, program } = {}) => attachResolvedSample(events, zones, samplesById, { bank, program }));
 ipcMain.handle('soundfont:attachResolvedSnapshot', async (_event, { events, snapshot, samplesById, bank, program } = {}) => attachResolvedSnapshot(events, snapshot, samplesById, { bank, program }));

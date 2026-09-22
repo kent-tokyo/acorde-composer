@@ -1,79 +1,44 @@
 # Acorde Composer
 
-A cross-platform AI-assisted score editor for Windows and macOS. **Acorde Composer** delegates the score model and deterministic music processing to the existing [`acorde`](https://github.com/kent-tokyo/acorde) engine.
+A local-first desktop score editor for MusicXML, MIDI, and ABC. Acorde Composer uses [`acorde`](https://github.com/kent-tokyo/acorde) as its only music-processing library; Electron owns the desktop UI, files, and provider boundaries.
 
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) · [Browser playground](src/playground/)
 
-Try the browser demo in [`src/playground/`](src/playground/). It runs the bundled `acorde-wasm` engine locally for a small ABC edit, undo/redo, SVG preview, and MusicXML export.
+## What works
 
-## Why Acorde Composer
+- Open, edit, and export MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
+- Enter notes and rests; edit text and common notation; select voices; undo/redo; save and reopen.
+- Use palettes, Properties, Navigator, Mixer, playback controls, and a MuseScore-oriented menu layout.
+- Review AI and OMR proposals before they become validated score commands.
+- Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
 
-Acorde Composer is a lightweight desktop score editor for MusicXML, MIDI, and ABC notation. It is designed for musicians and developers who want to inspect and edit score data, review AI-assisted ideas before applying them, and keep playback, export, and part editing in one local workflow.
+The development tree uses `acorde` v1.2.2. The published release remains **v0.1.14**, built and evidenced with `acorde` v1.2.0. See [CHANGELOG.md](CHANGELOG.md).
 
-- **Data-centered editing** — MusicXML is edited through `acorde`'s Score model and can be saved again.
-- **Reviewable AI assistance** — AI and OMR output becomes a `ScoreCommand` proposal instead of changing the score directly.
-- **Voice-aware workflow** — voice selection, keyboard navigation, round-trip fixtures, and loss diagnostics make multi-voice behavior visible.
-- **Local-first basics** — editing, playback, and file I/O work locally; external providers stay behind explicit boundaries.
-- **Honest readiness** — SoundFont, OMR, AI providers, VST, signing, and clean-machine QA are reported as separate capabilities and gates.
+## Safe MusicXML migration
 
-For comparison criteria, migration steps, and limitations, see the [Choosing and migrating guide](docs/choosing-and-migrating.md). The [SEO and competitive acquisition content plan](docs/seo-content-plan.md) documents the public content strategy.
+1. Export a copy from the source application.
+2. Open it and inspect diagnostics.
+3. Select the intended voice and edit.
+4. Save under a new name, reopen it, and check voices, rests, `backup`/`forward`, lyrics, and chords.
 
-## Music processing policy
+Keep the original unchanged. The fuller checklist and product-fit guidance are in [Choosing and migrating](docs/choosing-and-migrating.md).
 
-Composer uses `acorde` as its only music library. The Score model, MusicXML / MIDI / ABC I/O, editing commands, layout, SVG rendering, and PlaybackEvent processing all use `acorde` APIs. Composer does not use Tone.js, VexFlow, music21, or another music library.
+## Boundaries
 
-The current engine pins the five adjacent `acorde` crates at v1.2.0 through path dependencies and versions. If a required music capability is missing, it must be implemented and tested in `acorde` first rather than duplicated in Composer.
+This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged editing currently depends on upstream staff materialization; the missing large-SoundFont transport is tracked upstream as well.
 
-## Current release: v0.1.14
+No SoundFont, MuseSounds asset, VST binary, AI credential, or OMR provider is bundled. Check each external asset's licence and redistribution terms before distribution; see [NOTICE.md](NOTICE.md) and the [SoundFont checklist](docs/soundfont-license-checklist.md).
 
-This release uses `acorde` v1.2.0 and includes:
-
-- Electron UI with isolated preload and bounded JSON IPC
-- MusicXML, MXL, MIDI, and ABC import/export through `acorde-io`
-- SVG score rendering, PDF/print preview, page geometry diagnostics, and part export
-- Note/rest editing, lyrics, chord symbols, dynamics, articulations, grace notes, tuplets, slurs, ties, hairpins, ottava, pedal, arpeggio, trill, fingering, string number, and technique text
-- Multiple part/staff controls, voice selection, keyboard navigation, selection playback, undo/redo, and autosave recovery
-- Mixer controls, oscillator fallback, decoded PCM sample playback, SoundFont status, and bounded sample contracts
-- A resolved SoundFont preset-zone path for key/velocity selection, channel-aware PCM materialization, sample metadata, and missing-sample diagnostics
-- A MuseScore-oriented native menu and workspace layout that keeps parts, mixer, palettes, properties, playback, and zoom in familiar locations
-- AI proposal review, OMR review queue, provider license gates, timeout recovery, and redacted support bundles
-- Artifact manifest generation, release QA reports, schema migration, checksum, SBOM, NOTICE, and provenance checks
-- Reproducible long-score benchmarks for 100 / 1,000 / 10,000 measures, cold start, playback, layout, SVG, and repeat render
-- Parse → serialize timing plus harness RSS／CPU evidence for each performance profile
-
-## Migration from existing notation software
-
-1. Export a copy of the source score as MusicXML.
-2. Open it in Acorde Composer and inspect diagnostics.
-3. Select the target voice and make edits.
-4. Save to a new file name.
-5. Reopen the saved file and verify voices, rests, backup/forward events, lyrics, chords, and other important notation.
-6. Check print output, external audio assets, licenses, and target-platform requirements before distribution.
-
-Keep the original file unchanged during migration. The [migration guide](docs/choosing-and-migrating.md) explains comparison axes, the safe round-trip workflow, FAQ, and current limitations.
-
-## Current limitations
-
-Acorde Composer does not claim to replace a DAW, a mature commercial notation application, MuseSounds itself, or a general-purpose OMR service. Complete multi-voice editing, production SoundFont zone materialization, MuseSounds-equivalent assets, a real OMR provider, signed installers, and clean Windows/macOS packaged-app QA remain separate verification gates.
-
-No OMR provider, AI service, MuseSounds asset, SoundFont asset, or VST binary is bundled. External assets and providers remain subject to their own licenses, credentials, redistribution terms, and platform requirements.
-
-## Development
+## Development and verification
 
 ```sh
 npm install
-npm run check
 npm test
-npm start
-```
-
-Build a packaged directory and deterministic artifact manifest:
-
-```sh
+npm run check
 npm run pack
 ```
 
-Generate a 20-scenario release QA report:
+The current checkout passed 261 Node tests and 25 Rust tests on 2026-09-23. `npm run check:candidate` runs the local candidate gate; it is not a signed-release or packaged-QA result. The 20 release-QA scenarios remain separate: `not-run` is never a pass.
 
 ```sh
 npm run release:qa -- \
@@ -82,15 +47,4 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-Validate a report independently:
-
-```sh
-npm run release:qa:validate -- \
-  --input dist/release-qa-report.json
-```
-
-The current local verification is 210 Node tests and 24 Rust unit tests. `npm run check:candidate` runs the fixed local candidate gate: Node tests, static and fixture checks, Playground, Rust tests, clippy, and whitespace validation. `npm run check:candidate:json` emits the machine-readable local result, while `npm run check:candidate:strict` also requires Acorde dependency provenance; `valid` is the local result and `releaseReady` is the formal candidate result. The suite includes a legal real-SF3 fixture that must materialize non-zero PCM and focused round-trip checks for glissando and cross-staff spanners. The 20-scenario release QA matrix remains separate from local regression results; `not-run` scenarios are not counted as passed. See [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), [QA evidence](qa/README.md), [NOTICE.md](NOTICE.md), [CHANGELOG.md](CHANGELOG.md), and [GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14).
-
-## License and external assets
-
-Composer is distributed under the project license. The `acorde` engine notices are maintained by the [`acorde` project](https://github.com/kent-tokyo/acorde). See [NOTICE.md](NOTICE.md) before distributing builds that include external providers or assets.
+For evidence and status, see the [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), and [QA guide](qa/README.md).

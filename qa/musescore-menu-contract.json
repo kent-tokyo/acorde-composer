@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "reference": "MuseScore Studio 4.7",
+  "topLevel": {
+    "en": ["File", "Edit", "View", "Add", "Format", "Tools", "Plugins", "Help"],
+    "ja": ["ファイル", "編集", "表示", "追加", "フォーマット", "ツール", "プラグイン", "ヘルプ"],
+    "zh": ["文件", "编辑", "视图", "添加", "格式", "工具", "插件", "帮助"]
+  },
+  "mnemonics": ["F", "E", "V", "A", "O", "T", "P", "H"],
+  "separatorCounts": {
+    "darwin": [2, 2, 3, 0, 0, 0, 1, 0],
+    "win32": [3, 3, 3, 0, 0, 0, 1, 1],
+    "linux": [3, 3, 3, 0, 0, 0, 1, 1]
+  },
+  "accelerators": {
+    "file:new": "CmdOrCtrl+N",
+    "file:open": "CmdOrCtrl+O",
+    "file:close": "CmdOrCtrl+W",
+    "file:save": "CmdOrCtrl+S",
+    "file:save-as": "CmdOrCtrl+Shift+S",
+    "file:print": "CmdOrCtrl+P",
+    "edit:undo": "CmdOrCtrl+Z",
+    "edit:cut": "CmdOrCtrl+X",
+    "edit:copy": "CmdOrCtrl+C",
+    "edit:paste": "CmdOrCtrl+V",
+    "edit:select-all": "CmdOrCtrl+A",
+    "edit:find-go-to": "CmdOrCtrl+F",
+    "view:properties": "F8",
+    "view:mixer": "F10"
+  },
+  "allowedDuplicateCommands": {
+    "add:chord": 2
+  },
+  "requiredCommands": [
+    "file:new", "file:open", "file:close", "file:save", "file:save-as", "file:import-omr", "file:export-musicxml", "file:export-midi", "file:export-abc", "file:export-svg", "file:export-pdf", "file:score-properties", "file:parts", "file:print",
+    "edit:undo", "edit:redo", "edit:history", "edit:cut", "edit:copy", "edit:paste", "edit:delete", "edit:select-all", "edit:select-section", "edit:find-go-to",
+    "view:palettes", "view:layout", "view:properties", "view:history", "view:navigator", "view:mixer", "view:workspace-default", "view:playback-toolbar", "view:note-input-toolbar", "view:status-bar", "view:reset-layout",
+    "add:note", "add:rest", "add:measure", "add:staff-text", "add:dynamics", "add:expression", "add:rehearsal", "add:fingering", "add:chord", "add:lyrics", "add:tempo", "add:technique-text", "add:slur", "add:crescendo", "add:diminuendo", "add:ottava-alta", "add:ottava-bassa", "add:pedal", "add:glissando", "add:trill",
+    "format:text-style", "format:page-settings", "format:layout-density", "tools:transpose", "help:shortcuts"
+  ]
+}

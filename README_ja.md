@@ -17,13 +17,13 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-現在は `acorde` v1.2.0の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+現在は `acorde` v1.2.2の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
-**Acorde Composer v0.1.14**（`acorde v1.2.0`）
+公開版は **Acorde Composer v0.1.14**（`acorde v1.2.0`）です。開発ツリーは `acorde v1.2.2` を使用しています。
 
-AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。v0.1.14ではMuseScoreに近いメニュー順とworkspace配置、Acorde v1.2.0のchannel-aware SoundFont PCM経路を追加しました。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界外で接続します。
+AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界内で接続します。
 
 ## 既存ソフトからの移行
 
@@ -33,7 +33,7 @@ MusicXMLをコピーとして書き出し、Acorde Composerで開いてdiagnosti
 
 ## 重要な制約
 
-Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。完全な複数voice編集、実SoundFont zone materialization、MuseSounds相当音源、実OMR provider、署名済みinstallerは別の検証ゲートです。SoundFont asset、外部音源、providerのlicenseと配布条件は別途確認してください。
+Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。native VST、実運用OMR／AI、MuseSounds相当音源、署名済みinstaller、Windows／clean-machine QAは別の検証ゲートです。cross-staffのpackaged編集と大規模SoundFont転送には上流対応が残っています。
 
 ## 開発
 
@@ -53,7 +53,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-現在の検証結果はNode 210件、Rust unit test 24件です。`npm run check:candidate`でNode、静的検証、fixture、Playground、Rust test、clippy、差分検査を固定順に実行できます。機械可読な段階別結果は`npm run check:candidate:json`、依存provenanceを含む正式候補判定は`npm run check:candidate:strict`で取得できます。JSONの`valid`はローカル検証、`releaseReady`は正式候補可否を示します。実SF3 fixtureは非ゼロPCM materializationまで、spannerはglissando／cross-staffのround-tripまで個別回帰で確認します。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[CHANGELOG](CHANGELOG.md)、[GitHub Release v0.1.14](https://github.com/kent-tokyo/acorde-composer/releases/tag/v0.1.14)を参照してください。
+2026-09-23時点でNode 261件、Rust unit test 25件が成功しています。`npm run check:candidate`はローカル候補gateであり、署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 

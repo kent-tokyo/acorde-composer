@@ -88,6 +88,16 @@ test('audio backend holds sustained sample voices until pedal release', async ()
   await backend.dispose();
 });
 
+test('audio backend disconnects completed sample nodes without waiting for stopAll', async () => {
+  const backend = createBackend();
+  const audioContext = await backend.resume();
+  const source = backend.scheduleDecodedSample({ sampleRate: 8000, channels: 1, pcm: [0.25, -0.5], cacheKey: 'cleanup' }, { time_secs: 0, duration_secs: 0.2, velocity: 100, sustain: 1 }, audioContext.currentTime, backend.master, 2);
+  source.listeners.ended();
+  assert.equal(source.disconnected, 1);
+  assert.equal(backend.nodes.has(source), false);
+  await backend.dispose();
+});
+
 test('audio backend uses pedal state and deterministically steals the oldest voice at the polyphony limit', async () => {
   const backend = createBackend();
   const audioContext = await backend.resume();
