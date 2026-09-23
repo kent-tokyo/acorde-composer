@@ -16,6 +16,10 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(page, /id="add-note-button"/);
   assert.match(page, /id="load-abc-button"/);
   assert.match(page, /id="download-button"/);
+  assert.match(page, /id="pitch-select"/);
+  assert.match(page, /id="duration-select"/);
+  assert.match(page, /id="add-measure-button"/);
+  assert.match(page, /id="tempo-input"/);
   assert.match(page, /id="language-select"/);
   assert.match(page, /value="en">English/);
   assert.match(page, /value="ja">日本語/);
@@ -25,7 +29,10 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(script, /render_score_svg/);
   assert.match(script, /serialize_musicxml/);
   assert.match(script, /new acorde\.ScoreEngine/);
-  assert.match(script, /duration: 'Quarter'/);
+  assert.match(script, /const duration = \$\('duration-select'\)\.value/);
+  assert.match(script, /position: voice\.length/);
+  assert.match(script, /type: 'add_measure'/);
+  assert.match(script, /type: 'set_tempo'/);
   assert.match(script, /data-acorde-kind="note"/);
   assert.match(script, /score-view.*addEventListener\('click'/s);
   assert.match(script, /acorde-composer\.language\.v1/);

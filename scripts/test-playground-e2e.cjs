@@ -77,10 +77,21 @@ async function main() {
     assert.equal(await playground.locator('#abc-input').count(), 1);
     assert.equal(await playground.locator('#load-abc-button').count(), 1);
     assert.equal(await playground.locator('#add-note-button').isEnabled(), true);
+    assert.equal(await playground.locator('#add-measure-button').isEnabled(), true);
+    assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);
     assert.equal(await playground.locator('#download-button').isEnabled(), true);
 
+    await playground.locator('#pitch-select').selectOption('D4');
+    await playground.locator('#duration-select').selectOption('Half');
     await playground.locator('#add-note-button').click();
-    await waitForText(playground.locator('#status'), /^Added a C4 quarter note\.$/, 'Note edit did not complete');
+    await waitForText(playground.locator('#status'), /^Added a D4 Half note\.$/, 'Note edit did not complete');
+    await playground.locator('#add-rest-button').click();
+    await waitForText(playground.locator('#status'), /^Added a Half rest\.$/, 'Rest edit did not complete');
+    await playground.locator('#add-measure-button').click();
+    await waitForText(playground.locator('#status'), /^Added a measure\.$/, 'Measure edit did not complete');
+    await playground.locator('#tempo-input').fill('144');
+    await playground.locator('#apply-tempo-button').click();
+    await waitForText(playground.locator('#status'), /^Tempo set to 144 BPM\.$/, 'Tempo edit did not complete');
 
     await playground.locator('#abc-input').fill('X:1\nT:Playground E2E\nM:4/4\nL:1/4\nK:C\nC2 D2 |');
     await playground.locator('#load-abc-button').click();
