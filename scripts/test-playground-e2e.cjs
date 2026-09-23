@@ -76,6 +76,9 @@ async function main() {
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Acorde WASM did not become ready');
     assert.equal(await playground.locator('#abc-input').count(), 1);
     assert.equal(await playground.locator('#load-abc-button').count(), 1);
+    assert.equal(await playground.locator('.playground-editor-toolbar').getAttribute('role'), 'toolbar');
+    assert.equal(await playground.locator('.playground-editor-toolbar #add-note-button').count(), 1);
+    assert.equal(await playground.locator('.toolbar-history #undo-button').count(), 1);
     assert.equal(await playground.locator('#add-note-button').isEnabled(), true);
     assert.equal(await playground.locator('#add-measure-button').isEnabled(), true);
     assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);

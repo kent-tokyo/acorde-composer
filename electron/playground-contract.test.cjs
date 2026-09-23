@@ -20,6 +20,11 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(page, /id="duration-select"/);
   assert.match(page, /id="add-measure-button"/);
   assert.match(page, /id="tempo-input"/);
+  assert.match(page, /class="playground-editor-toolbar" role="toolbar"/);
+  assert.match(page, /id="add-note-button"[\s\S]*id="add-rest-button"[\s\S]*id="duration-select"[\s\S]*id="add-measure-button"/);
+  assert.match(page, /class="toolbar-group toolbar-history"[\s\S]*id="undo-button"[\s\S]*id="redo-button"/);
+  assert.equal((page.match(/id="add-note-button"/g) || []).length, 1);
+  assert.equal((page.match(/id="undo-button"/g) || []).length, 1);
   assert.match(page, /id="language-select"/);
   assert.match(page, /value="en">English/);
   assert.match(page, /value="ja">日本語/);

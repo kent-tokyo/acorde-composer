@@ -6,13 +6,6 @@
     <meta name="description" content="Try Acorde Composer in your browser: edit a small score with the Acorde MusicXML and ABC engine." />
     <title>Acorde Composer Playground</title>
     <link rel="stylesheet" href="./playground.css" />
-    <style>
-      .entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
-      .entry-grid label { margin:0; }
-      .entry-grid select,.inline-control input { width:100%; border:1px solid #e5e8ef; border-radius:8px; padding:9px 10px; color:#202638; background:#fff; }
-      .inline-control { display:flex; gap:8px; align-items:center; }
-      .inline-control button { white-space:nowrap; }
-    </style>
   </head>
   <body>
     <main class="shell">
@@ -37,35 +30,32 @@
               <span class="eyebrow" id="live-score-label">LIVE SCORE</span>
               <h2 id="score-title">ABC fixture</h2>
             </div>
-            <div class="actions">
-              <button id="undo-button" disabled>Undo</button>
-              <button id="redo-button" disabled>Redo</button>
-              <button id="download-button" class="primary" disabled>Download MusicXML</button>
+            <div class="actions"><button id="download-button" class="primary" disabled>Download MusicXML</button></div>
+          </div>
+          <div class="playground-editor-toolbar" role="toolbar" aria-label="Editing tools">
+            <div class="toolbar-group">
+              <button id="add-note-button" class="tool primary" disabled><span aria-hidden="true">♩</span> <span id="add-note-label">Add note</span></button>
+              <button id="add-rest-button" class="tool" disabled><span aria-hidden="true">𝄽</span> <span id="add-rest-label">Add rest</span></button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <label class="toolbar-field" for="pitch-select"><span id="pitch-label">Pitch</span><select id="pitch-select" aria-label="Pitch"><option>C4</option><option>D4</option><option>E4</option><option>F4</option><option>G4</option><option>A4</option><option>B4</option><option>C5</option></select></label>
+              <label class="toolbar-field" for="duration-select"><span id="duration-label">Duration</span><select id="duration-select" aria-label="Duration"><option value="Eighth">Eighth</option><option value="Quarter" selected>Quarter</option><option value="Half">Half</option><option value="Whole">Whole</option></select></label>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button id="add-measure-button" class="tool" disabled><span aria-hidden="true">＋</span> <span id="add-measure-label">Add measure</span></button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <label class="toolbar-field tempo-field" for="tempo-input"><span id="tempo-label">Tempo</span><input id="tempo-input" type="number" min="20" max="300" step="1" value="120" inputmode="numeric" /></label>
+              <button id="apply-tempo-button" class="tool" disabled><span id="apply-tempo-label">Apply</span></button>
+            </div>
+            <div class="toolbar-group toolbar-history">
+              <button id="undo-button" class="tool" disabled aria-label="Undo">↶ <span id="undo-label">Undo</span></button>
+              <button id="redo-button" class="tool" disabled aria-label="Redo">↷ <span id="redo-label">Redo</span></button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button id="reset-score-button" class="tool" disabled><span aria-hidden="true">↺</span> <span id="reset-score-label">Reset</span></button>
             </div>
           </div>
           <div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div>
           <p id="status" class="status" role="status"></p>
         </section>
         <aside class="controls">
-          <div class="control-section">
-            <h2 id="entry-title">Note entry</h2>
-            <p id="entry-description">Choose a pitch and duration, then append it to the last measure.</p>
-            <div class="entry-grid">
-              <label for="pitch-select" id="pitch-label">Pitch</label>
-              <select id="pitch-select" aria-label="Pitch"><option>C4</option><option>D4</option><option>E4</option><option>F4</option><option>G4</option><option>A4</option><option>B4</option><option>C5</option></select>
-              <label for="duration-select" id="duration-label">Duration</label>
-              <select id="duration-select" aria-label="Duration"><option value="Eighth">Eighth</option><option value="Quarter" selected>Quarter</option><option value="Half">Half</option><option value="Whole">Whole</option></select>
-            </div>
-            <button id="add-note-button" class="primary wide" disabled>Add note</button>
-            <button id="add-rest-button" class="wide" disabled>Add rest</button>
-            <button id="add-measure-button" class="wide" disabled>Add measure</button>
-          </div>
-          <div class="control-section">
-            <h2 id="score-settings-title">Score settings</h2>
-            <label for="tempo-input" id="tempo-label">Tempo (BPM)</label>
-            <div class="inline-control"><input id="tempo-input" type="number" min="20" max="300" step="1" value="120" /><button id="apply-tempo-button" disabled>Apply tempo</button></div>
-            <button id="reset-score-button" class="wide" disabled>Reset sample score</button>
-          </div>
           <div class="control-section">
             <h2 id="import-title">Import ABC</h2>
             <label for="abc-input" id="abc-label">ABC notation</label>
