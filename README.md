@@ -2,7 +2,7 @@
 
 A local-first desktop score editor for MusicXML, MIDI, and ABC. Acorde Composer uses [`acorde`](https://github.com/kent-tokyo/acorde) as its only music-processing library; Electron owns the desktop UI, files, and provider boundaries.
 
-Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) · [Browser playground](src/playground/)
+Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) · [Try the browser playground](https://kent-tokyo.github.io/acorde-composer/playground/)
 
 ## What works
 

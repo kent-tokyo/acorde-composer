@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const page = fs.readFileSync(path.join(root, 'src/playground/index.html'), 'utf8');
 const script = fs.readFileSync(path.join(root, 'src/playground/playground.js'), 'utf8');
+const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
 test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(page, /meta name="description"/);
@@ -28,4 +29,12 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(script, /document\.documentElement\.lang = language/);
   assert.match(script, /applyLanguage/);
   assert.doesNotMatch(script, /tone|vexflow|music21/i);
+});
+
+test('repository documentation opens the deployed playground, not its source directory', () => {
+  assert.match(readme, /https:\/\/kent-tokyo\.github\.io\/acorde-composer\/playground\//);
+  assert.doesNotMatch(readme, /\[Browser playground\]\(src\/playground\/\)/);
+  assert.match(page, /href="https:\/\/github\.com\/kent-tokyo\/acorde-composer"/);
+  assert.equal((page.match(/id="load-abc-button"/g) || []).length, 1);
+  assert.equal((page.match(/id="abc-input"/g) || []).length, 1);
 });

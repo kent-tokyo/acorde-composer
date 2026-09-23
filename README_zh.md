@@ -2,6 +2,8 @@
 
 面向 Windows／macOS 的 AI 辅助乐谱编辑器。产品名称为 **Acorde Composer**。乐谱模型和确定性的音乐处理由现有的 [`acorde`](https://github.com/kent-tokyo/acorde) 负责。
 
+安装前可打开[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)体验。GitHub 中的 `src/playground/` 仅用于浏览源代码。
+
 ## 主要功能
 
 - 导入、编辑和导出 MusicXML、MIDI、ABC

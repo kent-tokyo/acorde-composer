@@ -2,6 +2,8 @@
 
 Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Acorde Composer**。楽譜モデルと決定論的な音楽処理は、既存の [`acorde`](https://github.com/kent-tokyo/acorde) に委譲します。
 
+インストール前に試す場合は、[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)を開いてください。GitHub上の`src/playground/`はソースコードの閲覧用です。
+
 ## 特徴
 
 - MusicXML、MIDI、ABCの読み込み・編集・書き出し
