@@ -15,6 +15,8 @@
     "check:playback-results": "node scripts/validate-playback-results.cjs",
     "check:render-results": "node scripts/validate-render-results.cjs",
     "build:playground": "node scripts/build-playground-wasm.cjs",
+    "assemble:playground": "node scripts/assemble-playground-site.cjs",
+    "test:playground": "node scripts/assemble-playground-site.cjs && node scripts/test-playground-e2e.cjs --site-dir _site",
     "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js && node scripts/validate-notation-coverage.cjs && node scripts/verify-notation-roundtrip.cjs && node scripts/validate-release-qa-fixtures.cjs && node scripts/validate-performance-benchmark.cjs && node scripts/validate-performance-results.cjs && node scripts/validate-cold-start-results.cjs && node scripts/validate-playback-results.cjs && node scripts/validate-render-results.cjs && cargo check --manifest-path engine/Cargo.toml",
     "check:candidate": "node scripts/check-release-candidate.cjs",
     "check:candidate:json": "node scripts/check-release-candidate.cjs --json",
@@ -33,6 +35,7 @@
     "release:evidence:refresh": "node scripts/refresh-release-evidence.cjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "electron": "^38.0.0",
     "electron-builder": "^26.0.0"
   },

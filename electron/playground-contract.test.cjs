@@ -7,6 +7,9 @@ const root = path.resolve(__dirname, '..');
 const page = fs.readFileSync(path.join(root, 'src/playground/index.html'), 'utf8');
 const script = fs.readFileSync(path.join(root, 'src/playground/playground.js'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+const packageManifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const pagesWorkflow = fs.readFileSync(path.join(root, '.github/workflows/pages-playground.yml'), 'utf8');
+const e2e = fs.readFileSync(path.join(root, 'scripts/test-playground-e2e.cjs'), 'utf8');
 
 test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(page, /meta name="description"/);
@@ -37,4 +40,15 @@ test('repository documentation opens the deployed playground, not its source dir
   assert.match(page, /href="https:\/\/github\.com\/kent-tokyo\/acorde-composer"/);
   assert.equal((page.match(/id="load-abc-button"/g) || []).length, 1);
   assert.equal((page.match(/id="abc-input"/g) || []).length, 1);
+});
+
+test('Pages deployment retains the generated-site browser E2E gate', () => {
+  assert.equal(packageManifest.scripts['test:playground'], 'node scripts/assemble-playground-site.cjs && node scripts/test-playground-e2e.cjs --site-dir _site');
+  assert.match(pagesWorkflow, /npx playwright install --with-deps chromium/);
+  assert.match(pagesWorkflow, /npm run test:playground/);
+  assert.match(e2e, /application\/wasm/);
+  assert.match(e2e, /Acorde WASM did not become ready/);
+  assert.match(e2e, /Note edit did not complete/);
+  assert.match(e2e, /ABC import did not complete/);
+  assert.match(e2e, /acorde-playground\.musicxml/);
 });
