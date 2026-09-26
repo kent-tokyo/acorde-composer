@@ -4,6 +4,29 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 インストール前に試す場合は、[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)を開いてください。GitHub上の`src/playground/`はソースコードの閲覧用です。
 
+## アプリをダウンロード
+
+ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`*-unsigned.zip`がある場合は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。現在のv0.1.15にはデスクトップアプリの配布assetがまだ添付されていません。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
+
+## はじめかた
+
+### 推奨: 無料のPlaygroundを使う
+
+1. [Playground](https://kent-tokyo.github.io/acorde-composer/playground/)を開きます。
+2. **New score**で新規譜面を作るか、MusicXMLファイルを開きます。
+3. 小節を選択し、音符、休符、テキスト、voice、再生コントロールで編集します。
+4. 完了後にMusicXML、MIDI、ABC、SVGとして書き出します。
+
+ブラウザ内で動くため、インストールは不要です。まず試したい場合や、短い編集をしたい場合はこちらを使ってください。
+
+### macOS実験版: unsigned ZIP
+
+1. [Releases](https://github.com/kent-tokyo/acorde-composer/releases)を開き、利用可能な`-unsigned.zip`で終わるassetをダウンロードします。
+2. ZIPをダブルクリックして展開し、必要なら**Acorde Composer.app**をApplicationsへ移動します。
+3. 初回起動時にmacOSがブロックした場合は、FinderでアプリをControlクリックして**開く**を選び、もう一度**開く**を確認します。公式Releasesページから入手したZIPに限って実施してください。
+
+このビルドは無料ですが、署名・notarizationされていません。Gatekeeperの警告を理解できる方向けです。手動で解除したくない場合はPlaygroundを利用してください。
+
 ## 特徴
 
 - MusicXML、MIDI、ABCの読み込み・編集・書き出し

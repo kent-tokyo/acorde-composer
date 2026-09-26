@@ -4,6 +4,29 @@ A local-first desktop score editor for MusicXML, MIDI, and ABC. Acorde Composer 
 
 Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) · [Try the browser playground](https://kent-tokyo.github.io/acorde-composer/playground/)
 
+## Download the app
+
+The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. When available, a macOS `*-unsigned.zip` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. The current v0.1.15 release does not yet have a desktop-app asset attached. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
+
+## Get started
+
+### Recommended: use the free Playground
+
+1. Open the [Playground](https://kent-tokyo.github.io/acorde-composer/playground/).
+2. Choose **New score** or open a MusicXML file.
+3. Select a measure, then use the note, rest, text, voice, and playback controls to edit it.
+4. Export MusicXML, MIDI, ABC, or SVG when finished.
+
+It runs in the browser, so there is nothing to install. Start here to try Acorde Composer or to make a quick edit.
+
+### Experimental macOS app: unsigned ZIP
+
+1. Visit [Releases](https://github.com/kent-tokyo/acorde-composer/releases) and download the asset ending in `-unsigned.zip` when one is available.
+2. Double-click the ZIP, then move **Acorde Composer.app** to Applications if desired.
+3. If macOS blocks its first launch, Control-click the app in Finder, choose **Open**, then confirm **Open**. Do this only for a ZIP downloaded from the official Releases page.
+
+This build is free but unsigned and not notarized. It is for users who understand the Gatekeeper warning; use the Playground if you prefer not to override it.
+
 ## What works
 
 - Open, edit, and export MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.

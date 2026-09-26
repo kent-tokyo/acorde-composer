@@ -22,3 +22,19 @@ test('pack manifest generation records deterministic artifact evidence', () => {
     fs.rmSync(distDir, { recursive: true, force: true });
   }
 });
+
+test('pack manifest records a distributable DMG rather than only its unpacked staging directory', () => {
+  const distDir = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-composer-dmg-'));
+  try {
+    const appRoot = path.join(distDir, 'mac-arm64-unpacked', 'resources', 'app');
+    fs.mkdirSync(appRoot, { recursive: true });
+    fs.writeFileSync(path.join(appRoot, 'NOTICE.md'), 'Acorde Composer\n');
+    fs.writeFileSync(path.join(distDir, 'Acorde Composer-0.1.15-arm64.dmg'), 'dmg-fixture\n');
+    const manifest = createReleaseArtifactManifest({ distDir, version: '0.1.15', commit: 'be680d5' });
+    assert.deepEqual(manifest.artifacts.map((artifact) => artifact.name), ['Acorde Composer-0.1.15-arm64.dmg']);
+    assert.equal(manifest.artifacts[0].notice, true);
+    assert.equal(verifyArtifactManifest(manifest).valid, true);
+  } finally {
+    fs.rmSync(distDir, { recursive: true, force: true });
+  }
+});

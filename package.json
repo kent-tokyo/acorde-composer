@@ -23,6 +23,8 @@
     "check:candidate:strict": "node scripts/check-release-candidate.cjs --json --strict-dependency",
     "test": "node --test electron/*.test.cjs",
     "pack": "node scripts/build-engine.cjs && electron-builder --dir && node scripts/create-release-artifact-manifest.cjs",
+    "dist:mac": "node scripts/build-macos-release.cjs",
+    "dist:mac:unsigned": "node scripts/build-macos-unsigned.cjs",
     "bench:engine": "node scripts/benchmark-engine.cjs",
     "bench:performance": "node scripts/run-performance-benchmark.cjs",
     "bench:cold-start": "node scripts/benchmark-cold-start.cjs",
@@ -35,6 +37,7 @@
     "release:evidence:refresh": "node scripts/refresh-release-evidence.cjs"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.5.0",
     "@playwright/test": "^1.63.0",
     "electron": "^38.0.0",
     "electron-builder": "^26.0.0"
@@ -44,7 +47,16 @@
     "productName": "Acorde Composer",
     "files": ["electron/**/*", "src/**/*", "package.json", "NOTICE.md", "README.md", "README_ja.md", "README_zh.md", "CHANGELOG.md"],
     "extraResources": [{ "from": "build/engine", "to": "engine" }],
-    "mac": { "category": "public.app-category.music" },
+    "afterSign": "scripts/notarize-mac.cjs",
+    "mac": {
+      "category": "public.app-category.music",
+      "target": ["dmg"],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "packaging/entitlements.mac.plist",
+      "entitlementsInherit": "packaging/entitlements.mac.plist"
+    },
     "win": { "target": "nsis" }
   }
 }
