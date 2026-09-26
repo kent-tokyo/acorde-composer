@@ -8,9 +8,14 @@ const productName = packageJson.build.productName;
 const archiveName = `${productName}-${packageJson.version}-arm64-unsigned.zip`;
 const appPath = path.join(root, 'dist', 'mac-arm64', `${productName}.app`);
 const archivePath = path.join(root, 'dist', archiveName);
+const unsignedEnvironment = {
+  ...process.env,
+  ACORDE_DISABLE_NOTARIZATION: '1',
+  CSC_IDENTITY_AUTO_DISCOVERY: 'false',
+};
 
 function run(command, args) {
-  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit' });
+  const result = spawnSync(command, args, { cwd: root, env: unsignedEnvironment, stdio: 'inherit' });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status || 1);
 }

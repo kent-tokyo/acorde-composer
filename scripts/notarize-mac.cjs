@@ -17,8 +17,16 @@ function missingCredentialsMessage() {
   return 'macOS notarization credentials are required: set ACORDE_NOTARY_KEYCHAIN_PROFILE, or APPLE_API_KEY + APPLE_API_KEY_ID + APPLE_API_ISSUER, or APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID.';
 }
 
+function notarizationIsDisabled(env = process.env) {
+  return env.ACORDE_DISABLE_NOTARIZATION === '1';
+}
+
 async function notarizeMac(context) {
   if (context.electronPlatformName !== 'darwin') return;
+  if (notarizationIsDisabled()) {
+    process.stdout.write('Skipping macOS notarization for an explicitly unsigned experimental build.\n');
+    return;
+  }
   const credentials = notarizationCredentials();
   if (!credentials) {
     if (process.env.ACORDE_REQUIRE_NOTARIZATION === '1') throw new Error(missingCredentialsMessage());
@@ -34,3 +42,4 @@ module.exports = notarizeMac;
 module.exports.default = notarizeMac;
 module.exports.notarizationCredentials = notarizationCredentials;
 module.exports.missingCredentialsMessage = missingCredentialsMessage;
+module.exports.notarizationIsDisabled = notarizationIsDisabled;

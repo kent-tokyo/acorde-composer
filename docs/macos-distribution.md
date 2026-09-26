@@ -2,17 +2,25 @@
 
 Signed releases use a `.dmg` downloaded directly from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases). Do not put a DMG inside a ZIP file.
 
-For no-cost distribution, use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the primary user experience. A native macOS build may be offered as an **unsigned experimental ZIP** for technically confident users; it is not a signed or notarized release.
+For no-cost distribution, use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the primary user experience. A native macOS build may be offered as an **unsigned experimental DMG** for technically confident users; it is not a signed or notarized release.
 
-## No-cost experimental ZIP
+## No-cost experimental DMG
 
 On macOS, run:
+
+```sh
+npm run dist:mac:unsigned-dmg
+```
+
+This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg`. It explicitly disables automatic code-signing discovery and notarization, even if signing credentials exist on the build machine. Upload that DMG directly to a GitHub Release; do not rename it to a signed build or claim that it passes Gatekeeper. Users may need to use Finder's Control-click **Open** or macOS Privacy & Security's **Open Anyway** after verifying that it came from the official Releases page.
+
+An unsigned ZIP remains available for users who need it:
 
 ```sh
 npm run dist:mac:unsigned
 ```
 
-This creates `dist/Acorde Composer-<version>-arm64-unsigned.zip`. It uses `ditto` to preserve the `.app` bundle metadata and permissions. Upload that ZIP directly to a GitHub Release; do not rename it to a signed build or claim that it passes Gatekeeper. Users may need to follow macOS security prompts to open it.
+It creates `dist/Acorde Composer-<version>-arm64-unsigned.zip` with `ditto` so the `.app` bundle metadata and permissions are preserved.
 
 ## Prerequisites
 

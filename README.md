@@ -6,7 +6,7 @@ Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) 
 
 ## Download the app
 
-The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. When available, a macOS `*-unsigned.zip` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. The current v0.1.15 release does not yet have a desktop-app asset attached. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
+The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. When available, a macOS `*-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. The current v0.1.15 release does not yet have a desktop-app asset attached. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
 
 ## Get started
 
@@ -19,13 +19,13 @@ The user-facing desktop download page is [Acorde Composer Releases](https://gith
 
 It runs in the browser, so there is nothing to install. Start here to try Acorde Composer or to make a quick edit.
 
-### Experimental macOS app: unsigned ZIP
+### Experimental macOS app: unsigned DMG
 
-1. Visit [Releases](https://github.com/kent-tokyo/acorde-composer/releases) and download the asset ending in `-unsigned.zip` when one is available.
-2. Double-click the ZIP, then move **Acorde Composer.app** to Applications if desired.
+1. Visit [Releases](https://github.com/kent-tokyo/acorde-composer/releases) and download the asset ending in `-unsigned.dmg` when one is available.
+2. Open the DMG, then drag **Acorde Composer.app** to Applications.
 3. If macOS blocks its first launch, Control-click the app in Finder, choose **Open**, then confirm **Open**. Do this only for a ZIP downloaded from the official Releases page.
 
-This build is free but unsigned and not notarized. It is for users who understand the Gatekeeper warning; use the Playground if you prefer not to override it.
+This build is free but unsigned and not notarized. It is for users who understand the Gatekeeper warning; use the Playground if you prefer not to override it. An unsigned ZIP may be offered as a fallback for advanced users.
 
 ## What works
 

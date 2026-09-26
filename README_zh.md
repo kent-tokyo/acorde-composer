@@ -6,7 +6,7 @@
 
 ## 下载应用
 
-面向用户的桌面应用下载页面是 [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)。免费的正式入口是[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。若版本附带 macOS `*-unsigned.zip`，它属于实验性未签名构建，可能需要手动处理 Gatekeeper 提示。当前 v0.1.15 尚未附带桌面应用资产。维护者请遵循 [macOS 发布指南](docs/macos-distribution.md)。
+面向用户的桌面应用下载页面是 [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)。免费的正式入口是[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。若版本附带 macOS `*-unsigned.dmg`，它属于实验性未签名构建，可能需要手动处理 Gatekeeper 提示。当前 v0.1.15 尚未附带桌面应用资产。维护者请遵循 [macOS 发布指南](docs/macos-distribution.md)。
 
 ## 快速开始
 
@@ -19,13 +19,13 @@
 
 它在浏览器中运行，无需安装。首次体验或进行快速编辑时，建议从这里开始。
 
-### macOS 实验版：unsigned ZIP
+### macOS 实验版：unsigned DMG
 
-1. 打开 [Releases](https://github.com/kent-tokyo/acorde-composer/releases)，在可用时下载以 `-unsigned.zip` 结尾的资产。
-2. 双击 ZIP 解压；如有需要，将 **Acorde Composer.app** 移到“应用程序”。
+1. 打开 [Releases](https://github.com/kent-tokyo/acorde-composer/releases)，在可用时下载以 `-unsigned.dmg` 结尾的资产。
+2. 打开 DMG，将 **Acorde Composer.app** 拖到“应用程序”。
 3. 如果 macOS 在首次启动时拦截应用，请在 Finder 中按住 Control 点按应用，选择“打开”，再确认“打开”。只应对从官方 Releases 页面下载的 ZIP 执行此操作。
 
-该构建免费，但未经签名和 notarization，面向理解 Gatekeeper 警告的用户。如果不希望手动绕过提示，请使用 Playground。
+该构建免费，但未经签名和 notarization，面向理解 Gatekeeper 警告的用户。如果不希望手动绕过提示，请使用 Playground。也可为高级用户提供 unsigned ZIP 作为备用方式。
 
 ## 主要功能
 

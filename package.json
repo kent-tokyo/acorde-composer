@@ -25,6 +25,7 @@
     "pack": "node scripts/build-engine.cjs && electron-builder --dir && node scripts/create-release-artifact-manifest.cjs",
     "dist:mac": "node scripts/build-macos-release.cjs",
     "dist:mac:unsigned": "node scripts/build-macos-unsigned.cjs",
+    "dist:mac:unsigned-dmg": "node scripts/build-macos-unsigned-dmg.cjs",
     "bench:engine": "node scripts/benchmark-engine.cjs",
     "bench:performance": "node scripts/run-performance-benchmark.cjs",
     "bench:cold-start": "node scripts/benchmark-cold-start.cjs",

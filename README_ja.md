@@ -6,7 +6,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 ## アプリをダウンロード
 
-ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`*-unsigned.zip`がある場合は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。現在のv0.1.15にはデスクトップアプリの配布assetがまだ添付されていません。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
+ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`*-unsigned.dmg`がある場合は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。現在のv0.1.15にはデスクトップアプリの配布assetがまだ添付されていません。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
 
 ## はじめかた
 
@@ -19,13 +19,13 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 ブラウザ内で動くため、インストールは不要です。まず試したい場合や、短い編集をしたい場合はこちらを使ってください。
 
-### macOS実験版: unsigned ZIP
+### macOS実験版: unsigned DMG
 
-1. [Releases](https://github.com/kent-tokyo/acorde-composer/releases)を開き、利用可能な`-unsigned.zip`で終わるassetをダウンロードします。
-2. ZIPをダブルクリックして展開し、必要なら**Acorde Composer.app**をApplicationsへ移動します。
+1. [Releases](https://github.com/kent-tokyo/acorde-composer/releases)を開き、利用可能な`-unsigned.dmg`で終わるassetをダウンロードします。
+2. DMGを開き、**Acorde Composer.app**をApplicationsへドラッグします。
 3. 初回起動時にmacOSがブロックした場合は、FinderでアプリをControlクリックして**開く**を選び、もう一度**開く**を確認します。公式Releasesページから入手したZIPに限って実施してください。
 
-このビルドは無料ですが、署名・notarizationされていません。Gatekeeperの警告を理解できる方向けです。手動で解除したくない場合はPlaygroundを利用してください。
+このビルドは無料ですが、署名・notarizationされていません。Gatekeeperの警告を理解できる方向けです。手動で解除したくない場合はPlaygroundを利用してください。上級者向けの代替としてunsigned ZIPを配布する場合もあります。
 
 ## 特徴
 
