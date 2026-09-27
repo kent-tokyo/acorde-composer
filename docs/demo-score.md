@@ -4,9 +4,9 @@
 
 ## Walkthrough
 
-1. `npm start`でComposerを起動する。
+1. `npm start`でComposerを起動し、HomeからScoreへ移る。
 2. `qa/fixtures/multivoice-ui.musicxml`を開く。
-3. titleを編集し、voice selectorでvoice 1とvoice 2を切り替える。
+3. titleを編集し、Voices groupでvoice 1とvoice 2を切り替える。
 4. 別名でMusicXMLを保存する。
 5. 保存したファイルを再読込し、voice番号と`backup`が保持されていることを確認する。
 

@@ -31,6 +31,12 @@ test('registry owns menu state, context state, dynamic commands, and platform sh
   assert.equal(registry.commandForKeyboardEvent({ key: ' ', code: 'Space' }, 'default'), 'playback:toggle');
   assert.equal(registry.commandForKeyboardEvent({ key: '5' }, 'default'), 'duration:5');
   assert.equal(registry.commandForKeyboardEvent({ key: '.' }, 'default'), 'duration:dot');
+  assert.equal(registry.commandForKeyboardEvent({ key: 'q', shiftKey: true }, 'default'), 'duration:shorter');
+  assert.equal(registry.commandForKeyboardEvent({ key: 'w', shiftKey: true }, 'default'), 'duration:longer');
+  assert.equal(registry.commandForKeyboardEvent({ key: '3', ctrlKey: true }, 'default'), 'add:tuplet:3');
+  assert.equal(registry.commandForKeyboardEvent({ key: '+' }, 'default'), 'notation:sharp');
+  assert.equal(registry.commandForKeyboardEvent({ key: '-' }, 'default'), 'notation:flat');
+  assert.equal(registry.commandForKeyboardEvent({ key: '=' }, 'default'), 'notation:natural');
   assert.equal(registry.commandForKeyboardEvent({ key: '2', metaKey: true, altKey: true }, 'darwin'), 'voice:2');
   assert.equal(registry.commandForKeyboardEvent({ key: 'ArrowDown', ctrlKey: true, shiftKey: true }, 'default'), 'notation:cross-staff-down');
   assert.equal(registry.commandForKeyboardEvent({ key: 'c' }, 'default'), 'input:c');

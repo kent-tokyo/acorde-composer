@@ -6,16 +6,16 @@ Acorde Composerへ既存のMusicXMLを移すときは、元ファイルを上書
 
 1. 元ソフトからMusicXMLをコピーとして書き出す。
 2. Composerで開き、未対応要素やloss diagnosticsを確認する。
-3. voice selectorで対象voiceを選び、タイトルや音符・休符を編集する。
+3. Note InputのVoices groupで対象voiceを選び、タイトルや音符・休符を編集する。
 4. 別名で保存する。
 5. 保存ファイルを再読込し、voice番号、`backup` / `forward`、rest padding、歌詞、コードを確認する。
 6. 必要に応じて、再生イベントのaddressとSVG表示を確認する。
 
 ## 複数voiceの確認
 
-`qa/fixtures/multivoice-ui.musicxml`はvoice 1/2と`backup`を含むComposer用fixtureです。parse → edit → save → reloadのUI契約は`electron/ui-contract.test.cjs`で固定しています。macOS arm64 packaged smokeでは同じ流れを確認済みですが、Windows実機・署名済みartifact・clean machineの検証は別ゲートです。
+`qa/fixtures/multivoice-ui.musicxml`はvoice 1/2と`backup`を含みます。parse → edit → save → reloadのdevelopment UI契約はUI contract testsと`npm run test:workspace`で確認します。
 
-cross-staff fixtureは構造round-tripを検証しますが、現行Acordeモデルは宣言済みの複数staffをeditable staffとしてmaterializeできません。packaged編集E2Eは上流 #81 の解決後に再実行します。
+Acorde v1.2.4以降は宣言済みstaffとcross-staffをmaterializeします。構造round-trip fixtureはありますが、v0.2.2の20件のpackaged manual QAは`not-run`のため、Windows、署名済みartifact、clean machineを含む配布品質は未検証です。
 
 ## 確認できないもの
 

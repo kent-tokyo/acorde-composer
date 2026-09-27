@@ -28,13 +28,17 @@ async function run() {
       throw new Error(`Workspace did not load at ${page.url()}. Renderer errors: ${rendererErrors.join(' | ') || 'none'}. Body: ${body}`, { cause: error });
     }
 
-    assert.deepEqual(await page.locator('.sidebar-tabs button').allTextContents(), ['Palettes', 'Instruments', 'Layout', 'Properties']);
+    assert.deepEqual(await page.locator('.sidebar-tabs button').allTextContents(), ['Palettes', 'Instruments', 'Properties']);
+    assert.equal(await page.locator('.note-input-group').count(), 5);
+    assert.equal(await page.locator('.right-panel').isVisible(), false);
     assert.deepEqual(await page.locator('.composer-mode-button').allTextContents(), ['Home', 'Score', 'Publish']);
     assert.equal(await page.locator('.composer-mode-button[data-mode="score"]').getAttribute('aria-selected'), 'true');
     await page.locator('.composer-mode-button[data-mode="home"]').click();
     assert.equal(await page.locator('#composer-home').isVisible(), true);
+    await page.locator('#home-recent-list').waitFor();
     await page.locator('.composer-mode-button[data-mode="publish"]').click();
     assert.equal(await page.locator('#composer-publish').isVisible(), true);
+    assert.equal(await page.locator('.workspace').isVisible(), false);
     await page.locator('.composer-mode-button[data-mode="score"]').click();
     assert.equal(await page.locator('#sidebar-palettes-tab').getAttribute('aria-selected'), 'true');
     assert.ok(await page.locator('.palette-section').count() >= 10);
@@ -66,6 +70,9 @@ async function run() {
     await page.locator('.document-title').click();
     await page.keyboard.press('p');
     assert.equal(await page.locator('#piano-panel').isVisible(), true);
+    await page.locator('#piano-panel .utility-dock-toggle').click();
+    assert.equal(await page.locator('#piano-panel').evaluate((element) => element.classList.contains('floating')), true);
+    await page.locator('#piano-panel .utility-dock-toggle').click();
     await page.keyboard.press('p');
     assert.equal(await page.locator('#piano-panel').isVisible(), false);
     await page.locator('#workspace-select').selectOption('review');
@@ -98,6 +105,7 @@ async function run() {
 
     await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Alt+2' : 'Control+Alt+2');
     assert.equal(await page.locator('#voice-select').inputValue(), '1');
+    assert.equal(await page.locator('.voice-button[data-voice="1"]').getAttribute('aria-pressed'), 'true');
     const refreshedMeasure = page.locator('#score .acorde-measure-hit-area').first();
     const refreshedBounds = await refreshedMeasure.boundingBox();
     assert.ok(refreshedBounds, 'rerendered measure must have screen geometry');

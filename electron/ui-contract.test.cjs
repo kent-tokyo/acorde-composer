@@ -419,7 +419,8 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(app, /className = 'sidebar-panel sidebar-palettes'/);
   assert.match(app, /className = 'sidebar-panel sidebar-instruments hidden'/);
   assert.match(app, /className = 'sidebar-panel sidebar-properties hidden'/);
-  assert.match(app, /\['Palettes', 'Instruments', 'Layout', 'Properties'\]/);
+  assert.match(app, /\['Palettes', 'Instruments', 'Properties'\]/);
+  assert.doesNotMatch(app, /sidebar-layout/);
   assert.match(app, /composer-mode-tabs/);
   assert.match(app, /score-document-tabs/);
   assert.match(app, /timeline-panel/);
@@ -429,7 +430,9 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(app, /function applySelectionProperty\(property, value\)/);
   assert.match(app, /AcordeMuseScoreWorkspace\.PALETTE_GROUPS/);
   assert.match(app, /className = 'status-zoom'/);
-  assert.match(app, /className = 'navigator-panel'/);
+  assert.match(app, /className = 'navigator-panel utility-dock'/);
+  assert.match(app, /classList\.add\('musescore-status-bar'\)/);
+  assert.match(app, /className = 'note-input-group'/);
   assert.match(app, /rendererCommandHandlers/);
   assert.match(app, /'toggle-palettes': \(\) => toggleSidebar\('palettes'\)/);
   assert.match(app, /'toggle-note-input-toolbar':[\s\S]*classList\.toggle\('hidden'/);
@@ -440,4 +443,18 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(style, /MuseScore-oriented workspace/);
   assert.match(style, /\.sidebar-tabs/);
   assert.match(style, /\.property-section/);
+});
+
+test('MuseScore migration shell keeps Home, Publish, status, and Acorde-only tools separated', () => {
+  assert.match(app, /id = 'composer-home'/);
+  assert.match(app, /id="home-recent-list"/);
+  assert.match(app, /function refreshHomeRecentScores\(\)/);
+  assert.match(app, /id = 'composer-publish'/);
+  assert.match(app, /id="publish-document-name"/);
+  assert.match(app, /rightPanel\?\.setAttribute\('aria-label', 'Acorde tools panel'\)/);
+  assert.match(app, /close\.id = 'acorde-panel-close'/);
+  assert.match(app, /utilityDock:/);
+  assert.match(style, /MuseScore migration shell v4/);
+  assert.match(style, /\.utility-dock\.floating/);
+  assert.match(style, /\.home-recent-list/);
 });

@@ -5,6 +5,7 @@
 | path | 主題 | title / H1 | evidence link |
 | --- | --- | --- | --- |
 | `/` | Composer概要 | Acorde Composer — MusicXML score editor | README、feature matrix |
+| `/playground/` | ブラウザ編集 | Edit a score in your browser | Playground E2E、README |
 | `/features/` | 対応機能と制約 | Features and known limitations | feature matrix、CHANGELOG |
 | `/editor/` | 編集workflow | Create and edit a score | MusicXML移行手順 |
 | `/musicxml-midi/` | 交換形式 | MusicXML, MIDI, and ABC | ABC / MusicXMLガイド、notation fixtures |

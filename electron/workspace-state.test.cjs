@@ -15,7 +15,7 @@ function memoryStorage(initial = {}) {
 test('workspace state keeps a versioned default MuseScore layout', () => {
   assert.deepEqual(normalize(null), DEFAULT);
   assert.deepEqual(normalize({ version: 99, palettesVisible: false }), DEFAULT);
-  assert.equal(VERSION, 3);
+  assert.equal(VERSION, 4);
   assert.equal(DEFAULT.activeMode, 'score');
   assert.equal(DEFAULT.theme, 'light');
 });
@@ -38,6 +38,7 @@ test('workspace state persists panel and toolbar visibility with active tabs', (
     activeMode: 'publish',
     activeWorkspace: 'review',
     mixerDock: 'floating',
+    utilityDock: { navigator: 'floating', timeline: 'bottom', piano: 'floating' },
     theme: 'dark',
     timelineVisible: true,
     pianoVisible: true,
@@ -52,6 +53,7 @@ test('workspace state persists panel and toolbar visibility with active tabs', (
   assert.equal(saved.activeMode, 'publish');
   assert.equal(saved.theme, 'dark');
   assert.equal(saved.timelineVisible, true);
+  assert.deepEqual(saved.utilityDock, { navigator: 'floating', timeline: 'bottom', piano: 'floating' });
   assert.equal(saved.toolbar.articulation, false);
 });
 
@@ -78,13 +80,20 @@ test('workspace state migrates v1 Properties from the right panel into the left 
   assert.equal(migrated.activeRightPanel, 'ai');
 });
 
-test('workspace state migrates v2 defaults into the v3 shell', () => {
+test('workspace state migrates v2 defaults into the v4 shell', () => {
   const migrated = normalize({ version: 2, activeSidebar: 'instruments', mixerVisible: true });
-  assert.equal(migrated.version, 3);
+  assert.equal(migrated.version, 4);
   assert.equal(migrated.activeSidebar, 'instruments');
   assert.equal(migrated.mixerVisible, true);
   assert.equal(migrated.activeMode, 'score');
   assert.equal(migrated.toolbar.duration, true);
+});
+
+test('workspace state migrates the removed Layout sidebar and v3 utility defaults', () => {
+  const migrated = normalize({ version: 3, activeSidebar: 'layout', navigatorVisible: true });
+  assert.equal(migrated.version, 4);
+  assert.equal(migrated.activeSidebar, 'palettes');
+  assert.deepEqual(migrated.utilityDock, { navigator: 'bottom', timeline: 'bottom', piano: 'bottom' });
 });
 
 test('workspace state preserves a bounded custom workspace identity', () => {

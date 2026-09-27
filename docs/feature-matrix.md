@@ -1,18 +1,18 @@
 # Acorde Composer feature matrix
 
-この表は、実装済みと未検証を分ける基準です。公開版v0.2.1はAcorde 1.2.12を利用します。`release-ready`は、同一commitのartifact・実機・外部条件まで満たした場合にだけ使います。
+この表は、実装済みと未検証を分ける基準です。公開版v0.2.2はAcorde 1.2.13を利用します。`release-ready`は、同一commitのartifact・実機・外部条件まで満たした場合にだけ使います。
 
 | 領域 | 現在の状態 | ローカル証拠 | 未完了の境界 |
 | --- | --- | --- | --- |
-| Score編集 | core。MuseScore型Home／Score／Publish、Palettes／Instruments／Layout／Properties、part tab、Navigator／Timeline／Piano、dock Mixer、workspace／toolbar customizationと主要入力shortcutを実装 | `electron/command-schema.test.cjs`、`electron/musescore-workspace.test.cjs`、`electron/musescore-shell.test.cjs`、`npm run test:workspace` | breve／longa（Acorde #83）、全記譜要素の完全coverage |
-| 複数voice | fixture・macOS packaged smokeで検証済み。Acorde v1.2.4以降は宣言済みstaffもmaterialize | `qa/fixtures/multivoice-ui.musicxml`、`docs/musicxml-migration-example.md` | v1.2.12 artifactでのcross-staff packaged E2E、Windows・署名artifact・clean machine |
-| MusicXML / MIDI / ABC | 入出力とloss diagnosticsを実装 | `electron/notation-coverage.test.cjs`、`electron/import-diagnostics.test.cjs` | 要素ごとの完全round-trip |
+| Score編集 | MuseScore型shell、menu、5群の入力toolbar、voice 1〜4、3つの主要sidebar、utility panel、part tab、Mixer、workspaceを実装 | command／menu／UI contract tests、`npm run test:workspace` | breve／longa（Acorde #83）、全記譜要素の完全coverage、packaged manual UI QA |
+| 複数voice／staff | fixtureとdevelopment UI E2Eでvoice保持を検証。Acordeは宣言済みstaffとcross-staffをmaterialize | `qa/fixtures/multivoice-ui.musicxml`、`qa/fixtures/notation/cross-staff.musicxml` | v0.2.2 packaged manual E2E、Windows、署名artifact、clean machine |
+| MusicXML／MIDI／ABC | 入出力とloss diagnosticsを実装。開発版はAcorde v1.2.13のMusicXML barline修正を利用 | `electron/notation-coverage.test.cjs`、`electron/import-diagnostics.test.cjs` | 汎用corpusと要素ごとの完全round-trip |
 | Playback | oscillatorと検証済みsample PCMを再生 | `electron/audio-backend.test.cjs`、`electron/soundfont-playback.test.cjs` | 長時間・聴感・production asset QA |
 | SoundFont | 64 MiB以下のinline asset、sample・resolved-zone boundary | `electron/soundfont-asset.test.cjs`、`electron/soundfont-playback.test.cjs` | 大きなassetのfile-path/stream IPC（Acorde #82）と配布license |
 | AI / OMR | proposal・license・timeout・redaction boundary | `electron/ai-provider-boundary.test.cjs`、`electron/omr-boundary.test.cjs` | 実provider binary、認証、契約、品質評価 |
 | Plugin | bounded runtime・registry・crash recovery boundary | `electron/plugin-runtime.cjs`、`electron/plugin-registry.test.cjs` | native VST/VSTi ABI、実plugin、vendor SDK |
-| Packaging | macOS arm64 artifactとmanifestを生成するscriptを実装 | `npm run pack`、`npm run dist:mac:unsigned-dmg` | 現在のcandidate artifact、Windows artifact、署名、notarization |
-| Release QA | 20シナリオmatrixとschema検証 | `qa/release-qa-matrix.json` | 同一commitのreport、実機evidence、clean machine、全scenario passed |
+| Packaging | v0.2.2の未署名macOS arm64 DMGを公開。manifest生成scriptあり | `npm run pack`、`npm run dist:mac:unsigned-dmg` | Windows、署名、notarization、clean-machine QA |
+| Release QA | 20シナリオmatrixとschema検証 | `qa/release-qa-matrix.json` | 現在は20件`not-run`。同一artifactの実機evidenceが必要 |
 
 ## 表の使い方
 

@@ -37,8 +37,8 @@
   "requiredCommands": [
     "file:new", "file:open", "file:close", "file:save", "file:save-as", "file:import-omr", "file:export-musicxml", "file:export-midi", "file:export-abc", "file:export-svg", "file:export-pdf", "file:score-properties", "file:parts", "file:print",
     "edit:undo", "edit:redo", "edit:history", "edit:cut", "edit:copy", "edit:paste", "edit:delete", "edit:select-all", "edit:select-section", "edit:find-go-to",
-    "view:palettes", "view:palette-search", "view:master-palette", "view:instruments", "view:layout", "view:properties", "view:history", "view:navigator", "view:timeline", "view:piano", "view:mixer", "view:workspace-default", "view:workspace-minimal", "view:workspace-playback", "view:workspace-review", "view:playback-toolbar", "view:note-input-toolbar", "view:status-bar", "view:customize-toolbar", "view:reset-layout",
+    "view:palettes", "view:palette-search", "view:master-palette", "view:instruments", "view:properties", "view:history", "view:navigator", "view:timeline", "view:piano", "view:mixer", "view:workspace-default", "view:workspace-minimal", "view:workspace-playback", "view:workspace-review", "view:playback-toolbar", "view:note-input-toolbar", "view:status-bar", "view:customize-toolbar", "view:reset-layout",
     "add:note", "add:rest", "add:measure", "add:staff-text", "add:dynamics", "add:expression", "add:rehearsal", "add:fingering", "add:chord", "add:lyrics", "add:tempo", "add:technique-text", "add:slur", "add:crescendo", "add:diminuendo", "add:ottava-alta", "add:ottava-bassa", "add:pedal", "add:glissando", "add:trill",
-    "format:text-style", "format:page-settings", "format:layout-density", "tools:transpose", "help:shortcuts"
+    "format:text-style", "format:page-settings", "format:layout-density", "voice:1", "voice:2", "voice:3", "voice:4", "tools:transpose", "help:shortcuts"
   ]
 }

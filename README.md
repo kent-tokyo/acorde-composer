@@ -1,56 +1,37 @@
 # Acorde Composer
 
-A local-first desktop score editor for MusicXML, MIDI, and ABC. Acorde Composer uses [`acorde`](https://github.com/kent-tokyo/acorde) as its only music-processing library; Electron owns the desktop UI, files, and provider boundaries.
+A local-first desktop score editor for MusicXML, MIDI, and ABC. [`acorde`](https://github.com/kent-tokyo/acorde) is the only music-processing library; Electron handles the desktop UI, files, and external-provider boundaries.
 
-Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) · [Try the browser playground](https://kent-tokyo.github.io/acorde-composer/playground/)
+[Japanese](README_ja.md) · [Chinese](README_zh.md) · [Browser Playground](https://kent-tokyo.github.io/acorde-composer/playground/) · [Desktop downloads](https://github.com/kent-tokyo/acorde-composer/releases)
 
-## Download the app
+## Try or install
 
-The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. The macOS `Acorde Composer-0.2.1-arm64-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
+The free [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the recommended starting point. Create or open a MusicXML score, select a measure, edit notes, rests, text, and voices, then export the result.
 
-## Get started
+The latest desktop release is **v0.2.2**, built with `acorde` v1.2.13. It further aligns menus, note input, voice selection, utility panels, Home, and Publish with the MuseScore workflow. Its Apple-silicon macOS DMG is experimental, unsigned, and not notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
 
-### Recommended: use the free Playground
+## Capabilities
 
-1. Open the [Playground](https://kent-tokyo.github.io/acorde-composer/playground/).
-2. Choose **New score** or open a MusicXML file.
-3. Select a measure, then use the note, rest, text, voice, and playback controls to edit it.
-4. Export MusicXML, MIDI, ABC, or SVG when finished.
+- Edit and exchange MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
+- Enter notes and rests, edit common notation and text, select voices, undo/redo, save, and reopen.
+- Use a MuseScore-oriented Home/Score/Publish shell with Palettes, Instruments, Properties, parts, Navigator, Timeline, Piano, Mixer, workspaces, and familiar shortcuts.
+- Play oscillator or validated SF2/SF3 PCM through `acorde` playback data.
+- Review AI and OMR proposals before validated commands can change the score.
 
-It runs in the browser, so there is nothing to install. Start here to try Acorde Composer or to make a quick edit.
+## Current limits
 
-### Experimental macOS app: unsigned DMG
+Native VST hosting, production OMR/AI providers, MuseSounds-class bundled assets, signed installers, Windows packaged QA, and clean-machine QA are not complete. Large SoundFonts still need a file/stream transport path. No SoundFont, MuseSounds asset, VST binary, provider credential, or OMR binary is bundled.
 
-1. Visit [Releases](https://github.com/kent-tokyo/acorde-composer/releases) and download the asset ending in `-unsigned.dmg` when one is available.
-2. Open the DMG, then drag **Acorde Composer.app** to Applications.
-3. If macOS blocks its first launch, Control-click the app in Finder, choose **Open**, then confirm **Open**. Do this only for a ZIP downloaded from the official Releases page.
-
-This build is free but unsigned and not notarized. It is for users who understand the Gatekeeper warning; use the Playground if you prefer not to override it. An unsigned ZIP may be offered as a fallback for advanced users.
-
-## What works
-
-- Open, edit, and export MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
-- Enter notes and rests; edit text and common notation; select voices; undo/redo; save and reopen.
-- Use a MuseScore-oriented Home／Score／Publish shell with Palettes, Instruments, Layout, Properties, part tabs, page Navigator, Timeline, Piano, docked Mixer, workspace presets, and familiar note-input shortcuts.
-- Review AI and OMR proposals before they become validated score commands.
-- Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
-
-The published release is **v0.2.1**, built with `acorde` v1.2.12. See [CHANGELOG.md](CHANGELOG.md).
+See the [feature matrix](docs/feature-matrix.md) for exact boundaries and [NOTICE.md](NOTICE.md) for external-asset obligations.
 
 ## Safe MusicXML migration
 
 1. Export a copy from the source application.
-2. Open it and inspect diagnostics.
-3. Select the intended voice and edit.
-4. Save under a new name, reopen it, and check voices, rests, `backup`/`forward`, lyrics, and chords.
+2. Open it and review diagnostics before editing.
+3. Save under a new name and reopen it.
+4. Check voices, rests, `backup`/`forward`, lyrics, chords, and important notation.
 
-Keep the original unchanged. The fuller checklist and product-fit guidance are in [Choosing and migrating](docs/choosing-and-migrating.md).
-
-## Boundaries
-
-This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged E2E remains to be accepted on a v1.2.12 artifact; large-SoundFont transport remains tracked upstream.
-
-No SoundFont, MuseSounds asset, VST binary, AI credential, or OMR provider is bundled. Check each external asset's licence and redistribution terms before distribution; see [NOTICE.md](NOTICE.md) and the [SoundFont checklist](docs/soundfont-license-checklist.md).
+Keep the original unchanged. See [Choosing and migrating](docs/choosing-and-migrating.md) for the full checklist.
 
 ## Development and verification
 
@@ -58,16 +39,10 @@ No SoundFont, MuseSounds asset, VST binary, AI credential, or OMR provider is bu
 npm install
 npm test
 npm run check
-npm run pack
+npm run test:workspace
+npm run test:playground
 ```
 
-The v0.2.1 release gate runs Node and Rust tests, static and fixture checks, Clippy, the desktop workspace E2E, and the browser Playground E2E. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 manual release-QA scenarios remain separate: `not-run` is never a pass.
+`npm run pack` builds the local package and artifact manifest. `npm run check:candidate:strict` checks tests plus Acorde provenance, but it does not replace signed-package or real-machine QA. The 20 manual release scenarios remain separate; `not-run` is never a pass.
 
-```sh
-npm run release:qa -- \
-  --manifest dist/release-artifact-manifest.json \
-  --matrix qa/release-qa-matrix.json \
-  --results qa/release-qa-results.json
-```
-
-For evidence and status, see the [feature matrix](docs/feature-matrix.md), [evidence index](docs/evidence-index.md), and [QA guide](qa/README.md).
+Start with the [documentation index](docs/README.md), [QA guide](qa/README.md), and [CHANGELOG](CHANGELOG.md).

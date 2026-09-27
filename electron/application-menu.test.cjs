@@ -52,18 +52,18 @@ test('Open Recent uses a bounded native submenu without trusting file labels', (
 test('familiar MuseScore destinations retain their menu ownership', () => {
   const template = buildApplicationMenuTemplate({ send() {}, platform: 'linux' });
   const menu = (label) => template.find((item) => item.label === `&${label}`).submenu;
-  assert.deepEqual(menu('File').filter((item) => item.type !== 'separator' && item.role !== 'quit').map((item) => item.label), ['New Score…', 'Open…', 'Open Recent', 'Close', 'Save', 'Save As…', 'Import / OMR…', 'Export…', 'Score Properties…', 'Parts…', 'Print…']);
+  assert.deepEqual(menu('File').filter((item) => item.type !== 'separator' && item.role !== 'quit').map((item) => item.label), ['New Score…', 'Open…', 'Open Recent', 'Close', 'Save', 'Save As…', 'Import / OMR…', 'Project Properties…', 'Parts…', 'Export…', 'Print…']);
   assert.ok(menu('File').some((item) => item.label === 'Parts…'));
-  assert.ok(menu('File').findIndex((item) => item.label === 'Export…') < menu('File').findIndex((item) => item.label === 'Score Properties…'));
+  assert.ok(menu('File').findIndex((item) => item.label === 'Parts…') < menu('File').findIndex((item) => item.label === 'Export…'));
   assert.deepEqual(menu('File').find((item) => item.label === 'Export…').submenu.map((item) => item.label), ['Export MusicXML…', 'Export MIDI…', 'Export ABC…', 'Export SVG…', 'Export PDF…']);
-  assert.ok(menu('File').findIndex((item) => item.label === 'Score Properties…') < menu('File').findIndex((item) => item.label === 'Parts…'));
+  assert.ok(menu('File').findIndex((item) => item.label === 'Project Properties…') < menu('File').findIndex((item) => item.label === 'Parts…'));
   assert.ok(menu('Edit').some((item) => item.label === 'Cut'));
   assert.deepEqual(menu('Edit').slice(0, 3).map((item) => item.label), ['Undo', 'Redo', 'History']);
   const selectMenu = menu('Edit').find((item) => item.label === 'Select');
   assert.ok(menu('Edit').findIndex((item) => item.label === 'Delete') < menu('Edit').findIndex((item) => item.label === 'Select'));
   assert.deepEqual(selectMenu.submenu.map((item) => item.label), ['Select All', 'Select Section']);
   assert.equal(menu('Edit').find((item) => item.label === 'Find / Go to…').accelerator, 'CmdOrCtrl+F');
-  assert.deepEqual(menu('View').slice(0, 11).map((item) => item.label), ['Palettes', 'Search Palettes', 'Master Palette', 'Instruments', 'Properties', 'Layout', 'History', 'Navigator', 'Timeline', 'Piano', 'Mixer']);
+  assert.deepEqual(menu('View').slice(0, 10).map((item) => item.label), ['Palettes', 'Search Palettes', 'Master Palette', 'Instruments', 'Properties', 'History', 'Navigator', 'Timeline', 'Piano', 'Mixer']);
   const toolbars = menu('View').find((item) => item.label === 'Toolbars');
   assert.deepEqual(toolbars.submenu.map((item) => item.label), ['Playback Controls', 'Note Input', 'Status Bar', 'Customize Toolbar…']);
   assert.ok(toolbars.submenu.slice(0, 3).every((item) => item.type === 'checkbox' && item.checked));
@@ -88,8 +88,9 @@ test('familiar MuseScore destinations retain their menu ownership', () => {
   assert.deepEqual(menu('Format').map((item) => item.label), ['Style…', 'Page Settings…', 'Layout Density…']);
   assert.ok(!menu('Format').some((item) => item.label === 'Score Properties…'));
   assert.ok(menu('Format').some((item) => item.label === 'Page Settings…'));
+  assert.deepEqual(menu('Tools').find((item) => item.label === 'Voices').submenu.map((item) => item.label), ['Use voice 1', 'Use voice 2', 'Use voice 3', 'Use voice 4']);
   assert.ok(menu('Format').some((item) => item.label === 'Layout Density…'));
-  assert.deepEqual(menu('Tools').map((item) => item.label), ['Transpose…']);
+  assert.deepEqual(menu('Tools').map((item) => item.label), ['Voices', 'Transpose…']);
   assert.ok(!menu('Tools').some((item) => item.label === 'Playback'));
   assert.equal(menu('Plugins')[0].label, 'Manage Plugins…');
   assert.deepEqual(menu('Help').slice(0, 2).map((item) => item.label), ['Acorde Composer Documentation', 'MuseScore UI Reference']);

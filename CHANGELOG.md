@@ -4,6 +4,16 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
+No changes yet.
+
+## 0.2.2 — 2026-09-27
+
+- Updated all five Acorde crates to v1.2.13, including expanded MusicXML barline handling and MSCX/MEI round-trip coverage for multiple voices, parts, cross-staff notation, and spanners.
+- Reorganized File, View, Format, and Tools around a MuseScore-oriented command layout; added grouped note-input controls, duration and accidental shortcuts, and visible voice 1–4 state.
+- Reduced the primary left rail to Palettes, Instruments, and Properties; added docked or floating Navigator, Timeline, and Piano panels; and kept the Acorde panel closed by default.
+- Expanded Home with recent-score actions and Publish with document/export context. Workspace persistence now migrates to schema v4.
+- Verified 285 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. Packaged manual QA remains separate.
+
 ## 0.2.1 — 2026-09-27
 
 - Added Home, Score, and Publish modes; full-score and part tabs; page-thumbnail Navigator; Timeline; Piano; and Master Palette.

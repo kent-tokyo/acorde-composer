@@ -1,8 +1,6 @@
 # macOS distribution
 
-Signed releases use a `.dmg` downloaded directly from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases). Do not put a DMG inside a ZIP file.
-
-For no-cost distribution, use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the primary user experience. A native macOS build may be offered as an **unsigned experimental DMG** for technically confident users; it is not a signed or notarized release.
+Use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the no-cost default. Native builds come in two forms: an **unsigned experimental DMG/ZIP** or a signed and notarized DMG. Publish either form directly through [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); do not wrap a DMG in a ZIP.
 
 ## No-cost experimental DMG
 
@@ -12,7 +10,7 @@ On macOS, run:
 npm run dist:mac:unsigned-dmg
 ```
 
-This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg`. It explicitly disables automatic code-signing discovery and notarization, even if signing credentials exist on the build machine. Upload that DMG directly to a GitHub Release; do not rename it to a signed build or claim that it passes Gatekeeper. Users may need to use Finder's Control-click **Open** or macOS Privacy & Security's **Open Anyway** after verifying that it came from the official Releases page.
+This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg` with signing and notarization disabled. Never rename it to look signed or claim that it passes Gatekeeper. After confirming the official download source, users may need Finder's Control-click **Open** or Privacy & Security's **Open Anyway**.
 
 Build from the clean commit that will be tagged. Do not attach an artifact built from another commit: its manifest, QA report, and source commit would not match.
 
@@ -22,20 +20,11 @@ An unsigned ZIP remains available for users who need it:
 npm run dist:mac:unsigned
 ```
 
-It creates `dist/Acorde Composer-<version>-arm64-unsigned.zip` with `ditto` so the `.app` bundle metadata and permissions are preserved.
+This creates `dist/Acorde Composer-<version>-arm64-unsigned.zip` with `.app` metadata and permissions preserved.
 
-## Prerequisites
+## Signed build
 
-- A macOS host with Xcode command-line tools.
-- A `Developer ID Application` signing identity, exposed as `CSC_NAME` or `CSC_LINK`.
-- One notarization credential strategy:
-  - `ACORDE_NOTARY_KEYCHAIN_PROFILE` (recommended), or
-  - `APPLE_API_KEY`, `APPLE_API_KEY_ID`, and `APPLE_API_ISSUER`, or
-  - `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`.
-
-Secrets must remain in the Keychain or CI secret store; never commit them.
-
-## Build and publish
+Use a macOS host with Xcode command-line tools, a `Developer ID Application` identity in `CSC_NAME` or `CSC_LINK`, and one notarization method: `ACORDE_NOTARY_KEYCHAIN_PROFILE` (recommended), App Store Connect API key variables, or Apple ID variables. Keep secrets in Keychain or CI; never commit them.
 
 ```sh
 npm run dist:mac
@@ -43,6 +32,6 @@ shasum -a 256 "dist/Acorde Composer-<version>-arm64.dmg"
 gh release upload "v<version>" "dist/Acorde Composer-<version>-arm64.dmg"
 ```
 
-`npm run dist:mac` fails before packaging when signing or notarization credentials are absent. It creates an Apple-silicon DMG, notarizes and staples the contained app, then records the actual DMG checksum in `dist/release-artifact-manifest.json`.
+`npm run dist:mac` fails when signing or notarization credentials are absent. It creates an Apple-silicon DMG, notarizes and staples the app, and records the DMG checksum in `dist/release-artifact-manifest.json`.
 
-Before uploading, install the DMG on a clean macOS machine, launch it normally through Gatekeeper, and record the result in release QA. Build a separate `x64` DMG if Intel Mac support is required.
+Build from the commit that will be tagged so source, manifest, and QA refer to the same commit. Before uploading, install the DMG on a clean Mac, launch it through Gatekeeper, and record release QA. Build a separate `x64` artifact for Intel Macs.

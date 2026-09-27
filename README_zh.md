@@ -1,88 +1,48 @@
 # Acorde Composer
 
-面向 Windows／macOS 的 AI 辅助乐谱编辑器。产品名称为 **Acorde Composer**。乐谱模型和确定性的音乐处理由现有的 [`acorde`](https://github.com/kent-tokyo/acorde) 负责。
+一款以本地处理为主、支持 MusicXML、MIDI 和 ABC 的乐谱编辑器。音乐处理只使用 [`acorde`](https://github.com/kent-tokyo/acorde)；Electron 负责桌面 UI、文件操作和外部 provider 边界。
 
-安装前可打开[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)体验。GitHub 中的 `src/playground/` 仅用于浏览源代码。
+[English](README.md) · [日本語](README_ja.md) · [浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/) · [桌面版下载](https://github.com/kent-tokyo/acorde-composer/releases)
 
-## 下载应用
+## 体验或安装
 
-面向用户的桌面应用下载页面是 [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)。免费的正式入口是[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。macOS `Acorde Composer-0.2.1-arm64-unsigned.dmg` 是实验性未签名构建，可能需要手动处理 Gatekeeper 提示。维护者请遵循 [macOS 发布指南](docs/macos-distribution.md)。
+建议先使用免费的[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。可以新建或打开 MusicXML 乐谱，选择小节，编辑音符、休止符、文本和 voice，然后导出结果。
 
-## 快速开始
-
-### 推荐：使用免费的 Playground
-
-1. 打开[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。
-2. 选择 **New score** 新建乐谱，或打开 MusicXML 文件。
-3. 选择小节，然后使用音符、休止符、文本、voice 和播放控件编辑。
-4. 完成后导出为 MusicXML、MIDI、ABC 或 SVG。
-
-它在浏览器中运行，无需安装。首次体验或进行快速编辑时，建议从这里开始。
-
-### macOS 实验版：unsigned DMG
-
-1. 打开 [Releases](https://github.com/kent-tokyo/acorde-composer/releases)，在可用时下载以 `-unsigned.dmg` 结尾的资产。
-2. 打开 DMG，将 **Acorde Composer.app** 拖到“应用程序”。
-3. 如果 macOS 在首次启动时拦截应用，请在 Finder 中按住 Control 点按应用，选择“打开”，再确认“打开”。只应对从官方 Releases 页面下载的 ZIP 执行此操作。
-
-该构建免费，但未经签名和 notarization，面向理解 Gatekeeper 警告的用户。如果不希望手动绕过提示，请使用 Playground。也可为高级用户提供 unsigned ZIP 作为备用方式。
+最新公开版是 **v0.2.2**（`acorde` v1.2.13）。菜单、音符输入、voice 选择、辅助面板、Home 和 Publish 进一步接近 MuseScore 的工作方式。Apple Silicon macOS DMG 是实验性版本，未经签名和公证。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载。如果被 Gatekeeper 拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
 
 ## 主要功能
 
-- 导入、编辑和导出 MusicXML、MIDI、ABC
-- 基于实际 Score 的 SVG 显示、PDF／打印预览、撤销／重做
-- 多声部选择、键盘操作以及 voice-aware playback address
-- 接近 MuseScore 的 Home／Score／Publish、Palettes／Instruments／Layout／Properties、分谱标签、页面 Navigator、Timeline、Piano、停靠式 Mixer、workspace preset 与输入快捷键
-- 音符与休止符、歌词、和弦、力度、装饰音和演奏记号编辑
-- part／staff 编辑、分谱导出、Mixer 和 Web MIDI 输入
-- AI／OMR 建议在审核后再应用的安全 proposal workflow
-- SoundFont 状态显示、PCM 样本播放和 oscillator fallback
-- 面向 macOS／Windows 的 Electron UI 与 bounded JSON IPC
+- 编辑和交换 MusicXML、MIDI、ABC，生成 SVG，并提供 PDF／打印入口
+- 编辑音符、休止符、文本和常用记谱；选择 voice；撤销／重做；保存并重新打开
+- 接近 MuseScore 的 Home／Score／Publish、Palettes、Instruments、Properties、part、Navigator、Timeline、Piano、Mixer、workspace 和快捷键
+- 使用`acorde`播放数据进行 oscillator 或已验证的 SF2／SF3 PCM 播放
+- AI／OMR 建议经审核后才能作为已验证命令修改乐谱
 
-## 音乐库依赖原则
+## 当前限制
 
-音乐处理只使用 `acorde`。Score 模型、MusicXML／MIDI／ABC 输入输出、编辑 command、布局、SVG 渲染和 PlaybackEvent 都通过 `acorde` API 完成。不使用 Tone.js、VexFlow、music21 等其他音乐库。
+native VST、生产级 OMR／AI provider、MuseSounds 类内置音源、已签名 installer、Windows packaged QA 和 clean-machine QA 尚未完成。大型 SoundFont 仍需要 file／stream 传输路径。本仓库不内置 SoundFont、MuseSounds asset、VST binary、provider 凭据或 OMR binary。
 
-已发布的v0.2.1使用 `acorde` v1.2.12 的 5 个 crate。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
+准确范围请查看 [feature matrix](docs/feature-matrix.md)，外部资源义务请查看 [NOTICE.md](NOTICE.md)。
 
-## 当前版本
+## 安全迁移MusicXML
 
-已发布版本为 **Acorde Composer v0.2.1**（`acorde v1.2.12`）。
+1. 从原软件导出副本。
+2. 打开文件并先检查 diagnostics。
+3. 使用新文件名保存，再重新打开。
+4. 检查 voice、rest、`backup`／`forward`、歌词、和弦和重要记谱元素。
 
-AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界内。
+不要覆盖原文件。完整流程请参阅[选型与迁移指南](docs/choosing-and-migrating.md)。
 
-## 从现有乐谱软件迁移
-
-请先从原软件导出一份 MusicXML 副本，在 Acorde Composer 中打开并检查 diagnostics。编辑后使用新文件名保存，再重新打开保存的文件，确认 voice、rest、backup／forward、歌词、和弦以及主要记谱信息。
-
-[选型与迁移指南](docs/choosing-and-migrating.md)介绍比较维度、迁移步骤、FAQ和当前限制。[feature matrix](docs/feature-matrix.md)、[evidence index](docs/evidence-index.md)、[SEO与竞品流量内容设计](docs/seo-content-plan.md)记录实现证据、搜索意图及公开内容规则。
-
-## 重要限制
-
-Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff仍需在v1.2.12 artifact中完成packaged E2E验收；大 SoundFont 传输仍依赖上游支持。
-
-## 开发
+## 开发与验证
 
 ```sh
 npm install
-npm run check
 npm test
-npm start
+npm run check
+npm run test:workspace
+npm run test:playground
 ```
 
-`npm run pack`会生成 Electron 分发目录，并生成包含 checksum／SBOM／NOTICE／provenance 的 artifact manifest。可使用以下命令生成 release QA report：
+`npm run pack`生成本地 package 和 artifact manifest。`npm run check:candidate:strict`检查测试和 Acorde provenance，但不能替代已签名 package 或真机 QA。20 项手动 release scenario 属于独立门槛；`not-run`不等于通过。
 
-```sh
-npm run release:qa -- \
-  --manifest dist/release-artifact-manifest.json \
-  --matrix qa/release-qa-matrix.json \
-  --results qa/release-qa-results.json
-```
-
-v0.2.1发布 gate 会执行Node／Rust测试、静态与fixture检查、Clippy、desktop workspace E2E和Playground E2E。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项手动release QA是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
-
-性能 profile 还保存 parse→serialize 测量以及 harness RSS／CPU 证据。可通过 feature matrix 和 evidence index 追踪已实现范围与外部依赖的剩余任务。
-
-## 许可证与外部资源
-
-本仓库不内置 OMR provider、AI service、MuseSounds asset、SoundFont asset 或 VST binary。用户添加的 provider 和 asset 必须遵守各自的许可证、认证信息、再分发条款和平台要求。另请参阅 [NOTICE.md](NOTICE.md)。
+更多信息请从[文档索引](docs/README.md)、[QA指南](qa/README.md)和[CHANGELOG](CHANGELOG.md)开始。

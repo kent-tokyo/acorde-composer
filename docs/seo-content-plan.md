@@ -1,42 +1,36 @@
-# SEO・競合流入コンテンツ設計
+# SEO・公開コンテンツ方針
 
-この文書は、Acorde Composerの検索流入と導入検討を支える公開コンテンツの設計を固定する。目的は検索順位のためのキーワード反復ではなく、譜面編集の具体的な課題を解決し、実装と証跡を確認したうえでダウンロードへ案内することとする。
+検索語を繰り返すのではなく、譜面編集の疑問へ具体的に答え、実装と証跡を示してPlaygroundまたはダウンロードへ案内します。
 
 ## 検索意図と入口
 
-| 検索意図 | 主な語句の例 | 入口 | 読者が得るもの | CTA |
-| --- | --- | --- | --- | --- |
-| 譜面編集 | MusicXML editor、楽譜編集、score editor | README | 対応形式、編集範囲、導入条件 | Playground |
-| 形式移行 | MusicXML edit、ABC notation editor、MIDI export | 選定・移行ガイド | 移行手順、loss確認、再読込手順 | Migration checklist |
-| 複数voice | multiple voice MusicXML、voice notation | 移行ガイド＋QA | voice保持の確認方法と制約 | QA evidence |
-| AI編曲 | AI music notation、AI score editor | README | proposal確認、Reject、provider境界 | 安全な試用導線 |
-| 音源・再生 | SoundFont editor、SF2／SF3 playback | README＋FAQ | fallback、外部asset、license境界 | 音源要件を確認 |
-| 代替製品の検討 | notation software alternative、lightweight score editor | 選定・移行ガイド | 製品名ではなく比較軸での選定 | 要件チェック |
+| 検索意図 | 入口 | 読者が確認できること |
+| --- | --- | --- |
+| MusicXML編集 | README | 対応形式、編集範囲、Playground |
+| 形式移行・複数voice | 選定・移行ガイド | 別名保存、再読込、loss確認 |
+| AI／OMR | AI安全設計 | proposal reviewと外部provider境界 |
+| SoundFont再生 | README、SoundFont checklist | 対応範囲、asset、license |
+| 他製品からの移行 | 選定・移行ガイド | 向く用途、未検証範囲、UI配置 |
 
-## ページごとの作成ルール
+## 公開ルール
 
-- titleと冒頭文で「Acorde Composer」「楽譜編集」「MusicXML」など、ページ固有の主題を明示する。
-- 1ページ1検索意図とし、READMEは製品概要、移行ガイドは比較・移行、QA文書は証跡に集中させる。
-- 対応形式、`acorde`依存、外部provider、SoundFont、署名、Windows QAの状態を実装と同じ表現で記載する。
-- 主要主張には、操作手順、fixture、テスト、release artifactなど、読者が追跡できる証拠へのリンクを付ける。
-- 競合製品を名指しして未検証の性能・精度・価格・互換性を比較しない。「どの要件を確認すべきか」という比較軸で案内する。
-- 未実装のMuseSounds相当音源、実OMR provider、完全な複数voice編集、署名済みinstallerを、利用可能な機能として表現しない。
+- 1ページ1目的とし、READMEは概要、移行ガイドは選定と移行、QAは証跡に集中させる。
+- 対応形式、`acorde`依存、外部provider、SoundFont、署名、Windows QAを実装と同じ表現で記載する。
+- 主要な主張からfixture、テスト、artifact、QAへリンクする。
+- 条件のない性能・精度・価格・互換性の比較を載せない。
+- 未実装の実OMR、MuseSounds相当音源、native VST、署名済みinstallerを利用可能と書かない。
 
-## 競合からの移行導線
+## 移行導線
 
-1. 読者の課題を「MusicXMLを確認したい」「軽く編集したい」「AI提案を確認してから適用したい」のように具体化する。
-2. Acorde Composerが向く条件と向かない条件を同じページで示す。
-3. 元ソフトからMusicXMLをコピーとして書き出す手順を示す。
-4. Open → diagnostics確認 → 編集 → 別名保存 → 再読込の順で安全な試用を案内する。
-5. 実機QA、音源license、印刷品質、完全なvoice保持が必要な読者には、未完了ゲートを明示して判断を委ねる。無料の主導線はPlayground、experimental native buildはGitHub Releaseと明記する。
+1. 向く用途と向かない用途を同じページに示す。
+2. 元ソフトからMusicXMLをコピーとして書き出す。
+3. Open → diagnostics → edit → Save As → reloadを案内する。
+4. 無料の入口をPlayground、native buildをexperimental GitHub Releaseと明記する。
+5. 実機QA、音源license、印刷品質などの未完了条件を隠さない。
 
-この導線では、既存製品を否定するのではなく、データ保持・レビュー可能性・ローカル処理・`acorde`中心の設計というComposerの選択理由を提示する。
+## 更新時の確認
 
-## 証拠と更新周期
-
-- READMEの対応機能と公開バージョンは、releaseごとにCHANGELOGとpackage metadataを照合する。
-- QAの実機結果は、コードテスト結果と混ぜず、`qa/release-qa-results.json`のevidenceを正とする。
-- 競合比較の点数や「代替できる」という表現は、対象バージョン・対象OS・測定条件がない限り公開しない。
-- 外部providerや音源assetの接続条件が変わった場合は、README、選定・移行ガイド、NOTICEを同時に点検する。
-
-関連ガイドは[移行手順](musicxml-migration-example.md)、[ABCとMusicXML](abc-and-musicxml.md)、[AI提案の安全設計](ai-proposal-safety.md)、[SoundFont license checklist](soundfont-license-checklist.md)を参照してください。未検証の検索需要や競合優位性は推測で補いません。
+- releaseごとにREADME、CHANGELOG、package metadataを照合する。
+- 実機結果は`qa/release-qa-results.json`を正とし、コードテストと混ぜない。
+- 比較点数は対象version、OS、入力、測定条件が揃う場合だけ公開する。
+- providerや音源条件が変わったらREADME、移行ガイド、NOTICEを同時に点検する。
