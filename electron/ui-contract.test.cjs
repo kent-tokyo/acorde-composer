@@ -419,7 +419,12 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(app, /className = 'sidebar-panel sidebar-palettes'/);
   assert.match(app, /className = 'sidebar-panel sidebar-instruments hidden'/);
   assert.match(app, /className = 'sidebar-panel sidebar-properties hidden'/);
-  assert.match(app, /\['Palettes', 'Instruments', 'Properties'\]/);
+  assert.match(app, /\['Palettes', 'Instruments', 'Layout', 'Properties'\]/);
+  assert.match(app, /composer-mode-tabs/);
+  assert.match(app, /score-document-tabs/);
+  assert.match(app, /timeline-panel/);
+  assert.match(app, /piano-panel/);
+  assert.match(app, /mixer-dock/);
   assert.match(app, /function refreshSelectionProperties\(\)/);
   assert.match(app, /function applySelectionProperty\(property, value\)/);
   assert.match(app, /AcordeMuseScoreWorkspace\.PALETTE_GROUPS/);

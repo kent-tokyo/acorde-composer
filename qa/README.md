@@ -1,6 +1,6 @@
 # Release QA evidence
 
-The published app is Acorde Composer 0.2.0 with `acorde` 1.2.12. Release evidence must match the tagged commit and artifact digest. Do not treat older artifacts or benchmark records as evidence for this version.
+The published app is Acorde Composer 0.2.1 with `acorde` 1.2.12. Release evidence must match the tagged commit and artifact digest. Do not treat older artifacts or benchmark records as evidence for this version.
 
 ## Release-QA rule
 

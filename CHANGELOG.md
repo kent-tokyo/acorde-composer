@@ -4,6 +4,13 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
+## 0.2.1 — 2026-09-27
+
+- Added Home, Score, and Publish modes; full-score and part tabs; page-thumbnail Navigator; Timeline; Piano; and Master Palette.
+- Docked Mixer controls beside the score with an optional floating layout, and moved playback seeking into the top playback toolbar.
+- Added Default, Minimal, Playback, Review, and user-saved workspaces; customizable note-input toolbar visibility; light, dark, and high-contrast themes; and F6 focus traversal.
+- Expanded the MuseScore-oriented View menu and shortcuts with palette search, Master Palette, Timeline, Piano, and workspace presets. Workspace state now migrates to schema v3.
+
 ## 0.2.0 — 2026-09-27
 
 - Updated the five Acorde crates to v1.2.12; release evidence is regenerated from the tagged 0.2.0 commit.

@@ -10,7 +10,7 @@ const engineSource = fs.readFileSync(path.join(root, 'engine/src/main.rs'), 'utf
 
 test('release metadata identifies the current Acorde Composer version', () => {
   assert.equal(packageJson.name, 'acorde-composer');
-  assert.equal(packageJson.version, '0.2.0');
+  assert.equal(packageJson.version, '0.2.1');
   assert.notEqual(packageJson.private, true);
   assert.equal(packageJson.build.productName, 'Acorde Composer');
   assert.ok(packageJson.build.files.includes('electron/**/*'));

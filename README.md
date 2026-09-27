@@ -6,7 +6,7 @@ Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) 
 
 ## Download the app
 
-The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. The macOS `Acorde Composer-0.2.0-arm64-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
+The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. The macOS `Acorde Composer-0.2.1-arm64-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
 
 ## Get started
 
@@ -31,11 +31,11 @@ This build is free but unsigned and not notarized. It is for users who understan
 
 - Open, edit, and export MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
 - Enter notes and rests; edit text and common notation; select voices; undo/redo; save and reopen.
-- Use MuseScore-oriented Palettes, Instruments, Properties, Navigator, Mixer, and playback controls, with N, duration 1–7, A–G, and voice 1–4 input shortcuts.
+- Use a MuseScore-oriented Home／Score／Publish shell with Palettes, Instruments, Layout, Properties, part tabs, page Navigator, Timeline, Piano, docked Mixer, workspace presets, and familiar note-input shortcuts.
 - Review AI and OMR proposals before they become validated score commands.
 - Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
 
-The published release is **v0.2.0**, built with `acorde` v1.2.12. See [CHANGELOG.md](CHANGELOG.md).
+The published release is **v0.2.1**, built with `acorde` v1.2.12. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Safe MusicXML migration
 
@@ -61,7 +61,7 @@ npm run check
 npm run pack
 ```
 
-The v0.2.0 release gate runs Node and Rust tests, static and fixture checks, Clippy, the desktop workspace E2E, and the browser Playground E2E. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 manual release-QA scenarios remain separate: `not-run` is never a pass.
+The v0.2.1 release gate runs Node and Rust tests, static and fixture checks, Clippy, the desktop workspace E2E, and the browser Playground E2E. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 manual release-QA scenarios remain separate: `not-run` is never a pass.
 
 ```sh
 npm run release:qa -- \

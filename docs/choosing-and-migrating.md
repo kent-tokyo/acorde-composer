@@ -34,7 +34,7 @@ Acorde Composerは、DAW、完成された商用記譜ソフト、MuseSoundsそ�
 5. 保存したファイルを再読込し、voice、rest、backup／forward、歌詞、コード、主要記譜情報を確認します。
 6. 印刷や音源が必要な場合は、対象OSと外部assetのlicense・配布条件を確認します。
 
-元ファイルを上書きせず、移行前後のファイルを残してください。公開版v0.2.0はAcorde v1.2.12を利用します。大きなassetのstreaming、cross-staff packaged編集、production audio品質、MuseSounds接続、実OMR provider、署名済み配布は別の完了条件です。
+元ファイルを上書きせず、移行前後のファイルを残してください。公開版v0.2.1はAcorde v1.2.12を利用します。大きなassetのstreaming、cross-staff packaged編集、production audio品質、MuseSounds接続、実OMR provider、署名済み配布は別の完了条件です。
 
 ## FAQ
 

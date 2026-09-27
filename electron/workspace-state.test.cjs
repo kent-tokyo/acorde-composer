@@ -15,6 +15,9 @@ function memoryStorage(initial = {}) {
 test('workspace state keeps a versioned default MuseScore layout', () => {
   assert.deepEqual(normalize(null), DEFAULT);
   assert.deepEqual(normalize({ version: 99, palettesVisible: false }), DEFAULT);
+  assert.equal(VERSION, 3);
+  assert.equal(DEFAULT.activeMode, 'score');
+  assert.equal(DEFAULT.theme, 'light');
 });
 
 test('workspace state persists panel and toolbar visibility with active tabs', () => {
@@ -32,6 +35,13 @@ test('workspace state persists panel and toolbar visibility with active tabs', (
     statusBarVisible: false,
     activeSidebar: 'properties',
     activeRightPanel: 'omr',
+    activeMode: 'publish',
+    activeWorkspace: 'review',
+    mixerDock: 'floating',
+    theme: 'dark',
+    timelineVisible: true,
+    pianoVisible: true,
+    toolbar: { articulation: false },
   });
   assert.deepEqual(load(storage, 'workspace'), saved);
   assert.equal(saved.activeSidebar, 'properties');
@@ -39,6 +49,10 @@ test('workspace state persists panel and toolbar visibility with active tabs', (
   assert.equal(saved.rightPanelVisible, true);
   assert.equal(saved.mixerVisible, true);
   assert.equal(saved.historyVisible, true);
+  assert.equal(saved.activeMode, 'publish');
+  assert.equal(saved.theme, 'dark');
+  assert.equal(saved.timelineVisible, true);
+  assert.equal(saved.toolbar.articulation, false);
 });
 
 test('workspace reset removes persisted layout and restores defaults', () => {
@@ -62,4 +76,19 @@ test('workspace state migrates v1 Properties from the right panel into the left 
   assert.equal(migrated.propertiesVisible, true);
   assert.equal(migrated.rightPanelVisible, false);
   assert.equal(migrated.activeRightPanel, 'ai');
+});
+
+test('workspace state migrates v2 defaults into the v3 shell', () => {
+  const migrated = normalize({ version: 2, activeSidebar: 'instruments', mixerVisible: true });
+  assert.equal(migrated.version, 3);
+  assert.equal(migrated.activeSidebar, 'instruments');
+  assert.equal(migrated.mixerVisible, true);
+  assert.equal(migrated.activeMode, 'score');
+  assert.equal(migrated.toolbar.duration, true);
+});
+
+test('workspace state preserves a bounded custom workspace identity', () => {
+  assert.equal(normalize({ version: 3, activeWorkspace: 'custom:Orchestration' }).activeWorkspace, 'custom:Orchestration');
+  assert.equal(normalize({ version: 3, activeWorkspace: 'custom:' }).activeWorkspace, 'default');
+  assert.equal(normalize({ version: 3, activeWorkspace: `custom:${'x'.repeat(49)}` }).activeWorkspace, 'default');
 });

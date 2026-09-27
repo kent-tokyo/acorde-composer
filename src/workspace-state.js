@@ -5,7 +5,9 @@
 })(typeof globalThis === 'object' ? globalThis : this, function workspaceStateFactory() {
   'use strict';
 
-  const VERSION = 2;
+  const VERSION = 3;
+  const TOOLBAR_ITEMS = Object.freeze(['select', 'note', 'rest', 'duration', 'dot', 'tie', 'accidental', 'tuplet', 'voice', 'articulation', 'undo-redo']);
+  const DEFAULT_TOOLBAR = Object.freeze(Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, true])));
   const DEFAULT = Object.freeze({
     version: VERSION,
     leftRailVisible: true,
@@ -18,16 +20,38 @@
     noteInputVisible: true,
     statusBarVisible: true,
     navigatorVisible: true,
+    timelineVisible: false,
+    pianoVisible: false,
     activeSidebar: 'palettes',
     activeRightPanel: 'ai',
+    activeMode: 'score',
+    activeWorkspace: 'default',
+    mixerDock: 'right',
+    theme: 'light',
+    toolbar: DEFAULT_TOOLBAR,
   });
-  const SIDEBARS = new Set(['palettes', 'instruments', 'properties']);
+  const PRESETS = Object.freeze({
+    default: DEFAULT,
+    minimal: Object.freeze({ ...DEFAULT, activeWorkspace: 'minimal', leftRailVisible: false, navigatorVisible: false }),
+    playback: Object.freeze({ ...DEFAULT, activeWorkspace: 'playback', leftRailVisible: false, mixerVisible: true, navigatorVisible: false }),
+    review: Object.freeze({ ...DEFAULT, activeWorkspace: 'review', activeSidebar: 'properties', palettesVisible: false, propertiesVisible: true, timelineVisible: true }),
+  });
+  const SIDEBARS = new Set(['palettes', 'instruments', 'properties', 'layout']);
   const RIGHT_PANELS = new Set(['ai', 'omr']);
+  const MODES = new Set(['home', 'score', 'publish']);
+  const WORKSPACES = new Set(Object.keys(PRESETS));
+  const MIXER_DOCKS = new Set(['right', 'floating']);
+  const THEMES = new Set(['light', 'dark', 'high-contrast']);
+
+  function normalizeToolbar(value) {
+    const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    return Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, source[item] !== false]));
+  }
 
   function normalize(value) {
     const candidate = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
     const sourceVersion = Number(candidate?.version);
-    const input = sourceVersion === VERSION || sourceVersion === 1 ? candidate : {};
+    const input = sourceVersion === VERSION || sourceVersion === 2 || sourceVersion === 1 ? candidate : {};
     const legacyProperties = sourceVersion === 1 && input.activeRightPanel === 'properties' && input.propertiesVisible !== false;
     const activeSidebar = SIDEBARS.has(input.activeSidebar)
       ? input.activeSidebar
@@ -45,8 +69,15 @@
       noteInputVisible: input.noteInputVisible !== false,
       statusBarVisible: input.statusBarVisible !== false,
       navigatorVisible: input.navigatorVisible !== false,
+      timelineVisible: input.timelineVisible === true,
+      pianoVisible: input.pianoVisible === true,
       activeSidebar,
       activeRightPanel,
+      activeMode: MODES.has(input.activeMode) ? input.activeMode : DEFAULT.activeMode,
+      activeWorkspace: WORKSPACES.has(input.activeWorkspace) || (typeof input.activeWorkspace === 'string' && /^custom:[^\u0000-\u001f]{1,48}$/.test(input.activeWorkspace)) ? input.activeWorkspace : DEFAULT.activeWorkspace,
+      mixerDock: MIXER_DOCKS.has(input.mixerDock) ? input.mixerDock : DEFAULT.mixerDock,
+      theme: THEMES.has(input.theme) ? input.theme : DEFAULT.theme,
+      toolbar: normalizeToolbar(input.toolbar),
     };
   }
 
@@ -65,5 +96,7 @@
     return { ...DEFAULT };
   }
 
-  return { VERSION, DEFAULT, normalize, load, save, reset };
+  function preset(name) { return { ...(PRESETS[WORKSPACES.has(name) ? name : 'default']), toolbar: { ...DEFAULT_TOOLBAR } }; }
+
+  return { VERSION, DEFAULT, PRESETS, TOOLBAR_ITEMS, DEFAULT_TOOLBAR, normalizeToolbar, normalize, preset, load, save, reset };
 });

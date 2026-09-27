@@ -6,7 +6,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 ## アプリをダウンロード
 
-ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`Acorde Composer-0.2.0-arm64-unsigned.dmg`は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
+ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`Acorde Composer-0.2.1-arm64-unsigned.dmg`は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
 
 ## はじめかた
 
@@ -32,7 +32,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 - MusicXML、MIDI、ABCの読み込み・編集・書き出し
 - 実ScoreのSVG表示、PDF／印刷プレビュー、undo／redo
 - 複数voiceの選択、キーボード操作、voice-aware playback address
-- MuseScoreに近いPalettes／Instruments／Properties配置と、N・音価1〜7・A〜G・voice 1〜4の入力ショートカット
+- MuseScoreに近いHome／Score／Publish、Palettes／Instruments／Layout／Properties、パートタブ、ページNavigator、Timeline、Piano、dock式Mixer、workspace presetと入力ショートカット
 - 音符・休符、歌詞、コード記号、強弱、装飾音、アーティキュレーション編集
 - part／staff編集、パート書き出し、Mixer、Web MIDI入力
 - AI／OMR提案を確認してから適用する安全なproposal workflow
@@ -43,11 +43,11 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-公開版v0.2.0は `acorde` v1.2.12の5 crateを利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+公開版v0.2.1は `acorde` v1.2.12の5 crateを利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
-公開版は **Acorde Composer v0.2.0**（`acorde v1.2.12`）です。
+公開版は **Acorde Composer v0.2.1**（`acorde v1.2.12`）です。
 
 AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界内で接続します。
 
@@ -79,7 +79,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-v0.2.0ではNode／Rustテスト、静的・fixture検査、Clippy、desktop workspace E2E、Playground E2Eをrelease gateとして実行します。`npm run check:candidate`は署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
+v0.2.1ではNode／Rustテスト、静的・fixture検査、Clippy、desktop workspace E2E、Playground E2Eをrelease gateとして実行します。`npm run check:candidate`は署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 

@@ -63,13 +63,13 @@ test('familiar MuseScore destinations retain their menu ownership', () => {
   assert.ok(menu('Edit').findIndex((item) => item.label === 'Delete') < menu('Edit').findIndex((item) => item.label === 'Select'));
   assert.deepEqual(selectMenu.submenu.map((item) => item.label), ['Select All', 'Select Section']);
   assert.equal(menu('Edit').find((item) => item.label === 'Find / Go to…').accelerator, 'CmdOrCtrl+F');
-  assert.deepEqual(menu('View').slice(0, 7).map((item) => item.label), ['Palettes', 'Instruments', 'Properties', 'Layout', 'History', 'Navigator', 'Mixer']);
+  assert.deepEqual(menu('View').slice(0, 11).map((item) => item.label), ['Palettes', 'Search Palettes', 'Master Palette', 'Instruments', 'Properties', 'Layout', 'History', 'Navigator', 'Timeline', 'Piano', 'Mixer']);
   const toolbars = menu('View').find((item) => item.label === 'Toolbars');
-  assert.deepEqual(toolbars.submenu.map((item) => item.label), ['Playback Controls', 'Note Input', 'Status Bar']);
-  assert.ok(toolbars.submenu.every((item) => item.type === 'checkbox' && item.checked));
+  assert.deepEqual(toolbars.submenu.map((item) => item.label), ['Playback Controls', 'Note Input', 'Status Bar', 'Customize Toolbar…']);
+  assert.ok(toolbars.submenu.slice(0, 3).every((item) => item.type === 'checkbox' && item.checked));
   const workspace = menu('View').find((item) => item.label === 'Workspace');
-  assert.deepEqual(workspace.submenu.map((item) => item.label), ['Default']);
-  assert.equal(workspace.submenu[0].type, 'radio');
+  assert.deepEqual(workspace.submenu.map((item) => item.label), ['Default', 'Minimal', 'Playback', 'Review']);
+  assert.ok(workspace.submenu.every((item) => item.type === 'radio'));
   assert.equal(workspace.submenu[0].checked, true);
   assert.ok(!menu('View').some((item) => item.label === 'Panels'));
   const resetIndex = menu('View').findIndex((item) => item.label === 'Reset to Default Layout');
