@@ -5,13 +5,13 @@
 })(typeof globalThis === 'object' ? globalThis : this, function workspaceStateFactory() {
   'use strict';
 
-  const VERSION = 1;
+  const VERSION = 2;
   const DEFAULT = Object.freeze({
     version: VERSION,
     leftRailVisible: true,
-    rightPanelVisible: true,
+    rightPanelVisible: false,
     palettesVisible: true,
-    propertiesVisible: true,
+    propertiesVisible: false,
     mixerVisible: false,
     historyVisible: false,
     playbackControlsVisible: true,
@@ -19,27 +19,34 @@
     statusBarVisible: true,
     navigatorVisible: true,
     activeSidebar: 'palettes',
-    activeRightPanel: 'properties',
+    activeRightPanel: 'ai',
   });
-  const SIDEBARS = new Set(['palettes', 'scores']);
-  const RIGHT_PANELS = new Set(['properties', 'ai', 'omr']);
+  const SIDEBARS = new Set(['palettes', 'instruments', 'properties']);
+  const RIGHT_PANELS = new Set(['ai', 'omr']);
 
   function normalize(value) {
-    const input = value && typeof value === 'object' && Number(value.version) === VERSION ? value : {};
+    const candidate = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    const sourceVersion = Number(candidate?.version);
+    const input = sourceVersion === VERSION || sourceVersion === 1 ? candidate : {};
+    const legacyProperties = sourceVersion === 1 && input.activeRightPanel === 'properties' && input.propertiesVisible !== false;
+    const activeSidebar = SIDEBARS.has(input.activeSidebar)
+      ? input.activeSidebar
+      : legacyProperties ? 'properties' : DEFAULT.activeSidebar;
+    const activeRightPanel = RIGHT_PANELS.has(input.activeRightPanel) ? input.activeRightPanel : DEFAULT.activeRightPanel;
     return {
       version: VERSION,
       leftRailVisible: input.leftRailVisible !== false,
-      rightPanelVisible: input.rightPanelVisible !== false,
-      palettesVisible: input.palettesVisible !== false,
-      propertiesVisible: input.propertiesVisible !== false,
+      rightPanelVisible: sourceVersion === 1 && input.activeRightPanel === 'properties' ? false : input.rightPanelVisible === true,
+      palettesVisible: input.leftRailVisible !== false && activeSidebar === 'palettes',
+      propertiesVisible: input.leftRailVisible !== false && activeSidebar === 'properties',
       mixerVisible: input.mixerVisible === true,
       historyVisible: input.historyVisible === true,
       playbackControlsVisible: input.playbackControlsVisible !== false,
       noteInputVisible: input.noteInputVisible !== false,
       statusBarVisible: input.statusBarVisible !== false,
       navigatorVisible: input.navigatorVisible !== false,
-      activeSidebar: SIDEBARS.has(input.activeSidebar) ? input.activeSidebar : DEFAULT.activeSidebar,
-      activeRightPanel: RIGHT_PANELS.has(input.activeRightPanel) ? input.activeRightPanel : DEFAULT.activeRightPanel,
+      activeSidebar,
+      activeRightPanel,
     };
   }
 

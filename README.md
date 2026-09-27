@@ -31,11 +31,11 @@ This build is free but unsigned and not notarized. It is for users who understan
 
 - Open, edit, and export MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
 - Enter notes and rests; edit text and common notation; select voices; undo/redo; save and reopen.
-- Use palettes, Properties, Navigator, Mixer, playback controls, and a MuseScore-oriented menu layout.
+- Use MuseScore-oriented Palettes, Instruments, Properties, Navigator, Mixer, and playback controls, with N, duration 1–7, A–G, and voice 1–4 input shortcuts.
 - Review AI and OMR proposals before they become validated score commands.
 - Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
 
-The published release is **v0.1.15**, built and evidenced with `acorde` v1.2.2. See [CHANGELOG.md](CHANGELOG.md).
+The published release is **v0.1.15**, built and evidenced with `acorde` v1.2.2. Development `main` currently resolves `acorde` v1.2.11; it is not a published or packaged release. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Safe MusicXML migration
 
@@ -48,7 +48,7 @@ Keep the original unchanged. The fuller checklist and product-fit guidance are i
 
 ## Boundaries
 
-This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged editing currently depends on upstream staff materialization; the missing large-SoundFont transport is tracked upstream as well.
+This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged E2E remains to be accepted on a v1.2.11 artifact; large-SoundFont transport remains tracked upstream.
 
 No SoundFont, MuseSounds asset, VST binary, AI credential, or OMR provider is bundled. Check each external asset's licence and redistribution terms before distribution; see [NOTICE.md](NOTICE.md) and the [SoundFont checklist](docs/soundfont-license-checklist.md).
 
@@ -61,7 +61,7 @@ npm run check
 npm run pack
 ```
 
-The current checkout passed 261 Node tests and 25 Rust tests on 2026-09-23. `npm run check:candidate` runs the local candidate gate; it is not a signed-release or packaged-QA result. The 20 release-QA scenarios remain separate: `not-run` is never a pass.
+The v0.1.15 candidate recorded 261 Node and 25 Rust tests. Development `main` recorded a 270 Node / 25 Rust baseline before the v1.2.11 update; rerun the candidate gate from the clean release commit. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 release-QA scenarios remain separate: `not-run` is never a pass.
 
 ```sh
 npm run release:qa -- \

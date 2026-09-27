@@ -25,11 +25,18 @@
     return available.includes(numeric) ? numeric : available[0];
   }
 
+  function resolveEditableSlot(score, partIndex = 0, requestedSlot = 0) {
+    const numeric = Number(requestedSlot);
+    const supportsSlot = Number.isInteger(numeric) && numeric >= 0 && numeric < 4
+      && (score?.parts?.[partIndex]?.staves || []).some((staff) => (staff.measures || []).some((measure) => Array.isArray(measure.voices) && numeric < measure.voices.length));
+    return supportsSlot ? numeric : resolveSlot(score, partIndex, requestedSlot);
+  }
+
   function stepSlot(score, partIndex = 0, currentSlot = 0, direction = 1) {
     const available = slots(score, partIndex); const current = resolveSlot(score, partIndex, currentSlot);
     const next = (available.indexOf(current) + (direction < 0 ? -1 : 1) + available.length) % available.length;
     return available[next];
   }
 
-  return { slots, sourceNumber, resolveSlot, stepSlot };
+  return { slots, sourceNumber, resolveSlot, resolveEditableSlot, stepSlot };
 });

@@ -32,6 +32,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 - MusicXML、MIDI、ABCの読み込み・編集・書き出し
 - 実ScoreのSVG表示、PDF／印刷プレビュー、undo／redo
 - 複数voiceの選択、キーボード操作、voice-aware playback address
+- MuseScoreに近いPalettes／Instruments／Properties配置と、N・音価1〜7・A〜G・voice 1〜4の入力ショートカット
 - 音符・休符、歌詞、コード記号、強弱、装飾音、アーティキュレーション編集
 - part／staff編集、パート書き出し、Mixer、Web MIDI入力
 - AI／OMR提案を確認してから適用する安全なproposal workflow
@@ -42,7 +43,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-現在は `acorde` v1.2.2の5 crateをpath依存かつversion pinして利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+公開版v0.1.15は `acorde` v1.2.2の5 crateを利用しています。開発版`main`はv1.2.11へ追従中ですが、未公開・未packageの状態です。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
@@ -58,7 +59,7 @@ MusicXMLをコピーとして書き出し、Acorde Composerで開いてdiagnosti
 
 ## 重要な制約
 
-Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。native VST、実運用OMR／AI、MuseSounds相当音源、署名済みinstaller、Windows／clean-machine QAは別の検証ゲートです。cross-staffのpackaged編集と大規模SoundFont転送には上流対応が残っています。
+Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。native VST、実運用OMR／AI、MuseSounds相当音源、署名済みinstaller、Windows／clean-machine QAは別の検証ゲートです。cross-staffはv1.2.11 artifactでのpackaged E2E受入、大規模SoundFont転送は上流対応が残っています。
 
 ## 開発
 
@@ -78,7 +79,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-2026-09-23時点でNode 261件、Rust unit test 25件が成功しています。`npm run check:candidate`はローカル候補gateであり、署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
+v0.1.15候補ではNode 261件、Rust unit test 25件を記録しました。開発版はv1.2.11更新前にNode 270件、Rust 25件のbaselineを記録しています。候補版ではclean commitから再実行してください。`npm run check:candidate`は署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 

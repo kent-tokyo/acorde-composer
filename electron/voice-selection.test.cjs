@@ -16,3 +16,9 @@ test('voice selection keeps slot identity and wraps shortcuts across available v
   assert.equal(voiceSelection.stepSlot(twoVoiceScoreWithEmptySlots, 0, 1, 1), 0);
   assert.equal(voiceSelection.stepSlot(twoVoiceScoreWithEmptySlots, 0, 0, -1), 1);
 });
+
+test('direct voice shortcuts can target an empty engine voice slot', () => {
+  assert.equal(voiceSelection.resolveEditableSlot(twoVoiceScoreWithEmptySlots, 0, 2), 2);
+  assert.equal(voiceSelection.resolveEditableSlot(twoVoiceScoreWithEmptySlots, 0, 3), 3);
+  assert.equal(voiceSelection.resolveEditableSlot(twoVoiceScoreWithEmptySlots, 0, 4), 0);
+});

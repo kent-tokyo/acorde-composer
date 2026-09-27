@@ -6,7 +6,7 @@
 
 | 検索意図 | 主な語句の例 | 入口 | 読者が得るもの | CTA |
 | --- | --- | --- | --- | --- |
-| 譜面編集 | MusicXML editor、楽譜編集、score editor | README | 対応形式、編集範囲、導入条件 | Release |
+| 譜面編集 | MusicXML editor、楽譜編集、score editor | README | 対応形式、編集範囲、導入条件 | Playground |
 | 形式移行 | MusicXML edit、ABC notation editor、MIDI export | 選定・移行ガイド | 移行手順、loss確認、再読込手順 | Migration checklist |
 | 複数voice | multiple voice MusicXML、voice notation | 移行ガイド＋QA | voice保持の確認方法と制約 | QA evidence |
 | AI編曲 | AI music notation、AI score editor | README | proposal確認、Reject、provider境界 | 安全な試用導線 |
@@ -28,7 +28,7 @@
 2. Acorde Composerが向く条件と向かない条件を同じページで示す。
 3. 元ソフトからMusicXMLをコピーとして書き出す手順を示す。
 4. Open → diagnostics確認 → 編集 → 別名保存 → 再読込の順で安全な試用を案内する。
-5. 実機QA、音源license、印刷品質、完全なvoice保持が必要な読者には、未完了ゲートを明示して判断を委ねる。
+5. 実機QA、音源license、印刷品質、完全なvoice保持が必要な読者には、未完了ゲートを明示して判断を委ねる。無料の主導線はPlayground、experimental native buildはGitHub Releaseと明記する。
 
 この導線では、既存製品を否定するのではなく、データ保持・レビュー可能性・ローカル処理・`acorde`中心の設計というComposerの選択理由を提示する。
 
@@ -39,11 +39,4 @@
 - 競合比較の点数や「代替できる」という表現は、対象バージョン・対象OS・測定条件がない限り公開しない。
 - 外部providerや音源assetの接続条件が変わった場合は、README、選定・移行ガイド、NOTICEを同時に点検する。
 
-## 次に作ると効果が高いページ
-
-1. [MusicXML移行の確認手順](musicxml-migration-example.md) — 作成済み
-2. [ABC notationとMusicXMLの使い分け](abc-and-musicxml.md) — 作成済み
-3. [AI提案をレビューして適用する安全設計](ai-proposal-safety.md) — 作成済み
-4. [SoundFont・外部音源のlicense確認チェックリスト](soundfont-license-checklist.md) — 作成済み
-
-各ページは、実装またはfixtureで確認できる範囲から作成し、未検証の検索需要や競合優位性を推測で補わない。
+関連ガイドは[移行手順](musicxml-migration-example.md)、[ABCとMusicXML](abc-and-musicxml.md)、[AI提案の安全設計](ai-proposal-safety.md)、[SoundFont license checklist](soundfont-license-checklist.md)を参照してください。未検証の検索需要や競合優位性は推測で補いません。

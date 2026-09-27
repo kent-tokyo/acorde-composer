@@ -193,3 +193,44 @@ select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .shortcut-reference summary { cursor:pointer; font-size:12px; font-weight:600; }
 .shortcut-reference dl { margin:8px 0 0; }
 @media (max-width:780px) { .navigator-heading .muted { display:none; } .shortcut-row { grid-template-columns:1fr 110px auto; } }
+
+/* MuseScore migration workspace v2: notation panels stay predictable while
+   Acorde-only tools remain optional. */
+.command-sources { display:none !important; }
+.left-rail { width:292px; padding:0 0 12px; overflow:hidden; }
+.sidebar-tabs { gap:0; padding:0; }
+.sidebar-tabs button { flex:1; min-width:0; padding:0 8px; white-space:nowrap; }
+.sidebar-panel { flex:1; padding:0; }
+.sidebar-panel-heading { min-height:44px; padding:0 12px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+.sidebar-panel-heading strong { font-size:12px; }
+.sidebar-panel-heading span { color:var(--muted); font-size:10px; }
+.sidebar-panel-heading button { width:28px; height:28px; border-radius:5px; color:var(--muted); font-size:17px; }
+.sidebar-panel-heading button:hover { color:var(--accent); background:var(--accent-soft); }
+.sidebar-help { margin:0; padding:10px 12px; color:var(--muted); font-size:10px; line-height:1.45; border-bottom:1px solid var(--line); }
+.palette-search { width:calc(100% - 18px); margin:9px; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+.palette-section { padding:0; border-bottom:1px solid var(--line); }
+.palette-section summary { padding:10px 12px; cursor:pointer; color:#596278; font-size:11px; font-weight:700; list-style:none; }
+.palette-section summary::before { content:'›'; display:inline-block; width:14px; color:var(--muted); transform-origin:center; }
+.palette-section[open] summary::before { transform:rotate(90deg); }
+.palette-section .palette-item { width:calc(50% - 12px); min-height:38px; margin:0 3px 6px 9px; padding:7px 8px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--line); background:#fff; text-align:center; }
+.palette-section .palette-item:nth-of-type(even) { margin-left:0; }
+.instrument-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px; padding:12px; }
+.instrument-controls select, .instrument-controls button { min-width:0; min-height:32px; }
+.instrument-controls #part-select, .instrument-controls #staff-select, .instrument-controls #midi-input-select, .instrument-controls #midi-input-status { grid-column:1 / -1; }
+.instrument-controls #midi-input-status { color:var(--muted); font-size:10px; }
+.property-section { display:grid; gap:9px; padding:12px; border-bottom:1px solid var(--line); }
+.property-section h2 { margin:0 0 2px; color:#596278; font-size:11px; }
+.property-section label { display:grid; grid-template-columns:minmax(82px, .8fr) minmax(0, 1fr); align-items:center; gap:8px; color:var(--muted); font-size:10px; }
+.property-section label.check-row { display:flex; }
+.property-section input, .property-section select { width:100%; min-width:0; padding:6px 7px; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--ink); font:inherit; }
+.property-score .quiet { width:100%; padding:7px 9px; text-align:left; }
+#property-score-controls { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+#property-score-controls select, #property-score-controls button { min-width:0; padding:7px; }
+.editor-toolbar { padding:7px 14px; }
+.editor-toolbar > .tool-group:first-child { gap:5px; }
+.editor-toolbar select { min-height:32px; max-width:126px; border:1px solid var(--line); border-radius:6px; background:#fff; color:#596278; }
+.editor-toolbar .dot-toggle { min-height:32px; padding:0 7px; display:flex; align-items:center; gap:4px; color:#596278; font-size:11px; }
+.score-meta { min-height:39px; padding-top:6px; padding-bottom:6px; }
+.right-panel { overflow:auto; }
+@media (max-width:1120px) { .left-rail { width:248px; } }
+@media (max-width:860px) { .left-rail { display:none; } }

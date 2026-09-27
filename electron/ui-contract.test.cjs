@@ -176,9 +176,9 @@ test('packaging contract includes the release acorde engine sidecar', () => {
 });
 
 test('editor landmarks expose meaningful navigation names', () => {
-  assert.match(app, /left-rail'\)\?\.setAttribute\('aria-label', 'Score library'\)/);
+  assert.match(app, /left-rail'\)\?\.setAttribute\('aria-label', 'Notation panels'\)/);
   assert.match(app, /editor'\)\?\.setAttribute\('aria-label', 'Score editor'\)/);
-  assert.match(app, /right-panel'\)\?\.setAttribute\('aria-label', 'Assistant and import panel'\)/);
+  assert.match(app, /right-panel'\)\?\.setAttribute\('aria-label', 'Acorde tools panel'\)/);
 });
 
 test('editor transport exposes accessible playback actions', () => {
@@ -267,7 +267,7 @@ test('editor UI remains usable on compact windows with consistent focus treatmen
 });
 
 test('editor panel navigation exposes accessible tabs and keyboard switching', () => {
-  assert.match(app, /const panelTabs = \[\.\.\.document\.querySelectorAll\('\.panel-tab'\)\]/);
+  assert.match(app, /const panelTabs = \[\.\.\.document\.querySelectorAll\('\.panel-tab:not\(\[data-panel="properties"\]\)'\)\]/);
   assert.match(app, /setAttribute\('role', 'tablist'\)/);
   assert.match(app, /setAttribute\('role', 'tab'\)/);
   assert.match(app, /setAttribute\('role', 'tabpanel'\)/);
@@ -417,10 +417,16 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.match(app, /className = 'musescore-score-actions'/);
   assert.match(app, /className = 'musescore-playback'/);
   assert.match(app, /className = 'sidebar-panel sidebar-palettes'/);
+  assert.match(app, /className = 'sidebar-panel sidebar-instruments hidden'/);
+  assert.match(app, /className = 'sidebar-panel sidebar-properties hidden'/);
+  assert.match(app, /\['Palettes', 'Instruments', 'Properties'\]/);
+  assert.match(app, /function refreshSelectionProperties\(\)/);
+  assert.match(app, /function applySelectionProperty\(property, value\)/);
+  assert.match(app, /AcordeMuseScoreWorkspace\.PALETTE_GROUPS/);
   assert.match(app, /className = 'status-zoom'/);
   assert.match(app, /className = 'navigator-panel'/);
   assert.match(app, /rendererCommandHandlers/);
-  assert.match(app, /'toggle-palettes':[\s\S]*classList\.toggle\('hidden'/);
+  assert.match(app, /'toggle-palettes': \(\) => toggleSidebar\('palettes'\)/);
   assert.match(app, /'toggle-note-input-toolbar':[\s\S]*classList\.toggle\('hidden'/);
   assert.match(app, /'reset-layout': \(\) => resetWorkspaceState\(\)/);
   assert.equal(commandRegistry.resolveCommand('view:palettes').handler, 'toggle-palettes');
@@ -428,5 +434,5 @@ test('workspace follows the MuseScore panel and toolbar geography', () => {
   assert.equal(commandRegistry.resolveCommand('view:reset-layout').handler, 'reset-layout');
   assert.match(style, /MuseScore-oriented workspace/);
   assert.match(style, /\.sidebar-tabs/);
-  assert.match(style, /\.properties-actions/);
+  assert.match(style, /\.property-section/);
 });

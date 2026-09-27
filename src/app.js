@@ -63,6 +63,7 @@ const LANGUAGE_COPY = {
     voice: 'Voice', duration: 'Duration', dot: 'Dot', tuplet: 'Tuplet', dynamic: 'Dynamic', grace: 'Grace note', accidental: 'Accidental', articulation: 'Articulation',
     scoreSettingsTitle: 'Score settings', accessibility: 'Accessibility', reduceMotion: 'Reduce animation and motion', highContrast: 'High contrast notation', apply: 'Apply changes', cancel: 'Cancel',
     saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', saveFailed: 'Save failed', pageSettings: 'Page settings', layoutDensity: 'Layout density', pageSize: 'Page size', orientation: 'Orientation', margins: 'Margins', adaptive: 'Adaptive to window', measuresPerSystem: 'measures per system',
+    palettes: 'Palettes', instruments: 'Instruments', properties: 'Properties', paletteSearch: 'Search palettes', instrumentHelp: 'Manage parts, staves, instruments, and MIDI input.', propertyHelp: 'Select a note or rest to edit its properties.', selection: 'Selection', score: 'Score', dotted: 'Dotted', stem: 'Stem', fingering: 'Fingering', stringNumber: 'String number', scoreProperties: 'Score properties…', pageSettingsAction: 'Page settings…', textStyle: 'Text style…', editHistory: 'Edit history',
   },
   ja: {
     preferences: 'アプリの環境設定', preferencesHelp: 'Acorde Composerで使用する言語を選択します。変更はすぐに反映されます。', language: '言語', close: '閉じる', done: '完了',
@@ -71,6 +72,7 @@ const LANGUAGE_COPY = {
     voice: 'ボイス', duration: '音価', dot: '付点', tuplet: '連符', dynamic: 'ダイナミクス', grace: '装飾音', accidental: '臨時記号', articulation: 'アーティキュレーション',
     scoreSettingsTitle: '譜面設定', accessibility: 'アクセシビリティ', reduceMotion: 'アニメーションを減らす', highContrast: '譜面の高コントラスト表示', apply: '変更を適用', cancel: 'キャンセル',
     saved: '保存済み', unsaved: '未保存の変更', saving: '保存中…', saveFailed: '保存に失敗', pageSettings: 'ページ設定', layoutDensity: 'レイアウト密度', pageSize: '用紙サイズ', orientation: '向き', margins: '余白', adaptive: 'ウィンドウに合わせる', measuresPerSystem: '小節／段',
+    palettes: 'パレット', instruments: '楽器', properties: 'プロパティ', paletteSearch: 'パレットを検索', instrumentHelp: 'パート、譜表、楽器、MIDI入力を管理します。', propertyHelp: '音符または休符を選択するとプロパティを編集できます。', selection: '選択要素', score: '楽譜', dotted: '付点', stem: '符尾', fingering: '運指', stringNumber: '弦番号', scoreProperties: '楽譜のプロパティ…', pageSettingsAction: 'ページ設定…', textStyle: 'テキストスタイル…', editHistory: '編集履歴',
   },
   zh: {
     preferences: '应用偏好设置', preferencesHelp: '选择 Acorde Composer 使用的语言。更改会立即生效。', language: '语言', close: '关闭', done: '完成',
@@ -79,6 +81,7 @@ const LANGUAGE_COPY = {
     voice: '声部', duration: '时值', dot: '附点', tuplet: '连音', dynamic: '力度', grace: '装饰音', accidental: '变音记号', articulation: '奏法',
     scoreSettingsTitle: '乐谱设置', accessibility: '无障碍', reduceMotion: '减少动画和动态效果', highContrast: '高对比度乐谱', apply: '应用更改', cancel: '取消',
     saved: '已保存', unsaved: '有未保存的更改', saving: '保存中…', saveFailed: '保存失败', pageSettings: '页面设置', layoutDensity: '布局密度', pageSize: '页面大小', orientation: '方向', margins: '页边距', adaptive: '适应窗口', measuresPerSystem: '小节／系统',
+    palettes: '符号面板', instruments: '乐器', properties: '属性', paletteSearch: '搜索符号面板', instrumentHelp: '管理分谱、五线谱、乐器和 MIDI 输入。', propertyHelp: '选择音符或休止符后可编辑属性。', selection: '所选内容', score: '乐谱', dotted: '附点', stem: '符干', fingering: '指法', stringNumber: '弦号', scoreProperties: '乐谱属性…', pageSettingsAction: '页面设置…', textStyle: '文本样式…', editHistory: '编辑历史',
   },
 };
 let language = LANGUAGE_COPY[storedValue(LANGUAGE_KEY)] ? storedValue(LANGUAGE_KEY) : 'en';
@@ -99,9 +102,25 @@ function applyLanguage(nextLanguage = language) {
   window.acorde.setApplicationLanguage?.(language).catch(() => {});
   const toolLabels = { 'voice-select': copy.voice, 'duration-select': copy.duration, 'tuplet-select': copy.tuplet, 'dynamic-select': copy.dynamic, 'grace-select': copy.grace, 'accidental-select': copy.accidental, 'articulation-select': copy.articulation };
   Object.entries(toolLabels).forEach(([id, label]) => $(id)?.setAttribute('aria-label', label));
+  refreshWorkspaceLanguage();
   if ($('save-status')) updateSaveStatus(dirty ? 'unsaved' : 'saved');
 }
 function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; storeValue(LANGUAGE_KEY, language); applyLanguage(language); }
+function refreshWorkspaceLanguage() {
+  const copy = LANGUAGE_COPY[language]; if (!copy) return;
+  const sidebarNames = { palettes: copy.palettes, instruments: copy.instruments, properties: copy.properties };
+  Object.entries(sidebarNames).forEach(([name, label]) => { const tab = document.querySelector(`.sidebar-tabs [data-sidebar="${name}"]`); if (tab) tab.textContent = label; const heading = document.querySelector(`.sidebar-${name} .sidebar-panel-heading strong`); if (heading) heading.textContent = label; });
+  const search = $('palette-search'); if (search) { search.placeholder = copy.paletteSearch; search.setAttribute('aria-label', copy.paletteSearch); }
+  const instrumentHelp = document.querySelector('.sidebar-instruments .sidebar-help'); if (instrumentHelp) instrumentHelp.textContent = copy.instrumentHelp;
+  document.querySelectorAll('.palette-section').forEach((section) => { const summary = section.querySelector('summary'); if (summary?.dataset.sourceLabel) summary.textContent = window.AcordeMuseScoreWorkspace.paletteLabel(summary.dataset.sourceLabel, language); });
+  document.querySelectorAll('.palette-item').forEach((item) => { if (item.dataset.sourceLabel) item.textContent = window.AcordeMuseScoreWorkspace.paletteLabel(item.dataset.sourceLabel, language); });
+  const propertyLabels = { 'property-duration': copy.duration, 'property-dot': copy.dotted, 'property-dynamic': copy.dynamic, 'property-stem': copy.stem, 'property-fingering': copy.fingering, 'property-string-number': copy.stringNumber };
+  Object.entries(propertyLabels).forEach(([id, label]) => { const control = $(id); const owner = control?.closest('label'); if (owner?.firstChild?.nodeType === Node.TEXT_NODE) owner.firstChild.textContent = `${label} `; else if (id === 'property-dot' && owner) owner.lastChild.textContent = ` ${label}`; });
+  const selectionHeading = $('selection-properties-editor')?.querySelector('h2'); if (selectionHeading) selectionHeading.textContent = copy.selection;
+  const scoreHeading = document.querySelector('.property-score h2'); if (scoreHeading) scoreHeading.textContent = copy.score;
+  [['property-score-settings', copy.scoreProperties], ['property-page-settings', copy.pageSettingsAction], ['property-text-style', copy.textStyle], ['property-history', copy.editHistory]].forEach(([id, label]) => { if ($(id)) $(id).textContent = label; });
+  refreshSelectionProperties();
+}
 const aiProposal = { type: 'batch', label: 'AI proposal', commands: [
   { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 4, pitch: { step: 'C', octave: 3, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: false },
   { type: 'add_note', part_index: 0, staff_index: 0, measure_index: 0, voice: 0, position: 5, pitch: { step: 'G', octave: 3, alter: 0 }, duration: 'Quarter', dot_count: 0, is_rest: false },
@@ -129,7 +148,7 @@ function ensureUiDialog() { let dialog = $('ui-dialog'); if (dialog) return dial
 function uiAlert(message) { return new Promise((resolve) => { const dialog = ensureUiDialog(); dialog.returnValue = ''; dialog.setAttribute('role', 'alertdialog'); dialog.setAttribute('aria-labelledby', 'ui-dialog-title'); dialog.innerHTML = `<form method="dialog" class="ui-dialog-form"><h2 id="ui-dialog-title">Notice</h2><p class="ui-dialog-message"></p><div class="dialog-actions"><button value="default" class="primary">OK</button></div></form>`; dialog.querySelector('.ui-dialog-message').textContent = String(message); dialog.addEventListener('close', resolve, { once: true }); dialog.showModal(); }); }
 function uiPrompt(label, initial = '') { return new Promise((resolve) => { const dialog = ensureUiDialog(); dialog.returnValue = ''; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-labelledby', 'ui-dialog-title'); dialog.innerHTML = `<form method="dialog" class="ui-dialog-form"><h2 id="ui-dialog-title"></h2><label class="ui-dialog-label"><span></span><input class="ui-dialog-input" /></label><div class="dialog-actions"><button value="cancel" class="quiet">Cancel</button><button value="default" class="primary">OK</button></div></form>`; dialog.querySelector('h2').textContent = label; dialog.querySelector('.ui-dialog-label span').textContent = label; const input = dialog.querySelector('.ui-dialog-input'); input.value = initial; const finish = () => resolve(dialog.returnValue === 'cancel' || !dialog.returnValue ? null : input.value); dialog.addEventListener('close', finish, { once: true }); dialog.showModal(); input.focus(); input.select(); }); }
 function uiConfirm(message) { return new Promise((resolve) => { const dialog = ensureUiDialog(); dialog.returnValue = ''; dialog.setAttribute('role', 'alertdialog'); dialog.setAttribute('aria-labelledby', 'ui-dialog-title'); dialog.innerHTML = `<form method="dialog" class="ui-dialog-form"><h2 id="ui-dialog-title">Confirm</h2><p class="ui-dialog-message"></p><div class="dialog-actions"><button value="cancel" class="quiet">Cancel</button><button value="default" class="primary">Continue</button></div></form>`; dialog.querySelector('.ui-dialog-message').textContent = String(message); dialog.addEventListener('close', () => resolve(dialog.returnValue === 'default'), { once: true }); dialog.showModal(); dialog.querySelector('button[value="default"]').focus(); }); }
-document.querySelector('.left-rail')?.setAttribute('aria-label', 'Score library'); document.querySelector('.editor')?.setAttribute('aria-label', 'Score editor'); document.querySelector('.right-panel')?.setAttribute('aria-label', 'Assistant and import panel');
+document.querySelector('.left-rail')?.setAttribute('aria-label', 'Notation panels'); document.querySelector('.editor')?.setAttribute('aria-label', 'Score editor'); document.querySelector('.right-panel')?.setAttribute('aria-label', 'Acorde tools panel');
 document.querySelectorAll('dialog').forEach((dialog) => { const heading = dialog.querySelector('h2'); if (!heading) return; heading.id ||= `${dialog.id}-title`; dialog.setAttribute('aria-labelledby', heading.id); });
 function syncSelectionPlaybackControl() { const button = $('selection-play-button'); if (!button) return; button.disabled = !selectedRange; button.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first'; }
 function activeMeasures() { return currentScore?.parts?.[activePartIndex]?.staves?.[Number($('staff-select')?.value || 0)]?.measures || []; }
@@ -260,13 +279,15 @@ let applicationMenuStateSnapshot = '';
 function syncApplicationMenuState() {
   const leftRail = document.querySelector('.left-rail');
   const rightPanel = document.querySelector('.right-panel');
+  const activeSidebar = document.querySelector('.sidebar-tabs [aria-selected="true"]')?.dataset.sidebar;
   const state = {
     hasScore: Boolean(currentScore),
     hasSelection: Boolean(currentScore && selectedAddress),
     canUndo: history.past.length > 0,
     canRedo: history.future.length > 0,
     palettesVisible: !leftRail || (!leftRail.classList.contains('hidden') && !$('sidebar-palettes')?.classList.contains('hidden')),
-    propertiesVisible: !rightPanel || (!rightPanel.classList.contains('hidden') && document.querySelector('.panel-tab[data-panel="properties"]')?.classList.contains('active')),
+    propertiesVisible: !leftRail?.classList.contains('hidden') && activeSidebar === 'properties',
+    instrumentsVisible: !leftRail?.classList.contains('hidden') && activeSidebar === 'instruments',
     historyVisible: Boolean($('history-dialog')?.open),
     mixerVisible: Boolean($('mixer-settings')?.open),
     playbackControlsVisible: !document.querySelector('.musescore-playback')?.classList.contains('hidden'),
@@ -370,7 +391,7 @@ async function loadOmrReviewProposal(proposal) {
 function activeVoiceSlots() { return window.AcordeVoiceSelection.slots(currentScore, activePartIndex); }
 function voiceCount() { return activeVoiceSlots().length; }
 function sourceVoiceNumber(slot) { return window.AcordeVoiceSelection.sourceNumber(currentScore, activePartIndex, slot); }
-function setActiveVoice(slot) { const slots = activeVoiceSlots(); activeVoiceIndex = window.AcordeVoiceSelection.resolveSlot(currentScore, activePartIndex, slot); const ordinal = slots.indexOf(activeVoiceIndex) + 1; const source = sourceVoiceNumber(activeVoiceIndex); const selector = $('voice-select'); if (selector) { selector.value = String(activeVoiceIndex); selector.title = `Voice ${source} (${ordinal} of ${slots.length}). Use [ / ] to switch.`; selector.setAttribute('aria-describedby', 'voice-status'); } const status = $('voice-status'); if (status) { status.setAttribute('role', 'status'); status.textContent = slots.length > 1 ? `Voice ${source} (${ordinal} / ${slots.length})` : `Voice ${source}`; } const hint = document.querySelector('.score-hint'); if (hint) hint.dataset.activeVoice = String(source); }
+function setActiveVoice(slot, allowEmpty = false) { activeVoiceIndex = allowEmpty ? window.AcordeVoiceSelection.resolveEditableSlot(currentScore, activePartIndex, slot) : window.AcordeVoiceSelection.resolveSlot(currentScore, activePartIndex, slot); const slots = [...new Set([...activeVoiceSlots(), activeVoiceIndex])].sort((left, right) => left - right); const ordinal = slots.indexOf(activeVoiceIndex) + 1; const source = sourceVoiceNumber(activeVoiceIndex); const selector = $('voice-select'); if (selector) { if (![...selector.options].some((option) => Number(option.value) === activeVoiceIndex)) selector.add(new Option(`Voice ${source}`, String(activeVoiceIndex))); selector.value = String(activeVoiceIndex); selector.title = `Voice ${source} (${ordinal} of ${slots.length}). Use [ / ] to switch.`; selector.setAttribute('aria-describedby', 'voice-status'); } const status = $('voice-status'); if (status) { status.setAttribute('role', 'status'); status.textContent = slots.length > 1 ? `Voice ${source} (${ordinal} / ${slots.length})` : `Voice ${source}`; } const hint = document.querySelector('.score-hint'); if (hint) hint.dataset.activeVoice = String(source); }
 function stepActiveVoice(direction) { setActiveVoice(window.AcordeVoiceSelection.stepSlot(currentScore, activePartIndex, activeVoiceIndex, direction)); }
 function refreshVoiceSelector() { const selector = $('voice-select'); if (!selector) return; const slots = activeVoiceSlots(); selector.replaceChildren(...slots.map((slot) => { const option = document.createElement('option'); option.value = String(slot); option.textContent = `Voice ${sourceVoiceNumber(slot)}`; return option; })); setActiveVoice(activeVoiceIndex); }
 function refreshStaffSelector() { const selector = $('staff-select'); if (!selector) return; const count = Math.max(1, currentScore?.parts?.[activePartIndex]?.staves?.length || 1); selector.replaceChildren(...Array.from({ length: count }, (_, index) => { const option = document.createElement('option'); option.value = index; option.textContent = `Staff ${index + 1}`; return option; })); selector.value = String(Math.min(Number(selector.value || 0), count - 1)); }
@@ -434,6 +455,7 @@ function selectRenderedNote(note, extendRange = false) {
   selectionPlayButton.disabled = !selectedRange;
   selectionPlayButton.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first';
   renderNavigator();
+  refreshSelectionProperties();
 }
 function currentRenderOptions() {
   const scorePaper = document.querySelector('.score-paper');
@@ -545,7 +567,7 @@ function updateRenderedScore(svg) {
     });
     note.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectRenderedNote(note, event.shiftKey); } else if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(note); } });
   });
-  $('score').querySelectorAll('.acorde-measure-hit-area').forEach((measure) => { measure.setAttribute('tabindex', '0'); measure.setAttribute('role', 'button'); measure.setAttribute('aria-label', `Measure ${Number(measure.dataset.measure) + 1}`); measure.addEventListener('keydown', (event) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(measure); } }); measure.addEventListener('click', async (event) => {
+  const addAtMeasure = async (measure, event) => {
     if (toolMode === 'select') return;
     event.stopPropagation();
     if (!currentScore) return;
@@ -560,7 +582,14 @@ function updateRenderedScore(svg) {
     const tuple = $('tuplet-select').value ? $('tuplet-select').value.split(':').map(Number) : null;
     const command = { type: 'add_note', part_index: part, staff_index: staff, measure_index: measureIndex, voice: voiceIndex, position, pitch: isRest ? null : { step: 'C', octave: 4, alter: 0 }, duration: engineDuration($('duration-select').value), dot_count: $('dot-toggle').checked ? 1 : 0, is_rest: isRest, tuplet: tuple ? { actual_notes: tuple[0], normal_notes: tuple[1] } : null };
     try { await applyCommand(command, isRest ? 'AddRest' : 'AddNote'); } catch (error) { uiAlert(`入力できませんでした: ${userFacingError(error)}`); }
-  }); });
+  };
+  const measureHitAreas = [...$('score').querySelectorAll('.acorde-measure-hit-area')];
+  measureHitAreas.forEach((measure) => { measure.setAttribute('tabindex', '0'); measure.setAttribute('role', 'button'); measure.setAttribute('aria-label', `Measure ${Number(measure.dataset.measure) + 1}`); measure.addEventListener('keydown', (event) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(measure); } }); measure.addEventListener('click', (event) => addAtMeasure(measure, event)); });
+  interactiveSvg?.addEventListener('click', (event) => {
+    if (toolMode === 'select' || event.target.closest?.('[data-acorde-kind="note"], [data-acorde-kind="rest"], .acorde-measure-hit-area')) return;
+    const measure = measureHitAreas.find((candidate) => { const bounds = candidate.getBoundingClientRect(); return event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom; });
+    if (measure) void addAtMeasure(measure, event);
+  });
   $('score').querySelectorAll('[data-acorde-kind="measure-text"]').forEach((text) => { text.setAttribute('tabindex', '0'); text.setAttribute('role', 'button'); text.addEventListener('keydown', (event) => { if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) { event.preventDefault(); showScoreContextMenuForTarget(text); } }); });
   const scoreElement = $('score');
   if (scoreElement.dataset.contextMenuBound !== 'true') scoreElement.addEventListener('contextmenu', (event) => {
@@ -705,6 +734,7 @@ function syncEditorAfterScoreChange() {
   refreshVoiceSelector();
   refreshStaffSelector();
   applyPartView();
+  refreshSelectionProperties();
 }
 window.addEventListener('score-changed', syncEditorAfterScoreChange);
 updateZoom();
@@ -748,7 +778,7 @@ function navigateSelection(direction, edge = null, extendRange = false) {
   const next = edge === 'first' ? 0 : edge === 'last' ? rendered.length - 1 : Math.max(0, Math.min(rendered.length - 1, (current < 0 ? (direction > 0 ? -1 : rendered.length) : current) + direction));
   selectRenderedNote(rendered[next], extendRange);
 }
-document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select')) return; if (event.key === 'ArrowUp') { event.preventDefault(); transposeSelected(1); } if (event.key === 'ArrowDown') { event.preventDefault(); transposeSelected(-1); } if (event.key === 'ArrowLeft') { event.preventDefault(); navigateSelection(-1, null, event.shiftKey); } if (event.key === 'ArrowRight') { event.preventDefault(); navigateSelection(1, null, event.shiftKey); } if (event.key === 'Home') { event.preventDefault(); navigateSelection(0, 'first', event.shiftKey); } if (event.key === 'End') { event.preventDefault(); navigateSelection(0, 'last', event.shiftKey); } });
+document.addEventListener('keydown', (event) => { if (event.target.matches('textarea, input, select') || event.metaKey || event.ctrlKey || event.altKey) return; if (event.key === 'ArrowUp') { event.preventDefault(); transposeSelected(1); } if (event.key === 'ArrowDown') { event.preventDefault(); transposeSelected(-1); } if (event.key === 'ArrowLeft') { event.preventDefault(); navigateSelection(-1, null, event.shiftKey); } if (event.key === 'ArrowRight') { event.preventDefault(); navigateSelection(1, null, event.shiftKey); } if (event.key === 'Home') { event.preventDefault(); navigateSelection(0, 'first', event.shiftKey); } if (event.key === 'End') { event.preventDefault(); navigateSelection(0, 'last', event.shiftKey); } });
 async function deleteSelected() {
   if (!currentScore) return;
   if (contextTarget?.kind === 'measure-text') {
@@ -859,7 +889,7 @@ const playButton = $('play-button'); playButton?.setAttribute('aria-label', 'Pla
 $('loop-button').addEventListener('click', () => { loopEnabled = !loopEnabled; $('loop-button').classList.toggle('active', loopEnabled); $('loop-button').title = loopEnabled && selectedRange ? `Loop measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Loop'; });
 selectionPlayButton.addEventListener('click', async () => { if (!selectedRange) return; try { await startPlayback(0, selectedRange); } catch (error) { stopPlayback(); uiAlert(`選択範囲を再生できませんでした: ${userFacingError(error)}`); } });
 $('transport-track').addEventListener('click', async (event) => { if (!currentScore || !playbackDuration) return; const rect = event.currentTarget.getBoundingClientRect(); const offset = playbackDuration * Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)); try { await startPlayback(offset); } catch (error) { stopPlayback(); uiAlert(`シークできませんでした: ${userFacingError(error)}`); } });
-const panelTabs = [...document.querySelectorAll('.panel-tab')]; panelTabs.forEach((tab, index) => { tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', `${tab.dataset.panel}-panel`); tab.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End'); tab.setAttribute('aria-selected', String(tab.classList.contains('active'))); tab.tabIndex = tab.classList.contains('active') ? 0 : -1; tab.addEventListener('click', () => { panelTabs.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); item.tabIndex = -1; }); tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); tab.tabIndex = 0; ['properties', 'ai', 'omr'].forEach((name) => $(`${name}-panel`)?.classList.toggle('hidden', tab.dataset.panel !== name)); syncApplicationMenuState(); }); tab.addEventListener('keydown', (event) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); const next = event.key === 'Home' ? 0 : event.key === 'End' ? panelTabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + panelTabs.length) % panelTabs.length; panelTabs[next].focus(); panelTabs[next].click(); }); });
+const panelTabs = [...document.querySelectorAll('.panel-tab:not([data-panel="properties"])')]; panelTabs.forEach((tab, index) => { tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', `${tab.dataset.panel}-panel`); tab.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home End'); tab.setAttribute('aria-selected', String(tab.classList.contains('active'))); tab.tabIndex = tab.classList.contains('active') ? 0 : -1; tab.addEventListener('click', () => { panelTabs.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); item.tabIndex = -1; }); tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); tab.tabIndex = 0; ['ai', 'omr'].forEach((name) => $(`${name}-panel`)?.classList.toggle('hidden', tab.dataset.panel !== name)); syncApplicationMenuState(); }); tab.addEventListener('keydown', (event) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); const next = event.key === 'Home' ? 0 : event.key === 'End' ? panelTabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + panelTabs.length) % panelTabs.length; panelTabs[next].focus(); panelTabs[next].click(); }); });
 const panelTabList = document.querySelector('.panel-tabs'); if (panelTabList) panelTabList.setAttribute('role', 'tablist'); panelTabs.forEach((tab) => { const panel = $(tab.getAttribute('aria-controls')); tab.id = `${tab.dataset.panel}-tab`; if (panel) { panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', tab.id); panel.tabIndex = 0; } });
 $('undo-button').addEventListener('click', () => markDirty());
 $('redo-button').addEventListener('click', () => markDirty());
@@ -933,7 +963,7 @@ async function applyScoreSettingsFromButton(event) {
 }
 function selectTool(mode) { toolMode = mode; slurStart = null; hairpinStart = null; ottavaStart = null; pedalStart = null; const shortcuts = { 'select-tool': 'Escape', 'note-tool': 'N', 'rest-tool': 'R', 'slur-tool': 'S L', 'tie-tool': 'T', 'hairpin-tool': 'H' }; ['select-tool', 'note-tool', 'rest-tool', 'slur-tool', 'tie-tool', 'hairpin-tool'].forEach((id) => { $(id)?.classList.toggle('active', id === `${mode}-tool`); $(id)?.setAttribute('aria-pressed', String(id === `${mode}-tool`)); if (shortcuts[id]) $(id)?.setAttribute('aria-keyshortcuts', shortcuts[id]); }); $('score').classList.toggle('note-entry-mode', mode !== 'select'); }
 $('select-tool').addEventListener('click', () => selectTool('select'));
-$('note-tool').addEventListener('click', () => selectTool('note'));
+$('note-tool').addEventListener('click', () => selectTool(toolMode === 'note' ? 'select' : 'note'));
 $('rest-tool').addEventListener('click', () => selectTool('rest'));
 $('slur-tool').addEventListener('click', () => selectTool('slur'));
 $('tie-tool').addEventListener('click', () => selectTool('tie'));
@@ -1034,6 +1064,57 @@ function groupScoreMetaControls() {
   const settings = $('settings-button'); meta.append(container); if (settings) meta.append(settings);
 }
 groupScoreMetaControls();
+function activatePaletteItem(item) {
+  if (item.command) return dispatchApplicationMenuCommand(item.command);
+  const target = $(item.target);
+  if (!target || target.disabled) return;
+  if (item.target === 'clef-select') {
+    if (!currentScore) return;
+    return applyCommand({ type: 'set_clef', part_index: activePartIndex, staff_index: Number($('staff-select')?.value || 0), clef: item.value }, 'SetClef').catch((error) => uiAlert(`Clef could not be changed: ${userFacingError(error)}`));
+  }
+  if ('value' in item && 'value' in target) {
+    target.value = item.value;
+    target.dispatchEvent(new Event('change', { bubbles: true }));
+    return;
+  }
+  target.click();
+}
+function refreshSelectionProperties() {
+  const workspace = window.AcordeMuseScoreWorkspace;
+  const snapshot = workspace?.selectionSnapshot(currentScore, selectedAddress) || { selected: false };
+  const summary = $('selection-properties-summary');
+  if (summary) summary.textContent = snapshot.selected ? snapshot.label : (LANGUAGE_COPY[language]?.propertyHelp || 'Select a note or rest to edit its properties.');
+  const editor = $('selection-properties-editor');
+  if (!editor) return;
+  editor.querySelectorAll('input, select, button').forEach((control) => { control.disabled = !snapshot.selected; });
+  if (!snapshot.selected) return;
+  $('property-duration').value = snapshot.duration;
+  $('property-dot').checked = snapshot.dotted;
+  $('property-dynamic').value = snapshot.dynamic;
+  $('property-stem').value = snapshot.stem;
+  $('property-fingering').value = snapshot.fingering;
+  $('property-string-number').value = snapshot.stringNumber;
+}
+async function applySelectionProperty(property, value) {
+  const workspace = window.AcordeMuseScoreWorkspace;
+  const snapshot = workspace?.selectionSnapshot(currentScore, selectedAddress);
+  if (!snapshot?.selected) return;
+  if (property === 'fingering' && value !== '' && (!Number.isInteger(Number(value)) || Number(value) < 0 || Number(value) > 5)) return uiAlert('Fingering must be an integer from 0 to 5.');
+  if (property === 'string-number' && value !== '' && (!Number.isInteger(Number(value)) || Number(value) < 1 || Number(value) > 12)) return uiAlert('String number must be an integer from 1 to 12.');
+  const normalized = property === 'duration' ? engineDuration(value) : property === 'dot' ? Boolean(value) : value;
+  const command = workspace.propertyCommand(property, normalized, selectedAddress, { ...snapshot, duration: engineDuration(snapshot.duration) });
+  if (!command) return;
+  try { await applyCommand(command, `Properties:${property}`); } catch (error) { uiAlert(`Property could not be changed: ${userFacingError(error)}`); }
+}
+function installSelectionAwareProperties(panel) {
+  panel.className = 'sidebar-panel sidebar-properties hidden';
+  panel.innerHTML = '<div class="sidebar-panel-heading"><strong>Properties</strong><span>F8</span></div><p id="selection-properties-summary" class="sidebar-help">Select a note or rest to edit its properties.</p><section id="selection-properties-editor" class="property-section"><h2>Selection</h2><label>Duration<select id="property-duration"><option value="sixtyfourth">64th</option><option value="thirtysecond">32nd</option><option value="sixteenth">16th</option><option value="eighth">Eighth</option><option value="quarter">Quarter</option><option value="half">Half</option><option value="whole">Whole</option></select></label><label class="check-row"><input id="property-dot" type="checkbox" /> Dotted</label><label>Dynamic<select id="property-dynamic"><option value="">None</option><option value="P">p</option><option value="Mp">mp</option><option value="Mf">mf</option><option value="F">f</option><option value="Sfz">sfz</option></select></label><label>Stem<select id="property-stem"><option value="auto">Auto</option><option value="up">Up</option><option value="down">Down</option></select></label><label>Fingering<input id="property-fingering" type="number" min="0" max="5" /></label><label>String number<input id="property-string-number" type="number" min="1" max="12" /></label></section><section class="property-section property-score"><h2>Score</h2><div id="property-score-controls"></div><button id="property-score-settings" class="quiet">Score properties…</button><button id="property-page-settings" class="quiet">Page settings…</button><button id="property-text-style" class="quiet">Text style…</button><button id="property-history" class="quiet">Edit history</button></section>';
+  const bindings = { 'property-duration': 'duration', 'property-dynamic': 'dynamic', 'property-stem': 'stem', 'property-fingering': 'fingering', 'property-string-number': 'string-number' };
+  Object.entries(bindings).forEach(([id, property]) => $(id).addEventListener('change', () => applySelectionProperty(property, $(id).value)));
+  $('property-dot').addEventListener('change', () => applySelectionProperty('dot', $('property-dot').checked));
+  [['property-score-settings', 'settings-button'], ['property-page-settings', 'page-layout-apply'], ['property-text-style', 'text-style-button'], ['property-history', 'history-button']].forEach(([source, target]) => $(source)?.addEventListener('click', () => target === 'page-layout-apply' ? openPageSettings() : $(target)?.click()));
+  refreshSelectionProperties();
+}
 function installMuseScoreWorkspaceLayout() {
   const topbar = document.querySelector('.topbar'); const topActions = document.querySelector('.top-actions'); const editor = document.querySelector('.editor'); const toolbar = document.querySelector('.editor-toolbar'); const scoreMeta = $('score-meta'); const transport = document.querySelector('.transport');
   if (!topbar || !topActions || !editor || !toolbar || !scoreMeta || !transport || document.querySelector('.musescore-score-actions')) return;
@@ -1042,6 +1123,15 @@ function installMuseScoreWorkspaceLayout() {
   [['part-view-button', 'Parts'], ['mixer-button', 'Mixer']].forEach(([id, label]) => { const button = $(id); if (!button) return; button.dataset.shortLabel = label; scoreActions.append(button); });
   const playback = document.createElement('div'); playback.className = 'musescore-playback'; playback.setAttribute('aria-label', 'Playback toolbar'); ['play-button', 'loop-button', 'bpm-select'].forEach((id) => { const control = $(id); if (control) playback.append(control); });
   topbar.insertBefore(scoreActions, topActions); topbar.insertBefore(playback, topActions);
+
+  const primaryTools = toolbar.querySelector('.tool-group');
+  const duration = $('duration-select');
+  [['sixtyfourth', '64th'], ['thirtysecond', '32nd'], ['sixteenth', '16th']].reverse().forEach(([value, label]) => { if (![...duration.options].some((option) => option.value === value)) duration.prepend(new Option(label, value)); });
+  ['select-tool', 'note-tool', 'rest-tool', 'duration-select', 'dot-toggle', 'tie-tool', 'accidental-select', 'tuplet-select', 'voice-select', 'voice-status', 'articulation-select'].forEach((id) => { const control = $(id); if (control) primaryTools.append(control); });
+  const commandSources = document.createElement('div'); commandSources.id = 'notation-command-sources'; commandSources.className = 'command-sources';
+  ['slur-tool', 'dynamic-select', 'grace-select', 'hairpin-kind', 'hairpin-tool'].forEach((id) => { const control = $(id); if (control) commandSources.append(control); });
+  document.body.append(commandSources);
+
   const zoom = document.createElement('div'); zoom.className = 'status-zoom'; zoom.setAttribute('aria-label', 'Zoom controls'); ['zoom-out-button', 'zoom-value', 'zoom-in-button'].forEach((id) => { const control = $(id); if (control) zoom.append(control); }); transport.append(zoom);
   const viewMode = document.createElement('select'); viewMode.id = 'score-view-mode'; viewMode.setAttribute('aria-label', 'Score view mode'); viewMode.innerHTML = '<option value="page">Page view</option><option value="continuous">Continuous view</option>'; viewMode.addEventListener('change', async () => { document.querySelector('.score-area')?.classList.toggle('continuous-view', viewMode.value === 'continuous'); viewportRenderWidth = 0; if (!currentScore) return; try { await renderAndUpdateCurrentScore(); } catch (error) { uiAlert(`表示モードを変更できませんでした: ${userFacingError(error)}`); } }); transport.append(viewMode);
   const navigator = document.createElement('nav'); navigator.id = 'navigator-panel'; navigator.className = 'navigator-panel'; navigator.setAttribute('aria-label', 'Score navigator'); navigator.innerHTML = '<div class="navigator-heading"><strong>Navigator</strong><span id="navigator-summary" class="muted"></span><label>Measure <input id="navigator-measure-input" type="number" min="1" value="1" /></label><button id="navigator-go-button" type="button" class="quiet">Go</button></div><div id="navigator-measures" class="navigator-measures" aria-label="Measure overview"></div>';
@@ -1049,32 +1139,44 @@ function installMuseScoreWorkspaceLayout() {
   const goToNavigatorMeasure = () => { const measures = activeMeasures(); const value = Number($('navigator-measure-input')?.value); if (Number.isInteger(value) && value >= 1 && value <= measures.length) selectMeasureRange(value - 1, value - 1); };
   $('navigator-go-button')?.addEventListener('click', goToNavigatorMeasure); $('navigator-measure-input')?.addEventListener('change', goToNavigatorMeasure); renderNavigator();
 
-  const rail = document.querySelector('.left-rail'); const footer = rail?.querySelector('.rail-footer');
+  const rail = document.querySelector('.left-rail'); const footer = rail?.querySelector('.rail-footer'); const rightPanel = document.querySelector('.right-panel');
   if (rail && footer) {
-    const scoresPanel = document.createElement('div'); scoresPanel.className = 'sidebar-panel sidebar-scores hidden'; scoresPanel.id = 'sidebar-scores';
-    [...rail.children].filter((child) => child !== footer).forEach((child) => scoresPanel.append(child));
-    scoresPanel.querySelector('.rail-heading span').textContent = 'SCORES';
-    const homeActions = document.createElement('div'); homeActions.className = 'sidebar-home-actions'; ['new-button', 'template-button', 'open-button', 'shortcuts-button', 'preferences-button'].forEach((id) => { const control = $(id); if (control) homeActions.append(control); }); scoresPanel.prepend(homeActions);
-    const palettesPanel = document.createElement('div'); palettesPanel.className = 'sidebar-panel sidebar-palettes'; palettesPanel.id = 'sidebar-palettes'; palettesPanel.innerHTML = '<div class="rail-heading"><span>PALETTES</span></div>';
-    const paletteGroups = { Basic: [['♩ Note', 'note-tool'], ['𝅽 Rest', 'rest-tool'], ['⌒ Slur', 'slur-tool'], ['⌢ Tie', 'tie-tool']], Text: [['Lyrics', 'lyric-button'], ['Chord symbol', 'chord-button'], ['Tempo', 'measure-tempo-button'], ['Expression', 'expression-button']], Lines: [['Hairpin', 'hairpin-button'], ['Pedal', 'pedal-button'], ['Ottava', 'ottava-button'], ['Glissando', 'glissando-button']], Layout: [['Page break', 'page-break-button'], ['System break', 'system-break-button'], ['Multi-rest', 'multi-rest-button']] };
-    Object.entries(paletteGroups).forEach(([name, items]) => { const section = document.createElement('section'); section.className = 'palette-section'; const heading = document.createElement('h2'); heading.textContent = name; section.append(heading); items.forEach(([label, targetId]) => { const button = document.createElement('button'); button.className = 'palette-item'; button.textContent = label; button.dataset.target = targetId; button.addEventListener('click', () => { const target = $(targetId); if (target && !target.disabled) target.click(); }); section.append(button); }); palettesPanel.append(section); });
-    const tabs = document.createElement('div'); tabs.className = 'sidebar-tabs'; tabs.setAttribute('role', 'tablist'); const activate = (name) => { const palettes = name === 'palettes'; palettesPanel.classList.toggle('hidden', !palettes); scoresPanel.classList.toggle('hidden', palettes); [...tabs.children].forEach((button) => { const active = button.dataset.sidebar === name; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1; }); syncApplicationMenuState(); }; ['Palettes', 'Scores'].forEach((name) => { const button = document.createElement('button'); button.textContent = name; button.dataset.sidebar = name.toLowerCase(); button.setAttribute('role', 'tab'); button.addEventListener('click', () => activate(button.dataset.sidebar)); tabs.append(button); });
-    rail.prepend(tabs, palettesPanel, scoresPanel); activate('palettes'); window.activateComposerSidebar = activate;
+    const legacyHome = document.createElement('div'); legacyHome.id = 'score-home-data'; legacyHome.className = 'command-sources';
+    [...rail.children].filter((child) => child !== footer).forEach((child) => legacyHome.append(child));
+    rail.append(legacyHome);
+    const palettesPanel = document.createElement('div'); palettesPanel.className = 'sidebar-panel sidebar-palettes'; palettesPanel.id = 'sidebar-palettes';
+    palettesPanel.innerHTML = '<div class="sidebar-panel-heading"><strong>Palettes</strong><button id="palette-search-button" aria-label="Search palettes">⌕</button></div><input id="palette-search" class="palette-search hidden" type="search" placeholder="Search palettes" aria-label="Search palettes" />';
+    window.AcordeMuseScoreWorkspace.PALETTE_GROUPS.forEach((group) => { const section = document.createElement('details'); section.className = 'palette-section'; section.open = ['accidentals', 'articulations', 'dynamics'].includes(group.id); const heading = document.createElement('summary'); heading.dataset.sourceLabel = group.label; heading.textContent = group.label; section.append(heading); group.items.forEach((item) => { const button = document.createElement('button'); button.className = 'palette-item'; button.dataset.sourceLabel = item.label; button.textContent = item.label; button.dataset.search = ['en', 'ja', 'zh'].flatMap((locale) => [window.AcordeMuseScoreWorkspace.paletteLabel(group.label, locale), window.AcordeMuseScoreWorkspace.paletteLabel(item.label, locale)]).join(' ').toLowerCase(); button.addEventListener('click', () => activatePaletteItem(item)); section.append(button); }); palettesPanel.append(section); });
+    const search = palettesPanel.querySelector('#palette-search'); palettesPanel.querySelector('#palette-search-button').addEventListener('click', () => { search.classList.toggle('hidden'); if (!search.classList.contains('hidden')) search.focus(); }); search.addEventListener('input', () => { const query = search.value.trim().toLowerCase(); palettesPanel.querySelectorAll('.palette-item').forEach((item) => { item.hidden = Boolean(query) && !item.dataset.search.includes(query); }); palettesPanel.querySelectorAll('.palette-section').forEach((section) => { section.hidden = ![...section.querySelectorAll('.palette-item')].some((item) => !item.hidden); if (query && !section.hidden) section.open = true; }); });
+    const instrumentsPanel = document.createElement('div'); instrumentsPanel.className = 'sidebar-panel sidebar-instruments hidden'; instrumentsPanel.id = 'sidebar-instruments'; instrumentsPanel.innerHTML = '<div class="sidebar-panel-heading"><strong>Instruments</strong></div><p class="sidebar-help">Manage parts, staves, instruments, and MIDI input.</p><div id="instrument-controls" class="instrument-controls"></div>';
+    ['part-select', 'staff-select', 'add-part-button', 'delete-part-button', 'add-staff-button', 'delete-staff-button', 'rename-part-button', 'export-part-button', 'export-part-midi-button', 'part-group-button', 'midi-input-select', 'midi-input-button', 'midi-input-status'].forEach((id) => { const control = $(id); if (control) instrumentsPanel.querySelector('#instrument-controls').append(control); });
+    const propertiesPanel = $('properties-panel'); installSelectionAwareProperties(propertiesPanel); propertiesPanel.remove();
+    const scoreControls = propertiesPanel.querySelector('#property-score-controls'); ['time-select', 'key-select', 'add-measure-button', 'delete-measure-button'].forEach((id) => { const control = $(id); if (control) scoreControls.append(control); });
+    const tabs = document.createElement('div'); tabs.className = 'sidebar-tabs'; tabs.setAttribute('role', 'tablist');
+    const panels = { palettes: palettesPanel, instruments: instrumentsPanel, properties: propertiesPanel };
+    const activate = (name) => { const resolved = panels[name] ? name : 'palettes'; Object.entries(panels).forEach(([id, panel]) => panel.classList.toggle('hidden', id !== resolved)); [...tabs.children].forEach((button) => { const active = button.dataset.sidebar === resolved; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1; }); if (resolved === 'properties') refreshSelectionProperties(); syncApplicationMenuState(); };
+    ['Palettes', 'Instruments', 'Properties'].forEach((name, index) => { const button = document.createElement('button'); button.textContent = name; button.dataset.sidebar = name.toLowerCase(); button.id = `sidebar-${button.dataset.sidebar}-tab`; button.setAttribute('role', 'tab'); button.setAttribute('aria-controls', panels[button.dataset.sidebar].id); button.addEventListener('click', () => activate(button.dataset.sidebar)); button.addEventListener('keydown', (event) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.children.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.children.length) % tabs.children.length; tabs.children[target].focus(); tabs.children[target].click(); }); tabs.append(button); panels[button.dataset.sidebar].setAttribute('role', 'tabpanel'); panels[button.dataset.sidebar].setAttribute('aria-labelledby', button.id); });
+    rail.prepend(tabs, palettesPanel, instrumentsPanel, propertiesPanel); activate('palettes'); window.activateComposerSidebar = activate;
   }
-  const proxy = (sourceId, targetId) => $(sourceId)?.addEventListener('click', () => $(targetId)?.click()); proxy('properties-score-button', 'settings-button'); proxy('properties-text-button', 'text-style-button'); proxy('properties-history-button', 'history-button'); $('properties-parts-button')?.addEventListener('click', () => { const group = document.querySelector('.meta-group-parts'); if (group) group.open = true; });
+  rightPanel?.querySelector('[data-panel="properties"]')?.remove();
+  rightPanel?.setAttribute('aria-label', 'Acorde tools panel');
+  document.querySelector('.advanced-tools')?.remove();
+  const groupedControls = scoreMeta.querySelector('.meta-groups'); if (groupedControls) commandSources.append(groupedControls);
+  const settingsButton = $('settings-button'); if (settingsButton) commandSources.append(settingsButton);
+  refreshWorkspaceLanguage();
 }
 installMuseScoreWorkspaceLayout();
 function captureWorkspaceState() {
   const leftRail = document.querySelector('.left-rail');
   const rightPanel = document.querySelector('.right-panel');
   const activeSidebar = document.querySelector('.sidebar-tabs [aria-selected="true"]')?.dataset.sidebar || 'palettes';
-  const activeRightPanel = document.querySelector('.panel-tab.active')?.dataset.panel || 'properties';
+  const activeRightPanel = document.querySelector('.right-panel .panel-tab.active')?.dataset.panel || 'ai';
   return window.AcordeWorkspaceState.normalize({
     version: window.AcordeWorkspaceState.VERSION,
     leftRailVisible: !leftRail?.classList.contains('hidden'),
     rightPanelVisible: !rightPanel?.classList.contains('hidden'),
     palettesVisible: !leftRail?.classList.contains('hidden') && activeSidebar === 'palettes',
-    propertiesVisible: !rightPanel?.classList.contains('hidden') && activeRightPanel === 'properties',
+    propertiesVisible: !leftRail?.classList.contains('hidden') && activeSidebar === 'properties',
     mixerVisible: Boolean($('mixer-settings')?.open),
     historyVisible: Boolean($('history-dialog')?.open),
     playbackControlsVisible: !document.querySelector('.musescore-playback')?.classList.contains('hidden'),
@@ -1089,7 +1191,7 @@ function applyWorkspaceState(value) {
   const state = window.AcordeWorkspaceState.normalize(value);
   window.activateComposerSidebar?.(state.activeSidebar);
   document.querySelector('.left-rail')?.classList.toggle('hidden', !state.leftRailVisible);
-  document.querySelector(`.panel-tab[data-panel="${state.activeRightPanel}"]`)?.click();
+  document.querySelector(`.right-panel .panel-tab[data-panel="${state.activeRightPanel}"]`)?.click();
   document.querySelector('.right-panel')?.classList.toggle('hidden', !state.rightPanelVisible);
   document.querySelector('.musescore-playback')?.classList.toggle('hidden', !state.playbackControlsVisible);
   document.querySelector('.editor-toolbar')?.classList.toggle('hidden', !state.noteInputVisible);
@@ -1155,16 +1257,33 @@ function installUiSemantics() {
   if (!document.getElementById('ui-focus-style')) { const style = document.createElement('style'); style.id = 'ui-focus-style'; style.textContent = ':where(button, select, textarea, input):focus-visible { outline: 3px solid #6557d8; outline-offset: 2px; }'; document.head.append(style); }
 }
 installUiSemantics();
+async function enterPitchAtCursor(step) {
+  if (!currentScore || !selectedAddress || (toolMode !== 'note' && toolMode !== 'rest')) return;
+  const { part, staff, measure, voice, note } = selectedAddress;
+  const items = currentScore.parts?.[part]?.staves?.[staff]?.measures?.[measure]?.voices?.[voice];
+  if (!Array.isArray(items)) return;
+  const selected = items[note]; const selectedPitch = selected?.pitches?.[0]; const isRest = step === null;
+  const pitch = isRest ? null : { step, octave: Number(selectedPitch?.octave ?? 4), alter: 0 };
+  try { await applyCommand({ type: 'add_note', part_index: part, staff_index: staff, measure_index: measure, voice, position: Math.min(items.length, note + 1), pitch, duration: engineDuration($('duration-select').value), dot_count: $('dot-toggle').checked ? 1 : 0, is_rest: isRest }, isRest ? 'EnterRest' : `Enter${step}`); } catch (error) { uiAlert(`Note input failed: ${userFacingError(error)}`); }
+}
+async function moveSelectedCrossStaff(direction) {
+  if (!currentScore || !selectedAddress) return;
+  const { part, staff, measure, voice, note } = selectedAddress; const staffCount = currentScore.parts?.[part]?.staves?.length || 0; const target = staff + direction;
+  if (target < 0 || target >= staffCount) return;
+  try { await applyCommand({ type: 'set_cross_staff', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, placement: { target_staff: target, target_voice: null } }, direction < 0 ? 'CrossStaffUp' : 'CrossStaffDown'); } catch (error) { uiAlert(`Cross-staff could not be changed: ${userFacingError(error)}`); }
+}
 async function dispatchApplicationMenuCommand(command) {
   const definition = window.AcordeCommandRegistry?.resolveCommand(command);
   if (!definition) return;
   const target = definition.buttonTarget && $(definition.buttonTarget);
   if (target) { target.click(); return; }
   const revealMetaGroup = (name) => { const group = document.querySelector(`.meta-group-${name}`); if (!group) return; group.open = true; group.scrollIntoView({ block: 'nearest' }); group.querySelector('summary')?.focus(); };
+  const showSidebar = (name) => { const rail = document.querySelector('.left-rail'); rail?.classList.remove('hidden'); window.activateComposerSidebar?.(name); syncApplicationMenuState(); };
+  const toggleSidebar = (name) => { const rail = document.querySelector('.left-rail'); if (!rail) return; const visible = !rail.classList.contains('hidden') && document.querySelector(`.sidebar-tabs [data-sidebar="${name}"]`)?.getAttribute('aria-selected') === 'true'; if (visible) rail.classList.add('hidden'); else showSidebar(name); syncApplicationMenuState(); };
   const showRightPanel = (name) => { const panel = document.querySelector('.right-panel'); panel?.classList.remove('hidden'); document.querySelector(`.panel-tab[data-panel="${name}"]`)?.click(); };
   const rendererCommandHandlers = {
     'close-window': async () => { if (!dirty || await uiConfirm('Close this score and discard unsaved changes?')) await window.acorde.closeWindow?.(); },
-    'show-parts': () => revealMetaGroup('parts'), 'save-as': () => saveCurrentDocument(true),
+    'show-parts': () => showSidebar('instruments'), 'save-as': () => saveCurrentDocument(true),
     cut: async () => { await copySelected(); await deleteSelected(); }, copy: () => copySelected(), paste: () => pasteNote(), delete: () => deleteSelected(),
     'select-all': () => selectAllMeasures(), 'select-section': () => selectCurrentSection(), 'find-go-to': () => findOrGoToMeasure(), 'clear-recent': () => window.acorde.clearRecentFiles?.(),
     'recent-score': () => openRecentScoreAt(definition.recentIndex), 'open-export': () => { const menu = $('export-menu'); if (menu) menu.open = true; $('page-preset')?.focus(); },
@@ -1172,15 +1291,18 @@ async function dispatchApplicationMenuCommand(command) {
     dynamics: () => { const details = $('dynamic-select')?.closest('details'); if (details) details.open = true; $('dynamic-select')?.focus(); }, 'technique-text': () => openTextStyleEditor('Technique'),
     hairpin: () => { $('hairpin-kind').value = command === 'add:crescendo' ? 'Crescendo' : 'Decrescendo'; $('hairpin-tool').click(); },
     ottava: () => { $('ottava-kind').value = command === 'add:ottava-alta' ? 'Va8' : 'Vb8'; $('ottava-button').click(); }, transpose: () => openTransposeDialog(),
-    'toggle-palettes': () => { const rail = document.querySelector('.left-rail'); if (!rail) return; const visible = !rail.classList.contains('hidden') && !$('sidebar-palettes')?.classList.contains('hidden'); rail.classList.toggle('hidden', visible); if (!visible) window.activateComposerSidebar?.('palettes'); syncApplicationMenuState(); },
-    'show-layout': () => revealMetaGroup('layout'),
-    'toggle-properties': () => { const panel = document.querySelector('.right-panel'); const tab = document.querySelector('.panel-tab[data-panel="properties"]'); const visible = panel && !panel.classList.contains('hidden') && tab?.classList.contains('active'); panel?.classList.toggle('hidden', Boolean(visible)); if (!visible) showRightPanel('properties'); syncApplicationMenuState(); },
+    'toggle-palettes': () => toggleSidebar('palettes'), 'toggle-instruments': () => toggleSidebar('instruments'),
+    'show-layout': () => showSidebar('properties'),
+    'toggle-properties': () => toggleSidebar('properties'),
     'toggle-navigator': () => { const panel = $('navigator-panel'); panel?.classList.toggle('hidden'); if (panel && !panel.classList.contains('hidden')) renderNavigator(); syncApplicationMenuState(); },
     'toggle-note-input-toolbar': () => { document.querySelector('.editor-toolbar')?.classList.toggle('hidden'); syncApplicationMenuState(); },
     'toggle-playback-toolbar': () => { document.querySelector('.musescore-playback')?.classList.toggle('hidden'); syncApplicationMenuState(); },
     'toggle-status-bar': () => { document.querySelector('.transport')?.classList.toggle('hidden'); syncApplicationMenuState(); },
     'restore-workspace': () => restoreWorkspaceState(), 'reset-layout': () => resetWorkspaceState(), 'page-settings': () => openPageSettings(), 'layout-density': () => openLayoutDensity(),
-    'show-ai': () => showRightPanel('ai'), 'show-omr': () => showRightPanel('omr'), 'select-tool': () => { contextTarget = null; selectTool('select'); },
+    'show-ai': () => showRightPanel('ai'), 'show-omr': () => showRightPanel('omr'), 'select-tool': () => { contextTarget = null; selectTool('select'); }, 'toggle-note-input': () => selectTool(toolMode === 'note' ? 'select' : 'note'),
+    'set-duration': () => { $('duration-select').value = definition.duration; $('duration-select').dispatchEvent(new Event('change', { bubbles: true })); },
+    'toggle-dot': () => { $('dot-toggle').checked = !$('dot-toggle').checked; $('dot-toggle').dispatchEvent(new Event('change', { bubbles: true })); },
+    'voice-direct': () => setActiveVoice(definition.voice, true), 'enter-pitch': () => enterPitchAtCursor(definition.pitch), 'cross-staff-step': () => moveSelectedCrossStaff(definition.direction),
     'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1),
   };
   return rendererCommandHandlers[definition.handler]?.();

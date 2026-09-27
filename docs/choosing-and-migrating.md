@@ -29,12 +29,12 @@ Acorde Composerは、DAW、完成された商用記譜ソフト、MuseSoundsそ�
 
 1. 元のソフトからMusicXMLをコピーとして書き出します。
 2. Acorde Composerで開き、diagnosticsに表示されるlossや未対応要素を確認します。
-3. voice selectorで対象voiceを選び、必要な編集を行います。
+3. 左側のPalettes／Instruments／Propertiesとvoice selectorを使い、対象voiceを選んで編集します。Nで音符入力、1〜7で音価、A〜Gで音高、⌘/Ctrl+Option/Alt+1〜4でvoiceを直接選べます。
 4. 別名でMusicXMLを保存します。
 5. 保存したファイルを再読込し、voice、rest、backup／forward、歌詞、コード、主要記譜情報を確認します。
 6. 印刷や音源が必要な場合は、対象OSと外部assetのlicense・配布条件を確認します。
 
-元ファイルを上書きせず、移行前後のファイルを残す運用を推奨します。Composerはacorde v1.2.2のresolved preset-zone metadataを使い、実SF2/SF3 fixtureをPCMへ渡す経路を検証しています。大きなassetのstreaming、cross-staff packaged編集、production audio品質、MuseSounds接続、実OMR provider、コード署名済み配布は別の完了条件です。
+元ファイルを上書きせず、移行前後のファイルを残してください。公開版v0.1.15はAcorde v1.2.2でこの経路を検証済みです。開発版はv1.2.11へ追従中ですが、candidate artifactは未生成です。大きなassetのstreaming、cross-staff packaged編集、production audio品質、MuseSounds接続、実OMR provider、署名済み配布は別の完了条件です。
 
 ## FAQ
 

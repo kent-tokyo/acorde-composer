@@ -29,6 +29,13 @@ test('registry owns menu state, context state, dynamic commands, and platform sh
   assert.equal(registry.commandForKeyboardEvent({ key: 'z', metaKey: true, shiftKey: true }, 'darwin'), 'edit:redo');
   assert.equal(registry.commandForKeyboardEvent({ key: 'y', ctrlKey: true }, 'default'), 'edit:redo');
   assert.equal(registry.commandForKeyboardEvent({ key: ' ', code: 'Space' }, 'default'), 'playback:toggle');
+  assert.equal(registry.commandForKeyboardEvent({ key: '5' }, 'default'), 'duration:5');
+  assert.equal(registry.commandForKeyboardEvent({ key: '.' }, 'default'), 'duration:dot');
+  assert.equal(registry.commandForKeyboardEvent({ key: '2', metaKey: true, altKey: true }, 'darwin'), 'voice:2');
+  assert.equal(registry.commandForKeyboardEvent({ key: 'ArrowDown', ctrlKey: true, shiftKey: true }, 'default'), 'notation:cross-staff-down');
+  assert.equal(registry.commandForKeyboardEvent({ key: 'c' }, 'default'), 'input:c');
+  assert.equal(registry.commandForKeyboardEvent({ key: '0' }, 'default'), 'input:rest');
+  assert.equal(registry.commandAccelerator('view:palettes', 'darwin'), 'F9');
 });
 
 test('format-specific exports and Format actions keep one explicit renderer route', () => {

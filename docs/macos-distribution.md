@@ -14,6 +14,8 @@ npm run dist:mac:unsigned-dmg
 
 This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg`. It explicitly disables automatic code-signing discovery and notarization, even if signing credentials exist on the build machine. Upload that DMG directly to a GitHub Release; do not rename it to a signed build or claim that it passes Gatekeeper. Users may need to use Finder's Control-click **Open** or macOS Privacy & Security's **Open Anyway** after verifying that it came from the official Releases page.
 
+Build from the clean commit that will be tagged. Do not attach an artifact built after `v0.1.15` to that release: its manifest, QA report, and source commit would not match.
+
 An unsigned ZIP remains available for users who need it:
 
 ```sh

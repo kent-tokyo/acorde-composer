@@ -63,7 +63,7 @@ test('familiar MuseScore destinations retain their menu ownership', () => {
   assert.ok(menu('Edit').findIndex((item) => item.label === 'Delete') < menu('Edit').findIndex((item) => item.label === 'Select'));
   assert.deepEqual(selectMenu.submenu.map((item) => item.label), ['Select All', 'Select Section']);
   assert.equal(menu('Edit').find((item) => item.label === 'Find / Go to…').accelerator, 'CmdOrCtrl+F');
-  assert.deepEqual(menu('View').slice(0, 6).map((item) => item.label), ['Palettes', 'Layout', 'Properties', 'History', 'Navigator', 'Mixer']);
+  assert.deepEqual(menu('View').slice(0, 7).map((item) => item.label), ['Palettes', 'Instruments', 'Properties', 'Layout', 'History', 'Navigator', 'Mixer']);
   const toolbars = menu('View').find((item) => item.label === 'Toolbars');
   assert.deepEqual(toolbars.submenu.map((item) => item.label), ['Playback Controls', 'Note Input', 'Status Bar']);
   assert.ok(toolbars.submenu.every((item) => item.type === 'checkbox' && item.checked));
@@ -170,8 +170,7 @@ test('main, preload, and renderer keep the application-menu bridge connected', (
   assert.match(read('src/app.js'), /rendererCommandHandlers/);
   assert.match(read('src/app.js'), /commandForKeyboardEvent/);
   assert.doesNotMatch(read('src/app.js'), /const buttonTargets/);
-  assert.doesNotMatch(read('src/app.js'), /view:instruments/);
-  for (const command of ['file:score-properties', 'file:export-musicxml', 'file:export-midi', 'file:export-abc', 'file:export-svg', 'file:export-pdf', 'view:note-input-toolbar', 'view:layout', 'view:reset-layout', 'view:workspace-default', 'view:status-bar', 'format:page-settings', 'format:layout-density', 'file:recent:0', 'file:export', 'tools:transpose', 'add:staff-text', 'add:technique-text', 'add:tuplet:3', 'add:dynamics', 'add:crescendo', 'add:ottava-alta', 'view:history']) assert.ok(registry.resolveCommand(command), `registry resolves ${command}`);
+  for (const command of ['file:score-properties', 'file:export-musicxml', 'file:export-midi', 'file:export-abc', 'file:export-svg', 'file:export-pdf', 'view:instruments', 'view:note-input-toolbar', 'view:layout', 'view:reset-layout', 'view:workspace-default', 'view:status-bar', 'format:page-settings', 'format:layout-density', 'file:recent:0', 'file:export', 'tools:transpose', 'add:staff-text', 'add:technique-text', 'add:tuplet:3', 'add:dynamics', 'add:crescendo', 'add:ottava-alta', 'view:history']) assert.ok(registry.resolveCommand(command), `registry resolves ${command}`);
   assert.match(read('src/app.js'), /setApplicationMenuState\?\.\(state\)/);
 });
 

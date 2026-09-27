@@ -32,6 +32,7 @@
 - 导入、编辑和导出 MusicXML、MIDI、ABC
 - 基于实际 Score 的 SVG 显示、PDF／打印预览、撤销／重做
 - 多声部选择、键盘操作以及 voice-aware playback address
+- 接近 MuseScore 的 Palettes／Instruments／Properties 布局，以及 N、时值 1〜7、A〜G、voice 1〜4 输入快捷键
 - 音符与休止符、歌词、和弦、力度、装饰音和演奏记号编辑
 - part／staff 编辑、分谱导出、Mixer 和 Web MIDI 输入
 - AI／OMR 建议在审核后再应用的安全 proposal workflow
@@ -42,7 +43,7 @@
 
 音乐处理只使用 `acorde`。Score 模型、MusicXML／MIDI／ABC 输入输出、编辑 command、布局、SVG 渲染和 PlaybackEvent 都通过 `acorde` API 完成。不使用 Tone.js、VexFlow、music21 等其他音乐库。
 
-当前使用 `acorde` v1.2.2 的 5 个 crate，并通过 path dependency 和 version pin 固定。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
+已发布的v0.1.15使用 `acorde` v1.2.2 的 5 个 crate。开发中的`main`已跟进v1.2.11，但尚未发布或打包。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
 
 ## 当前版本
 
@@ -58,7 +59,7 @@ AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreComm
 
 ## 重要限制
 
-Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff 的 packaged 编辑和大 SoundFont 传输仍依赖上游支持。
+Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff仍需在v1.2.11 artifact中完成packaged E2E验收；大 SoundFont 传输仍依赖上游支持。
 
 ## 开发
 
@@ -78,7 +79,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-截至 2026-09-23，Node 261 项和 Rust unit test 25 项通过。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
+v0.1.15候选版记录了Node 261项和Rust unit test 25项。开发版在v1.2.11更新前记录了Node 270项、Rust 25项的baseline；候选版必须从clean commit重新执行。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
 
 性能 profile 还保存 parse→serialize 测量以及 harness RSS／CPU 证据。可通过 feature matrix 和 evidence index 追踪已实现范围与外部依赖的剩余任务。
 
