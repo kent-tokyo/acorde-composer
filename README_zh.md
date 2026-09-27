@@ -6,7 +6,7 @@
 
 ## 下载应用
 
-面向用户的桌面应用下载页面是 [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)。免费的正式入口是[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。若版本附带 macOS `*-unsigned.dmg`，它属于实验性未签名构建，可能需要手动处理 Gatekeeper 提示。当前 v0.1.15 尚未附带桌面应用资产。维护者请遵循 [macOS 发布指南](docs/macos-distribution.md)。
+面向用户的桌面应用下载页面是 [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)。免费的正式入口是[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。macOS `Acorde Composer-0.2.0-arm64-unsigned.dmg` 是实验性未签名构建，可能需要手动处理 Gatekeeper 提示。维护者请遵循 [macOS 发布指南](docs/macos-distribution.md)。
 
 ## 快速开始
 
@@ -43,11 +43,11 @@
 
 音乐处理只使用 `acorde`。Score 模型、MusicXML／MIDI／ABC 输入输出、编辑 command、布局、SVG 渲染和 PlaybackEvent 都通过 `acorde` API 完成。不使用 Tone.js、VexFlow、music21 等其他音乐库。
 
-已发布的v0.1.15使用 `acorde` v1.2.2 的 5 个 crate。开发中的`main`已跟进v1.2.11，但尚未发布或打包。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
+已发布的v0.2.0使用 `acorde` v1.2.12 的 5 个 crate。如果缺少音乐功能，不在 Composer 中复制实现，而是先在 `acorde` 中实现并测试。
 
 ## 当前版本
 
-已发布版本为 **Acorde Composer v0.1.15**（`acorde v1.2.2`）。
+已发布版本为 **Acorde Composer v0.2.0**（`acorde v1.2.12`）。
 
 AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreCommand` proposal 供用户审核。基础编辑、播放和文件输入输出可在本地运行。外部 provider 位于明确的 license、timeout、大小限制和崩溃恢复边界内。
 
@@ -59,7 +59,7 @@ AI／OMR 输出不会直接写入 Score，而是作为经过验证的 `ScoreComm
 
 ## 重要限制
 
-Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff仍需在v1.2.11 artifact中完成packaged E2E验收；大 SoundFont 传输仍依赖上游支持。
+Acorde Composer不保证可以替代DAW、成熟的商业制谱软件、MuseSounds本身或通用OMR服务。native VST、生产 OMR／AI、MuseSounds 类音源、已签名 installer、Windows／clean-machine QA 都属于独立验证门槛。cross-staff仍需在v1.2.12 artifact中完成packaged E2E验收；大 SoundFont 传输仍依赖上游支持。
 
 ## 开发
 
@@ -79,7 +79,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-v0.1.15候选版记录了Node 261项和Rust unit test 25项。开发版在v1.2.11更新前记录了Node 270项、Rust 25项的baseline；候选版必须从clean commit重新执行。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项 release QA 是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
+v0.2.0发布 gate 会执行Node／Rust测试、静态与fixture检查、Clippy、desktop workspace E2E和Playground E2E。`npm run check:candidate` 是本地候选 gate，不替代已签名分发或真机 QA。20 项手动release QA是独立门槛，`not-run`不会计为通过。详情请参阅 [QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md) 和 [CHANGELOG](CHANGELOG.md)。
 
 性能 profile 还保存 parse→serialize 测量以及 harness RSS／CPU 证据。可通过 feature matrix 和 evidence index 追踪已实现范围与外部依赖的剩余任务。
 

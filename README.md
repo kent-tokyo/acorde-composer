@@ -6,7 +6,7 @@ Japanese: [README_ja.md](README_ja.md) · Chinese: [README_zh.md](README_zh.md) 
 
 ## Download the app
 
-The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. When available, a macOS `*-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. The current v0.1.15 release does not yet have a desktop-app asset attached. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
+The user-facing desktop download page is [Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases). The [browser playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the primary free experience. The macOS `Acorde Composer-0.2.0-arm64-unsigned.dmg` asset is experimental: it is not signed or notarized and may require Gatekeeper override steps. Maintainers can follow the [macOS distribution guide](docs/macos-distribution.md).
 
 ## Get started
 
@@ -35,7 +35,7 @@ This build is free but unsigned and not notarized. It is for users who understan
 - Review AI and OMR proposals before they become validated score commands.
 - Load a local SF2/SF3, resolve a preset, and use decoded PCM playback when the asset fits the current bounded IPC path; otherwise playback falls back safely.
 
-The published release is **v0.1.15**, built and evidenced with `acorde` v1.2.2. Development `main` currently resolves `acorde` v1.2.11; it is not a published or packaged release. See [CHANGELOG.md](CHANGELOG.md).
+The published release is **v0.2.0**, built with `acorde` v1.2.12. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Safe MusicXML migration
 
@@ -48,7 +48,7 @@ Keep the original unchanged. The fuller checklist and product-fit guidance are i
 
 ## Boundaries
 
-This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged E2E remains to be accepted on a v1.2.11 artifact; large-SoundFont transport remains tracked upstream.
+This is not yet a replacement claim for a mature notation suite, a DAW, MuseSounds, or a general OMR service. Native VST hosting, production OMR/AI providers, MuseSounds-class assets, signed installers, Windows packaged QA, and clean-machine QA are separate gates. Cross-staff packaged E2E remains to be accepted on a v1.2.12 artifact; large-SoundFont transport remains tracked upstream.
 
 No SoundFont, MuseSounds asset, VST binary, AI credential, or OMR provider is bundled. Check each external asset's licence and redistribution terms before distribution; see [NOTICE.md](NOTICE.md) and the [SoundFont checklist](docs/soundfont-license-checklist.md).
 
@@ -61,7 +61,7 @@ npm run check
 npm run pack
 ```
 
-The v0.1.15 candidate recorded 261 Node and 25 Rust tests. Development `main` recorded a 270 Node / 25 Rust baseline before the v1.2.11 update; rerun the candidate gate from the clean release commit. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 release-QA scenarios remain separate: `not-run` is never a pass.
+The v0.2.0 release gate runs Node and Rust tests, static and fixture checks, Clippy, the desktop workspace E2E, and the browser Playground E2E. `npm run check:candidate` is not signed-release or packaged-QA evidence. The 20 manual release-QA scenarios remain separate: `not-run` is never a pass.
 
 ```sh
 npm run release:qa -- \

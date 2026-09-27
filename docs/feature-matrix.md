@@ -1,11 +1,11 @@
 # Acorde Composer feature matrix
 
-この表は、実装済みと未検証を分ける基準です。公開版はv0.1.15（Acorde 1.2.2）、開発`main`はAcorde 1.2.11です。`release-ready`は、同一commitのartifact・実機・外部条件まで満たした場合にだけ使います。
+この表は、実装済みと未検証を分ける基準です。公開版v0.2.0はAcorde 1.2.12を利用します。`release-ready`は、同一commitのartifact・実機・外部条件まで満たした場合にだけ使います。
 
 | 領域 | 現在の状態 | ローカル証拠 | 未完了の境界 |
 | --- | --- | --- | --- |
 | Score編集 | core。MuseScore型Palettes／Instruments／Propertiesと主要入力shortcutを実装 | `electron/command-schema.test.cjs`、`electron/musescore-workspace.test.cjs`、`npm run test:workspace` | breve／longa（Acorde #83）、全記譜要素の完全coverage |
-| 複数voice | fixture・macOS packaged smokeで検証済み。Acorde v1.2.4以降は宣言済みstaffもmaterialize | `qa/fixtures/multivoice-ui.musicxml`、`docs/musicxml-migration-example.md` | v1.2.11 artifactでのcross-staff packaged E2E、Windows・署名artifact・clean machine |
+| 複数voice | fixture・macOS packaged smokeで検証済み。Acorde v1.2.4以降は宣言済みstaffもmaterialize | `qa/fixtures/multivoice-ui.musicxml`、`docs/musicxml-migration-example.md` | v1.2.12 artifactでのcross-staff packaged E2E、Windows・署名artifact・clean machine |
 | MusicXML / MIDI / ABC | 入出力とloss diagnosticsを実装 | `electron/notation-coverage.test.cjs`、`electron/import-diagnostics.test.cjs` | 要素ごとの完全round-trip |
 | Playback | oscillatorと検証済みsample PCMを再生 | `electron/audio-backend.test.cjs`、`electron/soundfont-playback.test.cjs` | 長時間・聴感・production asset QA |
 | SoundFont | 64 MiB以下のinline asset、sample・resolved-zone boundary | `electron/soundfont-asset.test.cjs`、`electron/soundfont-playback.test.cjs` | 大きなassetのfile-path/stream IPC（Acorde #82）と配布license |

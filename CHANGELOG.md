@@ -4,11 +4,13 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
-- Development `main` resolves the five Acorde crates at v1.2.11. This is not evidence for a new Composer release: a clean candidate commit, artifact manifest, and release QA report still need regeneration.
+## 0.2.0 — 2026-09-27
+
+- Updated the five Acorde crates to v1.2.12; release evidence is regenerated from the tagged 0.2.0 commit.
 - Reworked the desktop workspace around MuseScore-compatible Palettes, Instruments, and selection-aware Properties panels; added familiar note-entry, duration, voice, cross-staff, and F8/F9/F10 shortcuts.
 - Added a real Electron workspace E2E covering panel geography, note entry, direct empty-voice activation, and selection properties; fixed startup panel construction and score-symbol click interception found by that test.
 - Added a browser Playground deployment gate and expanded its score-editing controls.
-- Added explicit macOS unsigned experimental DMG/ZIP build paths and user-facing distribution guidance. They are not signed or notarized and are not attached to the published 0.1.15 release.
+- Added explicit macOS unsigned experimental DMG/ZIP build paths and user-facing distribution guidance. These artifacts are not signed or notarized.
 
 ## 0.1.15 — 2026-09-23
 

@@ -6,7 +6,7 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 ## アプリをダウンロード
 
-ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`*-unsigned.dmg`がある場合は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。現在のv0.1.15にはデスクトップアプリの配布assetがまだ添付されていません。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
+ユーザー向けのデスクトップアプリ配布ページは、[Acorde Composer Releases](https://github.com/kent-tokyo/acorde-composer/releases)です。無料の正式導線は[ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)です。macOSの`Acorde Composer-0.2.0-arm64-unsigned.dmg`は実験版であり、署名・notarization済みではないためGatekeeperの手動操作が必要になることがあります。配布担当者は[macOS配布ガイド](docs/macos-distribution.md)に従ってください。
 
 ## はじめかた
 
@@ -43,11 +43,11 @@ Windows／macOS向けのAI支援楽譜編集アプリです。製品名は **Aco
 
 音楽処理は `acorde` を唯一の基盤とします。Scoreモデル、MusicXML／MIDI／ABC入出力、編集command、レイアウト、SVG描画、PlaybackEventは `acorde` のAPIを利用します。Tone.js、VexFlow、music21などの別音楽ライブラリは使用しません。
 
-公開版v0.1.15は `acorde` v1.2.2の5 crateを利用しています。開発版`main`はv1.2.11へ追従中ですが、未公開・未packageの状態です。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
+公開版v0.2.0は `acorde` v1.2.12の5 crateを利用しています。必要な音楽機能が不足している場合は、Composer側で重複実装せず、先に `acorde` 側へ実装してテストします。
 
 ## 現在のリリース
 
-公開版は **Acorde Composer v0.1.15**（`acorde v1.2.2`）です。
+公開版は **Acorde Composer v0.2.0**（`acorde v1.2.12`）です。
 
 AI／OMRの出力は直接Scoreへ適用せず、検証済みの `ScoreCommand` proposalとしてレビューできます。基本の編集・再生・入出力はローカルで動作します。外部providerはlicense、timeout、サイズ、クラッシュ復旧の境界内で接続します。
 
@@ -59,7 +59,7 @@ MusicXMLをコピーとして書き出し、Acorde Composerで開いてdiagnosti
 
 ## 重要な制約
 
-Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。native VST、実運用OMR／AI、MuseSounds相当音源、署名済みinstaller、Windows／clean-machine QAは別の検証ゲートです。cross-staffはv1.2.11 artifactでのpackaged E2E受入、大規模SoundFont転送は上流対応が残っています。
+Acorde ComposerはDAW、完成された商用記譜ソフト、MuseSoundsそのもの、汎用OMRサービスの代替を保証しません。native VST、実運用OMR／AI、MuseSounds相当音源、署名済みinstaller、Windows／clean-machine QAは別の検証ゲートです。cross-staffはv1.2.12 artifactでのpackaged E2E受入、大規模SoundFont転送は上流対応が残っています。
 
 ## 開発
 
@@ -79,7 +79,7 @@ npm run release:qa -- \
   --results qa/release-qa-results.json
 ```
 
-v0.1.15候補ではNode 261件、Rust unit test 25件を記録しました。開発版はv1.2.11更新前にNode 270件、Rust 25件のbaselineを記録しています。候補版ではclean commitから再実行してください。`npm run check:candidate`は署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
+v0.2.0ではNode／Rustテスト、静的・fixture検査、Clippy、desktop workspace E2E、Playground E2Eをrelease gateとして実行します。`npm run check:candidate`は署名済み配布や実機QAの代替ではありません。release QAの20シナリオは別ゲートで、`not-run`を合格扱いにしません。詳細は[QA evidence](qa/README.md)、[feature matrix](docs/feature-matrix.md)、[CHANGELOG](CHANGELOG.md)を参照してください。
 
 性能profileにはparse→serialize測定とharness RSS／CPU証跡も保存します。feature matrixとevidence indexから、実装済み範囲と外部依存の残課題を追跡できます。
 
