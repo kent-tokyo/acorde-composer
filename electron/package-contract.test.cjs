@@ -65,6 +65,13 @@ test('engine benchmark bounds iterations and rejects child termination', () => {
   assert.match(benchmark, /engine exited before completing the benchmark/);
 });
 
+test('packaged engine build honors an isolated Cargo target directory', () => {
+  const buildEngine = fs.readFileSync(path.join(root, 'scripts', 'build-engine.cjs'), 'utf8');
+  assert.match(buildEngine, /process\.env\.CARGO_TARGET_DIR/);
+  assert.match(buildEngine, /path\.resolve\(root, process\.env\.CARGO_TARGET_DIR\)/);
+  assert.match(buildEngine, /\{ cwd: root, stdio: 'inherit' \}/);
+});
+
 test('SoundFont playback stays behind an explicit resolved-zone IPC boundary', () => {
   const main = fs.readFileSync(path.join(root, 'electron/main.cjs'), 'utf8');
   const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');

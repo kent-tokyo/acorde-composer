@@ -4,12 +4,15 @@ const { spawnSync } = require('node:child_process');
 const { createEngineIdentity, enginePaths } = require('./engine-identity.cjs');
 
 const root = path.resolve(__dirname, '..');
-const releaseDir = path.join(root, 'engine', 'target', 'release');
+const cargoTargetDir = process.env.CARGO_TARGET_DIR
+  ? path.resolve(root, process.env.CARGO_TARGET_DIR)
+  : path.join(root, 'engine', 'target');
+const releaseDir = path.join(cargoTargetDir, 'release');
 const sourceName = `acorde-composer-engine${process.platform === 'win32' ? '.exe' : ''}`;
 const outputDir = path.join(root, 'build', 'engine');
 const outputName = sourceName;
 
-const result = spawnSync('cargo', ['build', '--release', '--manifest-path', path.join(root, 'engine', 'Cargo.toml')], { stdio: 'inherit' });
+const result = spawnSync('cargo', ['build', '--release', '--manifest-path', path.join(root, 'engine', 'Cargo.toml')], { cwd: root, stdio: 'inherit' });
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status || 1);
 

@@ -25,6 +25,6 @@ The report binds the version, commit, artifact digest, matrix, results, and opti
 
 ## Local checks
 
-On 2026-09-27, the v0.2.2 source candidate with `acorde` v1.2.13 passed 285 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. These are source-level results, not signed, Windows, or clean-machine evidence.
+On 2026-09-27, the v0.2.2 source candidate with `acorde` v1.2.13 passed 286 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. These are source-level results, not signed, Windows, or clean-machine evidence.
 
 Performance results are valid only with the input, engine version, commit, machine, iteration count, and output JSON recorded. A local timing is not a cross-platform guarantee.

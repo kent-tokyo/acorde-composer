@@ -12,7 +12,8 @@ No changes yet.
 - Reorganized File, View, Format, and Tools around a MuseScore-oriented command layout; added grouped note-input controls, duration and accidental shortcuts, and visible voice 1–4 state.
 - Reduced the primary left rail to Palettes, Instruments, and Properties; added docked or floating Navigator, Timeline, and Piano panels; and kept the Acorde panel closed by default.
 - Expanded Home with recent-score actions and Publish with document/export context. Workspace persistence now migrates to schema v4.
-- Verified 285 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. Packaged manual QA remains separate.
+- Fixed packaged engine builds to honor an isolated `CARGO_TARGET_DIR`, preventing release validation from reading a different Cargo target tree.
+- Verified 286 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. Packaged manual QA remains separate.
 
 ## 0.2.1 — 2026-09-27
 
