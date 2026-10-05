@@ -8,7 +8,7 @@
 
 建议先使用免费的[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。可以新建或打开 MusicXML 乐谱，选择小节，编辑音符、休止符、文本和 voice，然后导出结果。
 
-最新公开版是 **v0.2.2**（`acorde` v1.2.13）。菜单、音符输入、voice 选择、辅助面板、Home 和 Publish 进一步接近 MuseScore 的工作方式。Apple Silicon macOS DMG 是实验性版本，未经签名和公证。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载。如果被 Gatekeeper 拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
+最新公开版是 **v0.2.3**（`acorde` v1.2.17）。图标式音符输入工具栏、voice 操作、撤销／重做位置、Navigator 初始状态和快捷键更接近 MuseScore。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
 
 ## 主要功能
 
@@ -20,7 +20,7 @@
 
 ## 当前限制
 
-native VST、生产级 OMR／AI provider、MuseSounds 类内置音源、已签名 installer、Windows packaged QA 和 clean-machine QA 尚未完成。大型 SoundFont 仍需要 file／stream 传输路径。本仓库不内置 SoundFont、MuseSounds asset、VST binary、provider 凭据或 OMR binary。
+native VST、生产级 OMR／AI provider、MuseSounds 类内置音源、受信任的 Developer ID／Authenticode installer、Windows packaged QA 和 clean-machine QA 尚未完成。大型 SoundFont 仍需要 file／stream 传输路径。本仓库不内置 SoundFont、MuseSounds asset、VST binary、provider 凭据或 OMR binary。
 
 准确范围请查看 [feature matrix](docs/feature-matrix.md)，外部资源义务请查看 [NOTICE.md](NOTICE.md)。
 

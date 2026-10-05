@@ -331,7 +331,7 @@ select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .topbar .brand { flex-basis:auto; width:auto; }
   .topbar .brand > span:last-child { display:none; }
   .musescore-playback .timecode { display:none; }
-  .note-input-group[data-group="notation"] { display:none; }
+  .note-input-group:is([data-group="articulations"], [data-group="accidentals"]) { display:none; }
 }
 @media (max-width:860px) {
   .left-rail:not(.hidden) { display:flex; position:fixed; z-index:38; inset:58px auto 34px 0; width:min(292px,85vw); box-shadow:12px 0 30px #20283b2c; }
@@ -341,3 +341,58 @@ select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .musescore-score-actions { display:none; }
   .home-recent-list { grid-template-columns:1fr; }
 }
+/* MuseScore 4-style note input toolbar: one row of icon buttons, colored voices. */
+.editor-toolbar { flex-wrap:nowrap; }
+.editor-toolbar > .tool-group:first-child { flex:none; }
+.editor-toolbar { justify-content:flex-start; }
+.editor-toolbar > .tool-group.right { flex:none; padding-left:4px; }
+.ni-cluster { display:flex; align-items:center; gap:1px; }
+.ni-button { width:30px; height:30px; min-width:30px; padding:0; display:inline-grid; place-items:center; border-radius:5px; color:var(--ink); }
+.ni-button:hover { background:var(--accent-soft); }
+.ni-button.active, .ni-button[aria-pressed="true"] { background:var(--accent-soft); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+.ni-button:focus-visible, .voice-buttons .voice-button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+.ni-icon { display:block; pointer-events:none; overflow:visible; }
+.voice-buttons { gap:3px; }
+.voice-buttons .voice-button { --voice-color:#0065bf; min-width:28px; height:30px; padding:0 8px; border:0; border-radius:5px; color:var(--voice-color); font-weight:700; background:transparent; box-shadow:inset 0 -3px 0 var(--voice-color); }
+.voice-buttons .voice-button.voice-2 { --voice-color:#007f00; }
+.voice-buttons .voice-button.voice-3 { --voice-color:#c53f00; }
+.voice-buttons .voice-button.voice-4 { --voice-color:#c31989; }
+.voice-buttons .voice-button:hover { background:color-mix(in srgb, var(--voice-color) 12%, transparent); }
+.voice-buttons .voice-button.active, .voice-buttons .voice-button[aria-pressed="true"] { background:var(--voice-color); color:#fff; box-shadow:none; }
+:root[data-theme="dark"] .voice-buttons .voice-button.voice-1 { --voice-color:#5aa2ff; }
+:root[data-theme="dark"] .voice-buttons .voice-button.voice-2 { --voice-color:#4cc24c; }
+:root[data-theme="dark"] .voice-buttons .voice-button.voice-3 { --voice-color:#ff8a4c; }
+:root[data-theme="dark"] .voice-buttons .voice-button.voice-4 { --voice-color:#f06cc0; }
+:root[data-theme="dark"] .voice-buttons .voice-button.active { color:#10141c; }
+.visually-hidden { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0 0 0 0) !important; white-space:nowrap !important; border:0 !important; }
+.editor { container:editor / inline-size; }
+/* Collapse by the editor width, not the window, so docked Mixer/Properties panels never wrap the toolbar. */
+/* Default toolbar needs ~940px; showing voices 3–4 adds ~60px. */
+@container editor (max-width:955px) { .note-input-group[data-group="articulations"] { display:none; } }
+@container editor (max-width:1015px) { .editor-toolbar:has(#voice-button-3:not(.toolbar-item-hidden)) .note-input-group[data-group="articulations"] { display:none; } }
+@container editor (max-width:900px) { .editor-toolbar { padding-left:6px; padding-right:6px; } .note-input-group { padding:0 4px; } .ni-button { width:28px; min-width:28px; } }
+@container editor (max-width:815px) { .note-input-group[data-group="accidentals"] { display:none; } }
+@container editor (max-width:880px) { .editor-toolbar:has(#voice-button-3:not(.toolbar-item-hidden)) .note-input-group[data-group="accidentals"] { display:none; } }
+@container editor (max-width:720px) { .editor-toolbar > .tool-group:first-child { flex:1 1 0; min-width:0; flex-wrap:wrap; row-gap:2px; } .note-input-group { border-right:0; } }
+/* Vertical space: keep hidden notices hidden, fold the score summary into the tab row, and compact notices. */
+/* `.hidden` must win over later component display rules (notices, Navigator, playback toolbar). */
+.hidden { display:none !important; }
+.score-meta:empty { display:none; }
+.score-tabs-row { display:flex; align-items:flex-end; min-width:0; border-bottom:1px solid var(--line); background:#eef0f5; }
+.score-tabs-row > .score-document-tabs { flex:0 1 auto; min-width:0; border-bottom:0; background:transparent; }
+:root[data-theme="dark"] .score-tabs-row { background:#1a1f29; }
+@media print { .score-tabs-row { display:none !important; } }
+:root[data-theme="dark"] .first-use-guide { background:#252a3a; border-color:#363d55; color:#b8bfd0; }
+:root[data-theme="dark"] .recovery { background:#172a3c; border-color:#26445f; color:#a9c8e2; }
+:root[data-theme="dark"] .diagnostics { background:#2e2817; border-color:#4a3f22; color:#e2cf9f; }
+.score-tab-summary { margin-left:auto; align-self:center; min-width:0; display:flex; align-items:center; gap:10px; padding:0 12px 3px 16px; color:var(--muted); font-size:11px; white-space:nowrap; overflow:hidden; }
+.score-tab-summary > * { overflow:hidden; text-overflow:ellipsis; }
+.score-tab-summary strong { color:var(--ink); font-weight:600; }
+.recovery, .first-use-guide, .diagnostics { padding-top:4px; padding-bottom:4px; min-height:0; }
+.recovery .quiet, .first-use-guide .quiet, .diagnostics .quiet { padding:3px 8px; font-size:10px; }
+@media screen { .score-area { padding-top:20px; } }
+/* Undo / redo live at the right end of the top bar, as in MuseScore Studio. */
+.musescore-history { display:flex; align-items:center; gap:2px; flex:none; padding:4px; border:1px solid var(--line); border-radius:9px; background:#fbfcfe; }
+.musescore-history .tool { width:30px; height:30px; padding:0; display:inline-grid; place-items:center; font-size:16px; color:var(--ink); }
+:root[data-theme="dark"] .musescore-history { background:#202631; }
+@media print { .musescore-history { display:none !important; } }

@@ -8,7 +8,7 @@ MusicXML、MIDI、ABCに対応する、ローカル処理中心の楽譜編集�
 
 最初は無料の[Playground](https://kent-tokyo.github.io/acorde-composer/playground/)を推奨します。MusicXMLを新規作成または読み込み、小節を選択して音符、休符、テキスト、voiceを編集し、結果を書き出せます。
 
-最新の公開版は **v0.2.2**（`acorde` v1.2.13）です。メニュー、音符入力、voice選択、補助パネル、Home、PublishをMuseScoreの操作にさらに近づけました。Apple Silicon向けmacOS DMGは実験版で、署名も公証もされていません。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。Gatekeeperに止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
+最新の公開版は **v0.2.3**（`acorde` v1.2.17）です。アイコン式の音符入力ツールバー、voice操作、undo／redoの配置、Navigatorの初期状態、ショートカットをMuseScoreの操作に近づけました。Apple Silicon向けmacOS DMGは実験版です。アプリ全体をad-hoc署名して厳密に検証していますが、Developer ID署名も公証もないため、Gatekeeperに止められる場合があります。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
 
 ## 主な機能
 
@@ -20,7 +20,7 @@ MusicXML、MIDI、ABCに対応する、ローカル処理中心の楽譜編集�
 
 ## 現在の制約
 
-native VST、実運用OMR／AIプロバイダー、MuseSounds相当の同梱音源、署名済みインストーラー、Windows packaged QA、clean-machine QAは未完了です。大規模SoundFontにはfile／stream転送経路が必要です。SoundFont、MuseSounds asset、VST binary、プロバイダー認証情報、OMR binaryは同梱しません。
+native VST、実運用OMR／AIプロバイダー、MuseSounds相当の同梱音源、信頼済みDeveloper ID／Authenticodeインストーラー、Windows packaged QA、clean-machine QAは未完了です。大規模SoundFontにはfile／stream転送経路が必要です。SoundFont、MuseSounds asset、VST binary、プロバイダー認証情報、OMR binaryは同梱しません。
 
 正確な対応範囲は[feature matrix](docs/feature-matrix.md)、外部assetの条件は[NOTICE.md](NOTICE.md)を参照してください。
 

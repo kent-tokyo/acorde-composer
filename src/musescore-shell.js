@@ -8,17 +8,18 @@
   const MODES = Object.freeze(['home', 'score', 'publish']);
   const FOCUS_REGIONS = Object.freeze(['mode-tabs', 'score-actions', 'playback-toolbar', 'note-input-toolbar', 'left-sidebar', 'score-view', 'right-dock', 'status-bar']);
   const TOOLBAR_TARGETS = Object.freeze({
-    select: Object.freeze(['select-tool']),
     note: Object.freeze(['note-tool']),
+    duration: Object.freeze(['duration-buttons']),
+    dot: Object.freeze(['dot-button']),
     rest: Object.freeze(['rest-tool']),
-    duration: Object.freeze(['duration-select']),
-    dot: Object.freeze(['dot-toggle']),
+    accidental: Object.freeze(['accidental-buttons']),
     tie: Object.freeze(['tie-tool']),
-    accidental: Object.freeze(['accidental-select']),
-    tuplet: Object.freeze(['tuplet-select']),
-    voice: Object.freeze(['voice-select', 'voice-status']),
-    articulation: Object.freeze(['articulation-select']),
-    'undo-redo': Object.freeze(['undo-button', 'redo-button']),
+    slur: Object.freeze(['slur-tool']),
+    articulation: Object.freeze(['articulation-buttons']),
+    tuplet: Object.freeze(['tuplet-button']),
+    flip: Object.freeze(['flip-button']),
+    voice: Object.freeze(['voice-button-1', 'voice-button-2']),
+    'extra-voices': Object.freeze(['voice-button-3', 'voice-button-4']),
   });
 
   function normalizeMode(value) { return MODES.includes(value) ? value : 'score'; }

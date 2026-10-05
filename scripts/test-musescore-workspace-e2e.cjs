@@ -29,7 +29,28 @@ async function run() {
     }
 
     assert.deepEqual(await page.locator('.sidebar-tabs button').allTextContents(), ['Palettes', 'Instruments', 'Properties']);
-    assert.equal(await page.locator('.note-input-group').count(), 5);
+    assert.deepEqual(await page.locator('.note-input-group').evaluateAll((groups) => groups.map((group) => group.dataset.group)), ['input', 'duration', 'accidentals', 'lines', 'articulations', 'rhythm', 'voices']);
+    assert.equal(await page.locator('#duration-buttons .duration-button').count(), 7);
+    assert.equal(await page.locator('#recovery').isVisible(), false, 'a fresh profile has no recovered draft notice');
+    assert.equal(await page.locator('#diagnostics').isVisible(), false, 'empty diagnostics stay hidden');
+    assert.equal(await page.locator('#score-meta').isVisible(), false, 'score summary lives in the score tab row');
+    assert.match(await page.locator('#score-tab-summary #project-title').innerText(), /\S/);
+    assert.equal(await page.locator('#navigator-panel').isVisible(), false, 'Navigator is off by default, as in MuseScore 4');
+    await page.evaluate(() => dispatchApplicationMenuCommand('view:navigator'));
+    assert.equal(await page.locator('#navigator-panel').isVisible(), true);
+    await page.evaluate(() => dispatchApplicationMenuCommand('view:navigator'));
+    assert.equal(await page.locator('#navigator-panel').isVisible(), false, 'View > Navigator can hide the panel again');
+    await page.evaluate(() => dispatchApplicationMenuCommand('view:playback-toolbar'));
+    assert.equal(await page.locator('.musescore-playback').isVisible(), false, 'View > Playback toolbar hides the toolbar');
+    await page.evaluate(() => dispatchApplicationMenuCommand('view:playback-toolbar'));
+    assert.equal(await page.locator('#duration-select').isVisible(), false, 'legacy duration select stays a hidden command source');
+    assert.equal(await page.locator('.editor-toolbar .dot-toggle').count(), 0, 'no orphan Dot label remains in the toolbar');
+    const firstToolBounds = await page.locator('#note-tool').boundingBox();
+    const lastToolBounds = await page.locator('#configure-toolbar-button').boundingBox();
+    assert.ok(firstToolBounds && lastToolBounds && Math.abs(firstToolBounds.y - lastToolBounds.y) < 8, 'note input toolbar must fit on one row');
+    assert.equal(await page.locator('#select-tool').isVisible(), false, 'MuseScore has no Select button; Esc leaves note input');
+    assert.equal(await page.locator('.topbar .musescore-history #undo-button').count(), 1, 'undo/redo sit in the top bar');
+    assert.deepEqual(await page.locator('.voice-button').evaluateAll((buttons) => buttons.map((button) => button.getClientRects().length > 0)), [true, true, false, false], 'voices 3–4 are opt-in');
     assert.equal(await page.locator('.right-panel').isVisible(), false);
     assert.deepEqual(await page.locator('.composer-mode-button').allTextContents(), ['Home', 'Score', 'Publish']);
     assert.equal(await page.locator('.composer-mode-button[data-mode="score"]').getAttribute('aria-selected'), 'true');
@@ -100,6 +121,31 @@ async function run() {
 
     await page.keyboard.press('5');
     assert.equal(await page.locator('#duration-select').inputValue(), 'quarter');
+    assert.equal(await page.locator('#duration-quarter').getAttribute('aria-pressed'), 'true');
+    await page.locator('#duration-eighth').click();
+    assert.equal(await page.locator('#duration-select').inputValue(), 'eighth');
+    assert.equal(await page.locator('#duration-eighth').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('#duration-quarter').getAttribute('aria-pressed'), 'false');
+    await page.locator('#dot-button').click();
+    assert.equal(await page.locator('#dot-button').getAttribute('aria-pressed'), 'true');
+    await page.locator('#dot-button').click();
+    await page.locator('#duration-quarter').click();
+    assert.equal(await page.locator('#duration-select').inputValue(), 'quarter');
+    await notes.first().click();
+    await page.locator('#tuplet-button').click();
+    await page.waitForFunction(() => document.getElementById('tuplet-button')?.getAttribute('aria-pressed') === 'true');
+    await notes.first().click();
+    await page.locator('#tuplet-button').click();
+    await page.waitForFunction(() => document.getElementById('tuplet-button')?.getAttribute('aria-pressed') === 'false');
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => { selectedAddress = null; });
+    await page.locator('#tuplet-button').click();
+    assert.equal(await page.locator('#tuplet-select').inputValue(), '3:2', 'without a selection the triplet button arms triplet input');
+    await page.locator('#tuplet-button').click();
+    assert.equal(await page.locator('#tuplet-select').inputValue(), '', 'and a second click disarms it');
+    assert.equal(await page.locator('#tuplet-button').getAttribute('aria-pressed'), 'false');
+    await notes.first().click();
+    await page.keyboard.press('N');
     await page.keyboard.press('A');
     await page.waitForFunction((count) => document.querySelectorAll('#score [data-acorde-kind="note"]').length > count, initialNoteCount);
 
@@ -116,7 +162,7 @@ async function run() {
     assert.ok(await page.locator('#score-document-tabs .score-document-tab').count() >= 2);
     await page.keyboard.press('F6');
     assert.ok(await page.evaluate(() => Boolean(document.activeElement?.closest('.composer-mode-tabs, .musescore-score-actions, .musescore-playback, .editor-toolbar, .sidebar-tabs, #score, .transport'))));
-    console.log('MuseScore workspace E2E passed: modes, panels, palettes, docked Mixer, workspace presets, status controls, score tabs, and note entry.');
+    console.log('MuseScore workspace E2E passed: modes, panels, palettes, docked Mixer, workspace presets, status controls, score tabs, icon note-input toolbar, and note entry.');
   } finally {
     if (application) {
       const closed = application.waitForEvent('close', { timeout: 5000 }).catch(() => {});

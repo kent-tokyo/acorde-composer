@@ -6,8 +6,9 @@
   'use strict';
 
   const VERSION = 4;
-  const TOOLBAR_ITEMS = Object.freeze(['select', 'note', 'rest', 'duration', 'dot', 'tie', 'accidental', 'tuplet', 'voice', 'articulation', 'undo-redo']);
-  const DEFAULT_TOOLBAR = Object.freeze(Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, true])));
+  // MuseScore Studio order; voices 3–4 are opt-in like MuseScore's default toolbar.
+  const TOOLBAR_ITEMS = Object.freeze(['note', 'duration', 'dot', 'rest', 'accidental', 'tie', 'slur', 'articulation', 'tuplet', 'flip', 'voice', 'extra-voices']);
+  const DEFAULT_TOOLBAR = Object.freeze(Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, item !== 'extra-voices'])));
   const DEFAULT = Object.freeze({
     version: VERSION,
     leftRailVisible: true,
@@ -19,7 +20,7 @@
     playbackControlsVisible: true,
     noteInputVisible: true,
     statusBarVisible: true,
-    navigatorVisible: true,
+    navigatorVisible: false,
     timelineVisible: false,
     pianoVisible: false,
     activeSidebar: 'palettes',
@@ -35,7 +36,7 @@
     default: DEFAULT,
     minimal: Object.freeze({ ...DEFAULT, activeWorkspace: 'minimal', leftRailVisible: false, navigatorVisible: false }),
     playback: Object.freeze({ ...DEFAULT, activeWorkspace: 'playback', leftRailVisible: false, mixerVisible: true, navigatorVisible: false }),
-    review: Object.freeze({ ...DEFAULT, activeWorkspace: 'review', activeSidebar: 'properties', palettesVisible: false, propertiesVisible: true, timelineVisible: true }),
+    review: Object.freeze({ ...DEFAULT, activeWorkspace: 'review', activeSidebar: 'properties', palettesVisible: false, propertiesVisible: true, navigatorVisible: true, timelineVisible: true }),
   });
   const SIDEBARS = new Set(['palettes', 'instruments', 'properties']);
   const RIGHT_PANELS = new Set(['ai', 'omr']);
@@ -47,7 +48,7 @@
 
   function normalizeToolbar(value) {
     const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-    return Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, source[item] !== false]));
+    return Object.fromEntries(TOOLBAR_ITEMS.map((item) => [item, typeof source[item] === 'boolean' ? source[item] : DEFAULT_TOOLBAR[item]]));
   }
 
   function normalizeUtilityDock(value) {
@@ -75,7 +76,7 @@
       playbackControlsVisible: input.playbackControlsVisible !== false,
       noteInputVisible: input.noteInputVisible !== false,
       statusBarVisible: input.statusBarVisible !== false,
-      navigatorVisible: input.navigatorVisible !== false,
+      navigatorVisible: input.navigatorVisible === true,
       timelineVisible: input.timelineVisible === true,
       pianoVisible: input.pianoVisible === true,
       activeSidebar,

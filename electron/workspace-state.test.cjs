@@ -101,3 +101,11 @@ test('workspace state preserves a bounded custom workspace identity', () => {
   assert.equal(normalize({ version: 3, activeWorkspace: 'custom:' }).activeWorkspace, 'default');
   assert.equal(normalize({ version: 3, activeWorkspace: `custom:${'x'.repeat(49)}` }).activeWorkspace, 'default');
 });
+
+test('Navigator starts hidden like MuseScore 4 but keeps explicit and Review choices', () => {
+  const { PRESETS } = require('../src/workspace-state.js');
+  assert.equal(DEFAULT.navigatorVisible, false);
+  assert.equal(normalize({ version: VERSION }).navigatorVisible, false);
+  assert.equal(normalize({ version: VERSION, navigatorVisible: true }).navigatorVisible, true);
+  assert.equal(PRESETS.review.navigatorVisible, true);
+});

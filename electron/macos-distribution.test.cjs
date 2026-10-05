@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { notarizationCredentials, notarizationIsDisabled } = require('../scripts/notarize-mac.cjs');
 const { assessMacosReleaseEnvironment } = require('../scripts/verify-macos-release-env.cjs');
+const { signAdHocMacApp, verifyMacAppBundle, verifyMacDmg } = require('../scripts/macos-code-signing.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -21,7 +22,7 @@ test('macOS distribution explicitly produces a hardened DMG and invokes notariza
   assert.match(releaseScript, /create-release-artifact-manifest/);
 });
 
-test('free experimental distribution creates a clearly unsigned ZIP with ditto', () => {
+test('free experimental ZIP seals the complete app bundle with an ad-hoc signature', () => {
   assert.equal(packageJson.scripts['dist:mac:unsigned'], 'node scripts/build-macos-unsigned.cjs');
   assert.match(unsignedScript, /-arm64-unsigned\.zip/);
   assert.match(unsignedScript, /'--mac', '--dir', '--arm64'/);
@@ -29,16 +30,91 @@ test('free experimental distribution creates a clearly unsigned ZIP with ditto',
   assert.match(unsignedScript, /Refusing to overwrite an existing archive/);
   assert.match(unsignedScript, /ACORDE_DISABLE_NOTARIZATION: '1'/);
   assert.match(unsignedScript, /CSC_IDENTITY_AUTO_DISCOVERY: 'false'/);
+  assert.match(unsignedScript, /signAdHocMacApp\(appPath\)/);
 });
 
-test('free experimental distribution can create a clearly unsigned DMG', () => {
+test('free experimental DMG signs before packaging and verifies the mounted bundle', () => {
   assert.equal(packageJson.scripts['dist:mac:unsigned-dmg'], 'node scripts/build-macos-unsigned-dmg.cjs');
   assert.match(unsignedDmgScript, /-arm64-unsigned\.dmg/);
-  assert.match(unsignedDmgScript, /'--mac',\n    'dmg',\n    '--arm64'/);
+  assert.match(unsignedDmgScript, /'--mac',\n    '--dir',\n    '--arm64'/);
+  assert.match(unsignedDmgScript, /signAdHocMacApp\(appPath\)/);
+  assert.match(unsignedDmgScript, /'--prepackaged',\n    appPath/);
+  assert.match(unsignedDmgScript, /verifyMacDmg\(artifactPath, productName\)/);
   assert.match(unsignedDmgScript, /--config\.mac\.artifactName=/);
   assert.match(unsignedDmgScript, /ACORDE_DISABLE_NOTARIZATION: '1'/);
   assert.match(unsignedDmgScript, /CSC_IDENTITY_AUTO_DISCOVERY: 'false'/);
   assert.match(unsignedDmgScript, /Refusing to overwrite an existing artifact/);
+});
+
+test('ad-hoc signing seals the bundle and immediately performs strict verification', () => {
+  const calls = [];
+  const run = (command, args) => calls.push([command, args]);
+  const fsImpl = { existsSync: () => true };
+
+  signAdHocMacApp('/tmp/Acorde Composer.app', {
+    platform: 'darwin',
+    run,
+    fsImpl,
+    entitlementsPath: '/tmp/entitlements.plist',
+  });
+
+  assert.deepEqual(calls, [
+    ['codesign', [
+      '--force',
+      '--deep',
+      '--sign',
+      '-',
+      '--options',
+      'runtime',
+      '--timestamp=none',
+      '--entitlements',
+      '/tmp/entitlements.plist',
+      '/tmp/Acorde Composer.app',
+    ]],
+    ['codesign', [
+      '--verify',
+      '--deep',
+      '--strict',
+      '--verbose=4',
+      '/tmp/Acorde Composer.app',
+    ]],
+  ]);
+});
+
+test('strict bundle verification rejects non-macOS hosts before invoking codesign', () => {
+  assert.throws(
+    () => verifyMacAppBundle('/tmp/Acorde Composer.app', { platform: 'linux' }),
+    /requires a macOS host/,
+  );
+});
+
+test('DMG verification checks the image and the app copied into it', () => {
+  const os = require('node:os');
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'acorde-dmg-signing-test-'));
+  const dmgPath = path.join(tempRoot, 'Acorde.dmg');
+  fs.writeFileSync(dmgPath, 'fixture');
+  const calls = [];
+  const run = (command, args) => {
+    calls.push([command, args]);
+    if (command === 'hdiutil' && args[0] === 'attach') {
+      const mountPoint = args[args.indexOf('-mountpoint') + 1];
+      fs.mkdirSync(path.join(mountPoint, 'Acorde Composer.app'));
+    }
+  };
+
+  try {
+    verifyMacDmg(dmgPath, 'Acorde Composer', { platform: 'darwin', run });
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(calls[0], ['hdiutil', ['verify', dmgPath]]);
+  assert.equal(calls[1][0], 'hdiutil');
+  assert.equal(calls[1][1][0], 'attach');
+  assert.equal(calls[2][0], 'codesign');
+  assert.deepEqual(calls[2][1].slice(0, 4), ['--verify', '--deep', '--strict', '--verbose=4']);
+  assert.equal(calls[3][0], 'hdiutil');
+  assert.equal(calls[3][1][0], 'detach');
 });
 
 test('notarization supports a Keychain profile and both Apple credential strategies', () => {

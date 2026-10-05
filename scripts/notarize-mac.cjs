@@ -24,7 +24,7 @@ function notarizationIsDisabled(env = process.env) {
 async function notarizeMac(context) {
   if (context.electronPlatformName !== 'darwin') return;
   if (notarizationIsDisabled()) {
-    process.stdout.write('Skipping macOS notarization for an explicitly unsigned experimental build.\n');
+    process.stdout.write('Skipping macOS notarization for an experimental build without Developer ID signing.\n');
     return;
   }
   const credentials = notarizationCredentials();

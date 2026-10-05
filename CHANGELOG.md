@@ -6,6 +6,16 @@ This file records user-visible releases and the current development delta. Detai
 
 No changes yet.
 
+## 0.2.3 — 2026-10-05
+
+- Updated all five Acorde crates to v1.2.17 and bound the release candidate to the matching clean local tag.
+- Rebuilt the note-input toolbar in MuseScore Studio order with icon-based duration, dot, rest, accidental, tie, slur, articulation, triplet, stem-direction, and voice controls.
+- Moved undo and redo to the top bar, made voices 3–4 optional, and kept Navigator hidden by default while preserving View-menu and workspace controls.
+- Added stem-direction editing with the MuseScore-compatible `X` shortcut, localized toolbar customization, responsive one-row behavior, and focused renderer/E2E regression coverage.
+- Added double-flat and double-sharp controls. They share the existing accidental command boundary; applying accidentals still depends on upstream pitch-replacement support.
+- Changed the experimental macOS ZIP/DMG path to ad-hoc-sign and strictly verify the complete app bundle, including the app copied into the mounted DMG. The artifact is still not Developer ID-signed or notarized and may be blocked by Gatekeeper.
+- Verified 303 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, and Playground E2E. The 20 manual release-QA scenarios remain `not-run`.
+
 ## 0.2.2 — 2026-09-27
 
 - Updated all five Acorde crates to v1.2.13, including expanded MusicXML barline handling and MSCX/MEI round-trip coverage for multiple voices, parts, cross-staff notation, and spanners.

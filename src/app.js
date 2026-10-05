@@ -112,6 +112,7 @@ function applyLanguage(nextLanguage = language) {
 function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; storeValue(LANGUAGE_KEY, language); applyLanguage(language); }
 function refreshWorkspaceLanguage() {
   const copy = LANGUAGE_COPY[language]; if (!copy) return;
+  relabelNoteInputToolbar();
   const sidebarNames = { palettes: copy.palettes, instruments: copy.instruments, layout: copy.layout, properties: copy.properties };
   Object.entries(sidebarNames).forEach(([name, label]) => { const tab = document.querySelector(`.sidebar-tabs [data-sidebar="${name}"]`); if (tab) tab.textContent = label; const heading = document.querySelector(`.sidebar-${name} .sidebar-panel-heading strong`); if (heading) heading.textContent = label; });
   const search = $('palette-search'); if (search) { search.placeholder = copy.paletteSearch; search.setAttribute('aria-label', copy.paletteSearch); }
@@ -146,6 +147,7 @@ function saveShortcutOverrides(next = shortcutOverrides) {
   storeJson(SHORTCUTS_KEY, shortcutOverrides);
   syncApplicationMenuState();
   renderShortcutEditor();
+  relabelNoteInputToolbar();
 }
 const ENGINE_DURATIONS = Object.freeze({ whole: 'Whole', half: 'Half', quarter: 'Quarter', eighth: 'Eighth', sixteenth: 'Sixteenth', thirtysecond: 'ThirtySecond', sixtyfourth: 'SixtyFourth' });
 function engineDuration(value) { return ENGINE_DURATIONS[String(value || '').toLowerCase()] || 'Quarter'; }
@@ -497,7 +499,7 @@ function selectRenderedNote(note, extendRange = false) {
   const staffSelector = $('staff-select');
   if (staffSelector) { staffSelector.value = String(address.staff); }
   const item = currentScore?.parts?.[address.part]?.staves?.[address.staff]?.measures?.[address.measure]?.voices?.[address.voice]?.[address.note];
-  if (item) { $('duration-select').value = String(item.duration || 'quarter').toLowerCase(); $('dot-toggle').checked = Number(item.dot_count || 0) > 0; $('tuplet-select').value = item.tuplet ? `${item.tuplet.actual_notes}:${item.tuplet.normal_notes}` : ''; $('dynamic-select').value = item.dynamic || ''; $('grace-select').value = item.is_grace ? (item.grace_slash ? 'acciaccatura' : 'appoggiatura') : ''; }
+  if (item) { $('duration-select').value = String(item.duration || 'quarter').toLowerCase(); $('dot-toggle').checked = Number(item.dot_count || 0) > 0; $('tuplet-select').value = item.tuplet ? `${item.tuplet.actual_notes}:${item.tuplet.normal_notes}` : ''; syncNoteInputToolbar(); $('dynamic-select').value = item.dynamic || ''; $('grace-select').value = item.is_grace ? (item.grace_slash ? 'acciaccatura' : 'appoggiatura') : ''; }
   selectionPlayButton.disabled = !selectedRange;
   selectionPlayButton.title = selectedRange ? `Play measures ${selectedRange[0] + 1}–${selectedRange[1] + 1}` : 'Select a measure range first';
   renderNavigator();
@@ -790,7 +792,7 @@ const savedDraft = storedValue(AUTOSAVE_KEY);
 if (savedDraft) { $('recovery').classList.remove('hidden'); $('first-use-guide').classList.add('hidden'); }
 function revealQuickStartAfterRecovery() { if (storedValue('acorde-composer.quick-start-dismissed') !== '1') $('first-use-guide')?.classList.remove('hidden'); }
 function userFacingError(error) { const message = String(error?.message || error || 'Unknown error'); if (message.includes('acorde engine stopped')) { updateEngineIndicator('unavailable'); return 'acorde engineを起動できませんでした。アプリを再起動してもう一度お試しください。'; } return message; }
-function updateEngineIndicator(state) { const badge = document.querySelector('.engine-badge'); if (!badge) return; const label = badge.querySelector('small'); const pulse = badge.querySelector('.pulse'); const labels = { checking: 'Checking… · v1.2.13', ready: 'Ready · v1.2.13', unavailable: 'Unavailable · restart app' }; badge.setAttribute('role', 'status'); badge.setAttribute('aria-label', 'acorde engine status'); badge.setAttribute('aria-live', 'polite'); if (label) label.textContent = labels[state] || labels.checking; badge.dataset.state = state; pulse?.classList.toggle('error', state === 'unavailable'); }
+function updateEngineIndicator(state) { const badge = document.querySelector('.engine-badge'); if (!badge) return; const label = badge.querySelector('small'); const pulse = badge.querySelector('.pulse'); const labels = { checking: 'Checking… · v1.2.17', ready: 'Ready · v1.2.17', unavailable: 'Unavailable · restart app' }; badge.setAttribute('role', 'status'); badge.setAttribute('aria-label', 'acorde engine status'); badge.setAttribute('aria-live', 'polite'); if (label) label.textContent = labels[state] || labels.checking; badge.dataset.state = state; pulse?.classList.toggle('error', state === 'unavailable'); }
 function pitchFromMidi(midi) {
   const names = [['C', 0], ['C', 1], ['D', 0], ['D', 1], ['E', 0], ['F', 0], ['F', 1], ['G', 0], ['G', 1], ['A', 0], ['A', 1], ['B', 0]];
   const [step, alter] = names[Math.max(0, Math.min(127, midi)) % 12];
@@ -901,7 +903,7 @@ async function applyTupletValue(value) {
   if (!currentScore || !selectedAddress || value === '') return;
   const { part, staff, measure, voice, note } = selectedAddress;
   const tuplet = value === 'clear' ? null : (() => { const [actual_notes, normal_notes] = value.split(':').map(Number); return { actual_notes, normal_notes }; })();
-  try { await applyCommand({ type: 'set_tuplet', part_index: part, staff_index: staff, measure_index: measure, voice_index: voice, note_index: note, tuplet }, 'SetTuplet'); } catch (error) { uiAlert(`連符を変更できませんでした: ${userFacingError(error)}`); } finally { $('tuplet-select').value = tuplet && [...$('tuplet-select').options].some((option) => option.value === value) ? value : ''; }
+  try { await applyCommand({ type: 'set_tuplet', part_index: part, staff_index: staff, measure_index: measure, voice_index: voice, note_index: note, tuplet }, 'SetTuplet'); } catch (error) { uiAlert(`連符を変更できませんでした: ${userFacingError(error)}`); } finally { $('tuplet-select').value = tuplet && [...$('tuplet-select').options].some((option) => option.value === value) ? value : ''; syncNoteInputToolbar(); }
 }
 $('tuplet-select').addEventListener('change', () => applyTupletValue($('tuplet-select').value));
 $('dynamic-select').addEventListener('change', async () => { if (!currentScore || !selectedAddress || $('dynamic-select').value === '') return; const { part, staff, measure, voice, note } = selectedAddress; const value = $('dynamic-select').value; try { await applyCommand({ type: 'set_dynamic', part_index: part, staff_index: staff, measure_index: measure, voice, note_index: note, dynamic: value === 'clear' ? null : value }, 'SetDynamic'); } catch (error) { uiAlert(`強弱記号を変更できませんでした: ${userFacingError(error)}`); } finally { $('dynamic-select').value = value === 'clear' ? '' : value; } });
@@ -1239,7 +1241,7 @@ function installFocusCycle() {
       'mode-tabs': document.querySelector('.composer-mode-button.active'),
       'score-actions': document.querySelector('.musescore-score-actions button'),
       'playback-toolbar': document.querySelector('.musescore-playback button'),
-      'note-input-toolbar': document.querySelector('.editor-toolbar :is(button,select,input):not(.toolbar-item-hidden)'),
+      'note-input-toolbar': [...document.querySelectorAll('.editor-toolbar :is(button,select,input)')].find((element) => !element.disabled && element.getClientRects().length > 0) || null,
       'left-sidebar': document.querySelector('.sidebar-tabs [aria-selected="true"]'),
       'score-view': document.querySelector('#score [data-acorde-kind="note"], #score [data-acorde-kind="measure"], #score'),
       'right-dock': document.querySelector('#mixer-settings[open] input, .right-panel:not(.hidden) button'),
@@ -1271,24 +1273,31 @@ function installMuseScoreWorkspaceLayout() {
   document.body.insertBefore(home, document.querySelector('.workspace')); document.body.insertBefore(publish, document.querySelector('.workspace'));
   [home, publish].forEach((page) => { page.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => $(button.dataset.action)?.click())); page.querySelectorAll('[data-mode-target]').forEach((button) => button.addEventListener('click', () => setApplicationMode(button.dataset.modeTarget))); });
 
-  const documentTabs = document.createElement('div'); documentTabs.id = 'score-document-tabs'; documentTabs.className = 'score-document-tabs'; documentTabs.setAttribute('role', 'tablist'); documentTabs.setAttribute('aria-label', 'Score and parts'); editor.insertBefore(documentTabs, toolbar); renderDocumentTabs();
+  const documentTabs = document.createElement('div'); documentTabs.id = 'score-document-tabs'; documentTabs.className = 'score-document-tabs'; documentTabs.setAttribute('role', 'tablist'); documentTabs.setAttribute('aria-label', 'Score and parts'); const tabsRow = document.createElement('div'); tabsRow.className = 'score-tabs-row'; editor.insertBefore(tabsRow, toolbar); tabsRow.append(documentTabs); renderDocumentTabs();
+  const tabSummary = document.createElement('section'); tabSummary.id = 'score-tab-summary'; tabSummary.className = 'score-tab-summary'; tabSummary.setAttribute('aria-label', 'Score summary'); ['project-title', 'project-summary', 'tempo-display'].forEach((id) => { const element = $(id); if (element) tabSummary.append(element); }); tabsRow.append(tabSummary);
 
   const primaryTools = toolbar.querySelector('.tool-group');
   const duration = $('duration-select');
   [['sixtyfourth', '64th'], ['thirtysecond', '32nd'], ['sixteenth', '16th']].reverse().forEach(([value, label]) => { if (![...duration.options].some((option) => option.value === value)) duration.prepend(new Option(label, value)); });
   const toolbarGroups = {};
-  [['input', 'Input'], ['duration', 'Duration'], ['rhythm', 'Rhythm'], ['voices', 'Voices'], ['notation', 'Notation']].forEach(([name, label]) => { const group = document.createElement('div'); group.className = 'note-input-group'; group.dataset.group = name; group.setAttribute('role', 'group'); group.setAttribute('aria-label', label); toolbarGroups[name] = group; primaryTools.append(group); });
-  ['select-tool', 'note-tool', 'rest-tool'].forEach((id) => { const control = $(id); if (control) toolbarGroups.input.append(control); });
-  ['duration-select', 'dot-toggle'].forEach((id) => { const control = $(id); if (control) toolbarGroups.duration.append(control); });
-  ['tuplet-select', 'tie-tool'].forEach((id) => { const control = $(id); if (control) toolbarGroups.rhythm.append(control); });
+  // MuseScore Studio order: note input | durations, dot, rest | accidentals | tie, slur | articulations | tuplet, flip | voices.
+  [['input', 'Input'], ['duration', 'Duration'], ['accidentals', 'Accidentals'], ['lines', 'Ties and slurs'], ['articulations', 'Articulations'], ['rhythm', 'Rhythm'], ['voices', 'Voices']].forEach(([name, label]) => { const group = document.createElement('div'); group.className = 'note-input-group'; group.dataset.group = name; group.setAttribute('role', 'group'); group.setAttribute('aria-label', label); toolbarGroups[name] = group; primaryTools.append(group); });
+  const noteInputButtons = buildNoteInputButtons();
+  if ($('note-tool')) toolbarGroups.input.append($('note-tool'));
+  toolbarGroups.duration.append(...noteInputButtons.duration); if ($('rest-tool')) toolbarGroups.duration.append($('rest-tool'));
+  toolbarGroups.accidentals.append(...noteInputButtons.accidentals);
+  ['tie-tool', 'slur-tool'].forEach((id) => { const control = $(id); if (control) toolbarGroups.lines.append(control); });
+  toolbarGroups.articulations.append(...noteInputButtons.articulations);
+  toolbarGroups.rhythm.append(...noteInputButtons.rhythm);
   const voiceButtons = document.createElement('div'); voiceButtons.id = 'voice-buttons'; voiceButtons.className = 'voice-buttons'; voiceButtons.setAttribute('aria-label', 'Voice selection');
-  [1, 2, 3, 4].forEach((number) => { const button = document.createElement('button'); button.type = 'button'; button.className = `tool voice-button voice-${number}`; button.dataset.voice = String(number - 1); button.textContent = String(number); button.title = `Voice ${number}`; button.setAttribute('aria-label', `Voice ${number}`); button.addEventListener('click', () => setActiveVoice(number - 1, true)); voiceButtons.append(button); });
-  toolbarGroups.voices.append(voiceButtons, $('voice-select'), $('voice-status'));
-  ['accidental-select', 'articulation-select'].forEach((id) => { const control = $(id); if (control) toolbarGroups.notation.append(control); });
+  [1, 2, 3, 4].forEach((number) => { const button = document.createElement('button'); button.type = 'button'; button.id = `voice-button-${number}`; button.className = `tool voice-button voice-${number}`; button.dataset.voice = String(number - 1); button.textContent = String(number); button.title = `Voice ${number}`; button.setAttribute('aria-label', `Voice ${number}`); button.addEventListener('click', () => setActiveVoice(number - 1, true)); voiceButtons.append(button); });
+  const voiceStatus = $('voice-status'); voiceStatus?.classList.add('visually-hidden'); toolbarGroups.voices.append(voiceButtons, voiceStatus);
   const configureToolbar = document.createElement('button'); configureToolbar.id = 'configure-toolbar-button'; configureToolbar.type = 'button'; configureToolbar.className = 'tool'; configureToolbar.textContent = '⚙'; configureToolbar.title = 'Customize toolbar'; configureToolbar.setAttribute('aria-label', 'Customize note input toolbar'); configureToolbar.addEventListener('click', () => $('toolbar-config-dialog')?.showModal()); toolbar.querySelector('.tool-group.right')?.append(configureToolbar);
   const commandSources = document.createElement('div'); commandSources.id = 'notation-command-sources'; commandSources.className = 'command-sources';
-  ['slur-tool', 'dynamic-select', 'grace-select', 'hairpin-kind', 'hairpin-tool'].forEach((id) => { const control = $(id); if (control) commandSources.append(control); });
-  document.body.append(commandSources);
+  ['select-tool', 'duration-select', 'tuplet-select', 'voice-select', 'accidental-select', 'articulation-select', 'dynamic-select', 'grace-select', 'hairpin-kind', 'hairpin-tool'].forEach((id) => { const control = $(id); if (control) commandSources.append(control); });
+  const dotSource = $('dot-toggle')?.closest('label') || $('dot-toggle'); if (dotSource) commandSources.append(dotSource); toolbar.querySelectorAll('.advanced-tools').forEach((element) => commandSources.append(element));
+  const historyControls = document.createElement('div'); historyControls.className = 'musescore-history'; historyControls.setAttribute('aria-label', 'Undo and redo'); ['undo-button', 'redo-button'].forEach((id) => { const control = $(id); if (control) historyControls.append(control); }); topbar.insertBefore(historyControls, topActions); toolbar.querySelectorAll('.tool-group.right .divider').forEach((element) => element.remove());
+  document.body.append(commandSources); relabelNoteInputToolbar(); syncNoteInputToolbar();
 
   transport.classList.add('musescore-status-bar'); transport.setAttribute('aria-label', 'Status bar');
   const selectionStatus = document.createElement('span'); selectionStatus.id = 'selection-status'; selectionStatus.className = 'position-label'; selectionStatus.textContent = 'No selection'; transport.prepend(selectionStatus);
@@ -1330,7 +1339,7 @@ function installMuseScoreWorkspaceLayout() {
   const groupedControls = scoreMeta.querySelector('.meta-groups'); if (groupedControls) commandSources.append(groupedControls);
   const settingsButton = $('settings-button'); if (settingsButton) commandSources.append(settingsButton);
   const mixer = $('mixer-settings'); if (mixer) { mixer.classList.add('mixer-dock'); document.querySelector('.workspace')?.append(mixer); const form = $('mixer-form'); const heading = form?.querySelector('h2'); if (heading && !$('mixer-dock-toggle')) { const header = document.createElement('div'); header.className = 'mixer-dock-heading'; heading.before(header); header.append(heading); const toggle = document.createElement('button'); toggle.type = 'button'; toggle.id = 'mixer-dock-toggle'; toggle.className = 'quiet'; toggle.textContent = '↗'; toggle.setAttribute('aria-label', 'Float mixer'); toggle.addEventListener('click', () => { mixer.classList.toggle('floating'); toggle.textContent = mixer.classList.contains('floating') ? '↘' : '↗'; toggle.setAttribute('aria-label', mixer.classList.contains('floating') ? 'Dock mixer' : 'Float mixer'); persistWorkspaceFromDom(); }); header.append(toggle); } }
-  const toolbarConfig = document.createElement('dialog'); toolbarConfig.id = 'toolbar-config-dialog'; toolbarConfig.innerHTML = '<form method="dialog" class="shortcuts-form"><h2>Customize note input toolbar</h2><p class="muted">Show only the controls you use. Music commands and shortcuts stay available.</p><div id="toolbar-config-list" class="toolbar-config-list"></div><div class="dialog-actions"><button value="cancel" class="primary">Done</button></div></form>'; (window.AcordeWorkspaceState?.TOOLBAR_ITEMS || []).forEach((name) => { const label = document.createElement('label'); label.className = 'check-row'; label.innerHTML = `<input type="checkbox" value="${name}" checked /> ${name.replace('-', ' ')}`; label.querySelector('input').addEventListener('change', () => { const next = Object.fromEntries([...toolbarConfig.querySelectorAll('input')].map((input) => [input.value, input.checked])); applyToolbarVisibility(next); persistWorkspaceFromDom(); }); toolbarConfig.querySelector('#toolbar-config-list').append(label); }); document.body.append(toolbarConfig);
+  const toolbarConfig = document.createElement('dialog'); toolbarConfig.id = 'toolbar-config-dialog'; toolbarConfig.innerHTML = '<form method="dialog" class="shortcuts-form"><h2>Customize note input toolbar</h2><p class="muted">Show only the controls you use. Music commands and shortcuts stay available.</p><div id="toolbar-config-list" class="toolbar-config-list"></div><div class="dialog-actions"><button value="cancel" class="primary">Done</button></div></form>'; (window.AcordeWorkspaceState?.TOOLBAR_ITEMS || []).forEach((name) => { const label = document.createElement('label'); label.className = 'check-row'; label.innerHTML = `<input type="checkbox" value="${name}" checked /> ${name.replace('-', ' ')}`; label.querySelector('input').addEventListener('change', () => { const next = Object.fromEntries([...toolbarConfig.querySelectorAll('input')].map((input) => [input.value, input.checked])); applyToolbarVisibility(next); persistWorkspaceFromDom(); }); toolbarConfig.querySelector('#toolbar-config-list').append(label); }); document.body.append(toolbarConfig); relabelNoteInputToolbar();
   const masterPalette = document.createElement('dialog'); masterPalette.id = 'master-palette-dialog'; masterPalette.innerHTML = '<form method="dialog" class="shortcuts-form"><h2>Master Palette</h2><input id="master-palette-search" type="search" placeholder="Search notation elements" /><div id="master-palette-items" class="master-palette-items"></div><div class="dialog-actions"><button value="cancel" class="primary">Close</button></div></form>'; window.AcordeMuseScoreWorkspace.PALETTE_GROUPS.flatMap((group) => group.items).forEach((item) => { const button = document.createElement('button'); button.type = 'button'; button.className = 'palette-item'; button.textContent = item.label; button.dataset.search = item.label.toLowerCase(); button.addEventListener('click', () => { activatePaletteItem(item); masterPalette.close(); }); masterPalette.querySelector('#master-palette-items').append(button); }); masterPalette.querySelector('#master-palette-search').addEventListener('input', (event) => { const query = event.target.value.trim().toLowerCase(); masterPalette.querySelectorAll('.palette-item').forEach((item) => { item.hidden = Boolean(query) && !item.dataset.search.includes(query); }); }); document.body.append(masterPalette);
   const preferencesForm = $('preferences-form'); if (preferencesForm && !$('theme-select')) { const label = document.createElement('label'); label.id = 'theme-label'; label.innerHTML = 'Theme<select id="theme-select"><option value="light">Light</option><option value="dark">Dark</option><option value="high-contrast">High contrast</option></select>'; preferencesForm.querySelector('.dialog-actions').before(label); label.querySelector('select').addEventListener('change', (event) => { applyComposerTheme(event.target.value); persistWorkspaceFromDom(); }); }
   refreshWorkspaceLanguage();
@@ -1498,10 +1507,71 @@ async function dispatchApplicationMenuCommand(command) {
     'step-duration': () => { const values = ['sixtyfourth', 'thirtysecond', 'sixteenth', 'eighth', 'quarter', 'half', 'whole']; const current = Math.max(0, values.indexOf($('duration-select').value)); const next = Math.max(0, Math.min(values.length - 1, current + definition.direction)); $('duration-select').value = values[next]; $('duration-select').dispatchEvent(new Event('change', { bubbles: true })); },
     'set-accidental': () => { $('accidental-select').value = definition.accidental; $('accidental-select').dispatchEvent(new Event('change', { bubbles: true })); },
     'voice-direct': () => setActiveVoice(definition.voice, true), 'enter-pitch': () => enterPitchAtCursor(definition.pitch), 'cross-staff-step': () => moveSelectedCrossStaff(definition.direction),
-    'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1),
+    'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1), 'flip-direction': () => flipSelectedStem(),
   };
   return rendererCommandHandlers[definition.handler]?.();
 }
 window.acorde.onMenuCommand?.(dispatchApplicationMenuCommand);
 const refreshSoundfontStatusBase = refreshSoundfontStatus;
 refreshSoundfontStatus = async () => { await refreshSoundfontStatusBase(); updateSoundfontIndicator(mixerState.soundfont.presetCount ? `active · ${mixerState.soundfont.presetCount} presets` : mixerState.soundfont.path ? 'configured' : 'fallback'); };
+function buildNoteInputButtons() {
+  const model = window.AcordeNoteInputToolbar;
+  const groups = { duration: [], accidentals: [], articulations: [], rhythm: [] };
+  if (!model) return groups;
+  const make = (definition, html, onClick, extraClass = '') => { const button = document.createElement('button'); button.type = 'button'; button.id = definition.id; button.className = `tool ni-button ${extraClass}`.trim(); button.innerHTML = html; button.dataset.sourceLabel = definition.label; button.addEventListener('click', onClick); return button; };
+  const cluster = (id, label, children) => { const element = document.createElement('div'); element.id = id; element.className = 'ni-cluster'; element.setAttribute('role', 'group'); element.dataset.sourceLabel = label; element.append(...children); return element; };
+  const durations = model.DURATIONS.map((definition) => { const button = make(definition, model.durationIcon(definition), () => dispatchApplicationMenuCommand(definition.command), 'duration-button'); button.dataset.duration = definition.value; return button; });
+  groups.duration.push(cluster('duration-buttons', 'Durations', durations), make(model.DOT, model.icon('dot'), () => dispatchApplicationMenuCommand(model.DOT.command), 'dot-button'));
+  groups.rhythm.push(make(model.TUPLET, model.icon('triplet'), () => { const source = $('tuplet-select'); if (!selectedAddress) { if (source) source.value = source.value === model.TUPLET.value ? '' : model.TUPLET.value; syncNoteInputToolbar(); return; } if (source?.value === model.TUPLET.value) applyTupletValue('clear'); else dispatchApplicationMenuCommand(model.TUPLET.command); }));
+  const accidentals = model.ACCIDENTALS.map((definition) => make(definition, model.icon(definition.icon), () => dispatchApplicationMenuCommand(definition.command), 'accidental-button'));
+  const articulations = model.ARTICULATIONS.map((definition) => make(definition, model.icon(definition.icon), () => { const select = $('articulation-select'); if (!select) return; select.value = definition.value; select.dispatchEvent(new Event('change', { bubbles: true })); }, 'articulation-button'));
+  groups.accidentals.push(cluster('accidental-buttons', 'Accidentals', accidentals)); groups.articulations.push(cluster('articulation-buttons', 'Articulations', articulations));
+  groups.rhythm.push(make(model.FLIP, model.icon('flip'), () => dispatchApplicationMenuCommand(model.FLIP.command)));
+  ['duration-select', 'dot-toggle', 'tuplet-select'].forEach((id) => $(id)?.addEventListener('change', syncNoteInputToolbar));
+  return groups;
+}
+function relabelNoteInputToolbar() {
+  const model = window.AcordeNoteInputToolbar; if (!model) return;
+  const registry = window.AcordeCommandRegistry;
+  const mac = /Mac/i.test(navigator.platform || '');
+  const binding = (definition) => (definition.command && registry?.shortcutsForCommand(definition.command, shortcutOverrides)?.[0]) || null;
+  const apply = (button, definition, name) => {
+    const shortcut = binding(definition);
+    button.title = model.tooltip({ label: name }, 'en', mac, shortcut ? registry.shortcutLabel(shortcut, mac ? 'darwin' : 'default') : '');
+    const aria = model.ariaKeyShortcut(shortcut, mac);
+    if (aria) button.setAttribute('aria-keyshortcuts', aria); else button.removeAttribute('aria-keyshortcuts');
+  };
+  [...model.DURATIONS, model.DOT, ...model.ACCIDENTALS, model.TUPLET, model.FLIP, ...model.ARTICULATIONS].forEach((definition) => {
+    const button = $(definition.id); if (!button) return;
+    const name = model.label(definition.label, language);
+    button.setAttribute('aria-label', name); apply(button, definition, name);
+  });
+  document.querySelectorAll('.ni-cluster').forEach((element) => element.setAttribute('aria-label', model.label(element.dataset.sourceLabel, language)));
+  const copy = LANGUAGE_COPY[language] || LANGUAGE_COPY.en;
+  model.TOOLS.forEach((definition) => {
+    const button = $(definition.id); if (!button) return;
+    const name = copy[definition.copyKey] || LANGUAGE_COPY.en[definition.copyKey] || definition.copyKey;
+    const hiddenName = document.createElement('span'); hiddenName.className = 'visually-hidden'; hiddenName.textContent = name;
+    button.innerHTML = model.icon(definition.icon); button.append(hiddenName);
+    button.classList.add('ni-button', 'ni-tool'); apply(button, definition, name);
+  });
+  document.querySelectorAll('#toolbar-config-list input').forEach((input) => { const text = input.nextSibling; if (text?.nodeType === Node.TEXT_NODE) text.textContent = ` ${model.label(model.TOOLBAR_LABELS[input.value] || input.value, language)}`; });
+}
+function syncNoteInputToolbar() {
+  const model = window.AcordeNoteInputToolbar; if (!model) return;
+  const state = model.pressedState({ duration: $('duration-select')?.value, dotted: $('dot-toggle')?.checked, tuplet: $('tuplet-select')?.value });
+  const press = (element, on) => { if (!element) return; element.classList.toggle('active', on); element.setAttribute('aria-pressed', String(on)); };
+  document.querySelectorAll('.duration-button').forEach((button) => press(button, button.dataset.duration === state.duration));
+  press($('dot-button'), state.dot);
+  press($('tuplet-button'), state.triplet);
+}
+async function flipSelectedStem() {
+  const model = window.AcordeNoteInputToolbar; const workspace = window.AcordeMuseScoreWorkspace;
+  if (!model || !workspace || !currentScore || !selectedAddress) return;
+  const snapshot = workspace.selectionSnapshot(currentScore, selectedAddress);
+  if (!snapshot?.selected || snapshot.kind !== 'note') return;
+  const { part, staff, measure, voice, note } = selectedAddress;
+  const stem = document.querySelector(`#score [data-acorde-kind="note"][data-note-addr="${part}:${staff}:${measure}:${voice}:${note}"] .acorde-stem`);
+  const renderedUp = stem ? Number(stem.getAttribute('y2')) < Number(stem.getAttribute('y1')) : null;
+  await applySelectionProperty('stem', model.nextStemDirection({ renderedUp, stem: snapshot.stem }));
+}

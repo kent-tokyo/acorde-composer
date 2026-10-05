@@ -1,6 +1,6 @@
 # macOS distribution
 
-Use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the no-cost default. Native builds come in two forms: an **unsigned experimental DMG/ZIP** or a signed and notarized DMG. Publish either form directly through [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); do not wrap a DMG in a ZIP.
+Use the browser [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) as the no-cost default. Native builds come in two forms: an **experimental ad-hoc-signed DMG/ZIP** or a Developer ID-signed and notarized DMG. Publish either form directly through [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); do not wrap a DMG in a ZIP.
 
 ## No-cost experimental DMG
 
@@ -10,17 +10,17 @@ On macOS, run:
 npm run dist:mac:unsigned-dmg
 ```
 
-This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg` with signing and notarization disabled. Never rename it to look signed or claim that it passes Gatekeeper. After confirming the official download source, users may need Finder's Control-click **Open** or Privacy & Security's **Open Anyway**.
+This creates `dist/Acorde Composer-<version>-arm64-unsigned.dmg`. The script packages the app directory, applies an ad-hoc signature to the complete bundle, creates the DMG, verifies the image, mounts it read-only, and runs strict `codesign` verification on the embedded app. It does not use a Developer ID certificate or notarization, so never claim that it passes Gatekeeper. After confirming the official download source, users may need Finder's Control-click **Open** or Privacy & Security's **Open Anyway**.
 
 Build from the clean commit that will be tagged. Do not attach an artifact built from another commit: its manifest, QA report, and source commit would not match.
 
-An unsigned ZIP remains available for users who need it:
+An experimental ad-hoc-signed ZIP remains available for users who need it:
 
 ```sh
 npm run dist:mac:unsigned
 ```
 
-This creates `dist/Acorde Composer-<version>-arm64-unsigned.zip` with `.app` metadata and permissions preserved.
+This creates `dist/Acorde Composer-<version>-arm64-unsigned.zip` with `.app` metadata and permissions preserved. The filename retains `unsigned` to distinguish it from a trusted Developer ID release; ad-hoc signing only seals bundle integrity on the build machine.
 
 ## Signed build
 

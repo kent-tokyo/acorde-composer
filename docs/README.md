@@ -8,7 +8,7 @@ Choose the shortest document that answers the question. Public claims must match
 - [MusicXML migration checklist](musicxml-migration-example.md): open, edit, save, and reload checks
 - [ABC and MusicXML](abc-and-musicxml.md): when to use each format
 - [SoundFont checklist](soundfont-license-checklist.md): external-asset licence and portability checks
-- [macOS distribution](macos-distribution.md): unsigned experimental and signed release procedures
+- [macOS distribution](macos-distribution.md): ad-hoc experimental and Developer ID release procedures
 
 ## Safety and evidence
 

@@ -8,7 +8,7 @@ A local-first desktop score editor for MusicXML, MIDI, and ABC. [`acorde`](https
 
 The free [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the recommended starting point. Create or open a MusicXML score, select a measure, edit notes, rests, text, and voices, then export the result.
 
-The latest desktop release is **v0.2.2**, built with `acorde` v1.2.13. It further aligns menus, note input, voice selection, utility panels, Home, and Publish with the MuseScore workflow. Its Apple-silicon macOS DMG is experimental, unsigned, and not notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
+The latest desktop release is **v0.2.3**, built with `acorde` v1.2.17. Its icon-based note-input toolbar, voice controls, history placement, Navigator behavior, and shortcuts are closer to the MuseScore workflow. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
 
 ## Capabilities
 
@@ -20,7 +20,7 @@ The latest desktop release is **v0.2.2**, built with `acorde` v1.2.13. It furthe
 
 ## Current limits
 
-Native VST hosting, production OMR/AI providers, MuseSounds-class bundled assets, signed installers, Windows packaged QA, and clean-machine QA are not complete. Large SoundFonts still need a file/stream transport path. No SoundFont, MuseSounds asset, VST binary, provider credential, or OMR binary is bundled.
+Native VST hosting, production OMR/AI providers, MuseSounds-class bundled assets, trusted Developer ID/Authenticode installers, Windows packaged QA, and clean-machine QA are not complete. Large SoundFonts still need a file/stream transport path. No SoundFont, MuseSounds asset, VST binary, provider credential, or OMR binary is bundled.
 
 See the [feature matrix](docs/feature-matrix.md) for exact boundaries and [NOTICE.md](NOTICE.md) for external-asset obligations.
 

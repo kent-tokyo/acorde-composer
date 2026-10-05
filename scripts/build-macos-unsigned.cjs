@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { signAdHocMacApp } = require('./macos-code-signing.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -26,9 +27,10 @@ function buildUnsignedMacArchive({ platform = process.platform } = {}) {
   run(process.execPath, ['scripts/build-engine.cjs']);
   run(path.join(root, 'node_modules', '.bin', 'electron-builder'), ['--mac', '--dir', '--arm64']);
   if (!fs.existsSync(appPath)) throw new Error(`Packaged macOS application was not found: ${appPath}`);
+  signAdHocMacApp(appPath);
   run('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', appPath, archivePath]);
   run(process.execPath, ['scripts/create-release-artifact-manifest.cjs']);
-  process.stdout.write(`Created unsigned experimental archive: ${archivePath}\n`);
+  process.stdout.write(`Created ad-hoc-signed experimental archive: ${archivePath}\n`);
   return archivePath;
 }
 

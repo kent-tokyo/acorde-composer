@@ -1,12 +1,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { signAdHocMacApp, verifyMacDmg } = require('./macos-code-signing.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const productName = packageJson.build.productName;
 const artifactName = `${productName}-${packageJson.version}-arm64-unsigned.dmg`;
 const artifactPath = path.join(root, 'dist', artifactName);
+const appPath = path.join(root, 'dist', 'mac-arm64', `${productName}.app`);
 const unsignedEnvironment = {
   ...process.env,
   ACORDE_DISABLE_NOTARIZATION: '1',
@@ -25,16 +27,26 @@ function buildUnsignedMacDmg({ platform = process.platform } = {}) {
   run(process.execPath, ['scripts/build-engine.cjs']);
   run(path.join(root, 'node_modules', '.bin', 'electron-builder'), [
     '--mac',
+    '--dir',
+    '--arm64',
+  ]);
+  if (!fs.existsSync(appPath)) throw new Error(`Packaged macOS application was not found: ${appPath}`);
+  signAdHocMacApp(appPath);
+  run(path.join(root, 'node_modules', '.bin', 'electron-builder'), [
+    '--mac',
     'dmg',
     '--arm64',
+    '--prepackaged',
+    appPath,
     `--config.mac.artifactName=${productName}-${packageJson.version}-\${arch}-unsigned.\${ext}`,
   ]);
   if (!fs.existsSync(artifactPath)) throw new Error(`Unsigned macOS DMG was not found: ${artifactPath}`);
+  verifyMacDmg(artifactPath, productName);
   run(process.execPath, ['scripts/create-release-artifact-manifest.cjs']);
-  process.stdout.write(`Created unsigned experimental DMG: ${artifactPath}\n`);
+  process.stdout.write(`Created ad-hoc-signed experimental DMG: ${artifactPath}\n`);
   return artifactPath;
 }
 
 if (require.main === module) buildUnsignedMacDmg();
 
-module.exports = { artifactName, artifactPath, buildUnsignedMacDmg };
+module.exports = { appPath, artifactName, artifactPath, buildUnsignedMacDmg };
