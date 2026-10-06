@@ -114,7 +114,7 @@ test('toolbar customization targets stay in sync with persisted toolbar items', 
 });
 
 test('renderer builds the icon toolbar and keeps legacy selects as hidden command sources', () => {
-  assert.match(index, /<script src="\.\/note-input-toolbar\.js"><\/script><script src="\.\/app\.js"><\/script>/);
+  assert.match(index, /<script src="\.\/note-input-toolbar\.js"><\/script>(?:<script src="\.\/[a-z-]+\.js"><\/script>)*<script src="\.\/app\.js"><\/script>/);
   assert.match(app, /function buildNoteInputButtons\(\)/);
   assert.match(app, /function syncNoteInputToolbar\(\)/);
   assert.match(app, /\['select-tool', 'duration-select', 'tuplet-select', 'voice-select', 'accidental-select', 'articulation-select'/);

@@ -12,7 +12,7 @@
 | SoundFont sampleをboundedに再生する | `electron/soundfont-playback.cjs`、`src/audio-backend.js` | `electron/soundfont-playback.test.cjs`、`electron/audio-backend.test.cjs` | CC0 SF2 / SF3 fixture | local (64 MiB inline IPC) |
 | artifactの改変を検出する | `scripts/create-release-artifact-manifest.cjs` | `electron/release-artifact-manifest.test.cjs` | candidate生成時のmanifest | local |
 | QAの未検証を合格扱いしない | `scripts/run-release-qa.cjs`、`electron/release-qa.cjs` | `electron/release-qa-cli.test.cjs` | `qa/release-qa-results.json` | local |
-| macOS arm64 packaged appにengineを同梱し、bundle全体を封印する | `package.json`、`scripts/build-engine.cjs`、`scripts/macos-code-signing.cjs` | `electron/package-contract.test.cjs`、`electron/macos-distribution.test.cjs`、`npm run pack` | v0.2.3 ad-hoc-signed DMG＋manifest | released experimental; Developer ID未対応 |
+| macOS arm64 packaged appにengineを同梱し、bundle全体を封印する | `package.json`、`scripts/build-engine.cjs`、`scripts/macos-code-signing.cjs` | `electron/package-contract.test.cjs`、`electron/macos-distribution.test.cjs`、`npm run pack` | v0.2.4 ad-hoc-signed DMG＋manifest | released experimental; Developer ID未対応 |
 | 正式候補として公開できる | candidate gate／release QA | strict gate | Acorde clean exact tag、署名、実機QA | external pending |
 
 ## 更新規則

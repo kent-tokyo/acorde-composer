@@ -67,7 +67,7 @@ const LANGUAGE_COPY = {
     voice: 'Voice', duration: 'Duration', dot: 'Dot', tuplet: 'Tuplet', dynamic: 'Dynamic', grace: 'Grace note', accidental: 'Accidental', articulation: 'Articulation',
     scoreSettingsTitle: 'Score settings', accessibility: 'Accessibility', reduceMotion: 'Reduce animation and motion', highContrast: 'High contrast notation', apply: 'Apply changes', cancel: 'Cancel',
     saved: 'Saved', unsaved: 'Unsaved changes', saving: 'Saving…', saveFailed: 'Save failed', pageSettings: 'Page settings', layoutDensity: 'Layout density', pageSize: 'Page size', orientation: 'Orientation', margins: 'Margins', adaptive: 'Adaptive to window', measuresPerSystem: 'measures per system',
-    palettes: 'Palettes', instruments: 'Instruments', layout: 'Layout', properties: 'Properties', paletteSearch: 'Search palettes', instrumentHelp: 'Manage parts, staves, instruments, and MIDI input.', propertyHelp: 'Select a note or rest to edit its properties.', selection: 'Selection', score: 'Score', dotted: 'Dotted', stem: 'Stem', fingering: 'Fingering', stringNumber: 'String number', scoreProperties: 'Project properties…', pageSettingsAction: 'Page settings…', textStyle: 'Text style…', editHistory: 'Edit history', modeHome: 'Home', modeScore: 'Score', modePublish: 'Publish', parts: 'Parts', partView: 'Part view', timeline: 'Timeline', piano: 'Piano', navigator: 'Navigator', theme: 'Theme', homeTitle: 'Create and open scores', homeLead: 'Start from a template or continue a local score.', newScore: 'New score', openScore: 'Open score', continueEditing: 'Continue editing', recentScores: 'Recent scores', browse: 'Browse…', publishTitle: 'Export the current score', publishLead: 'Create notation, exchange, and playback files from one place.', backToScore: 'Back to score',
+    palettes: 'Palettes', instruments: 'Instruments', layout: 'Layout', properties: 'Properties', paletteSearch: 'Search palettes', instrumentHelp: 'Manage parts, staves, instruments, and MIDI input.', propertyHelp: 'Select a note or rest to edit its properties.', selection: 'Selection', score: 'Score', dotted: 'Dotted', stem: 'Stem', fingering: 'Fingering', stringNumber: 'String number', scoreProperties: 'Project properties…', pageSettingsAction: 'Page settings…', textStyle: 'Text style…', editHistory: 'Edit history', modeHome: 'Home', modeScore: 'Score', modePublish: 'Publish', parts: 'Parts', partView: 'Part view', timeline: 'Timeline', piano: 'Piano', navigator: 'Navigator', theme: 'Theme', homeTitle: 'Create and open scores', homeLead: 'Start from a template or continue a local score.', newScore: 'New score', openScore: 'Open score', continueEditing: 'Continue editing', recentScores: 'Recent scores', browse: 'Open other…', publishTitle: 'Export the current score', publishLead: 'Create notation, exchange, and playback files from one place.', backToScore: 'Back to score',
   },
   ja: {
     preferences: 'アプリの環境設定', preferencesHelp: 'Acorde Composerで使用する言語を選択します。変更はすぐに反映されます。', language: '言語', close: '閉じる', done: '完了',
@@ -76,7 +76,7 @@ const LANGUAGE_COPY = {
     voice: 'ボイス', duration: '音価', dot: '付点', tuplet: '連符', dynamic: 'ダイナミクス', grace: '装飾音', accidental: '臨時記号', articulation: 'アーティキュレーション',
     scoreSettingsTitle: '譜面設定', accessibility: 'アクセシビリティ', reduceMotion: 'アニメーションを減らす', highContrast: '譜面の高コントラスト表示', apply: '変更を適用', cancel: 'キャンセル',
     saved: '保存済み', unsaved: '未保存の変更', saving: '保存中…', saveFailed: '保存に失敗', pageSettings: 'ページ設定', layoutDensity: 'レイアウト密度', pageSize: '用紙サイズ', orientation: '向き', margins: '余白', adaptive: 'ウィンドウに合わせる', measuresPerSystem: '小節／段',
-    palettes: 'パレット', instruments: '楽器', layout: 'レイアウト', properties: 'プロパティ', paletteSearch: 'パレットを検索', instrumentHelp: 'パート、譜表、楽器、MIDI入力を管理します。', propertyHelp: '音符または休符を選択するとプロパティを編集できます。', selection: '選択要素', score: '楽譜', dotted: '付点', stem: '符尾', fingering: '運指', stringNumber: '弦番号', scoreProperties: 'プロジェクトのプロパティ…', pageSettingsAction: 'ページ設定…', textStyle: 'テキストスタイル…', editHistory: '編集履歴', modeHome: 'ホーム', modeScore: '楽譜', modePublish: '公開', parts: 'パート', partView: 'パート表示', timeline: 'タイムライン', piano: 'ピアノ', navigator: 'ナビゲーター', theme: 'テーマ', homeTitle: '楽譜を作成・開く', homeLead: 'テンプレートから始めるか、ローカルの楽譜を続きから編集します。', newScore: '新しい楽譜', openScore: '楽譜を開く', continueEditing: '編集を続ける', recentScores: '最近使った楽譜', browse: '参照…', publishTitle: '現在の楽譜を書き出す', publishLead: '譜面、交換用データ、再生データを作成します。', backToScore: '楽譜に戻る',
+    palettes: 'パレット', instruments: '楽器', layout: 'レイアウト', properties: 'プロパティ', paletteSearch: 'パレットを検索', instrumentHelp: 'パート、譜表、楽器、MIDI入力を管理します。', propertyHelp: '音符または休符を選択するとプロパティを編集できます。', selection: '選択要素', score: '楽譜', dotted: '付点', stem: '符尾', fingering: '運指', stringNumber: '弦番号', scoreProperties: 'プロジェクトのプロパティ…', pageSettingsAction: 'ページ設定…', textStyle: 'テキストスタイル…', editHistory: '編集履歴', modeHome: 'ホーム', modeScore: '楽譜', modePublish: '公開', parts: 'パート', partView: 'パート表示', timeline: 'タイムライン', piano: 'ピアノ', navigator: 'ナビゲーター', theme: 'テーマ', homeTitle: '楽譜を作成・開く', homeLead: 'テンプレートから始めるか、ローカルの楽譜を続きから編集します。', newScore: '新しい楽譜', openScore: '楽譜を開く', continueEditing: '編集を続ける', recentScores: '最近使った楽譜', browse: 'その他を開く…', publishTitle: '現在の楽譜を書き出す', publishLead: '譜面、交換用データ、再生データを作成します。', backToScore: '楽譜に戻る',
   },
   zh: {
     preferences: '应用偏好设置', preferencesHelp: '选择 Acorde Composer 使用的语言。更改会立即生效。', language: '语言', close: '关闭', done: '完成',
@@ -85,7 +85,7 @@ const LANGUAGE_COPY = {
     voice: '声部', duration: '时值', dot: '附点', tuplet: '连音', dynamic: '力度', grace: '装饰音', accidental: '变音记号', articulation: '奏法',
     scoreSettingsTitle: '乐谱设置', accessibility: '无障碍', reduceMotion: '减少动画和动态效果', highContrast: '高对比度乐谱', apply: '应用更改', cancel: '取消',
     saved: '已保存', unsaved: '有未保存的更改', saving: '保存中…', saveFailed: '保存失败', pageSettings: '页面设置', layoutDensity: '布局密度', pageSize: '页面大小', orientation: '方向', margins: '页边距', adaptive: '适应窗口', measuresPerSystem: '小节／系统',
-    palettes: '符号面板', instruments: '乐器', layout: '布局', properties: '属性', paletteSearch: '搜索符号面板', instrumentHelp: '管理分谱、五线谱、乐器和 MIDI 输入。', propertyHelp: '选择音符或休止符后可编辑属性。', selection: '所选内容', score: '乐谱', dotted: '附点', stem: '符干', fingering: '指法', stringNumber: '弦号', scoreProperties: '项目属性…', pageSettingsAction: '页面设置…', textStyle: '文本样式…', editHistory: '编辑历史', modeHome: '主页', modeScore: '乐谱', modePublish: '发布', parts: '分谱', partView: '分谱视图', timeline: '时间线', piano: '钢琴', navigator: '导航器', theme: '主题', homeTitle: '创建或打开乐谱', homeLead: '从模板开始，或继续编辑本地乐谱。', newScore: '新建乐谱', openScore: '打开乐谱', continueEditing: '继续编辑', recentScores: '最近使用的乐谱', browse: '浏览…', publishTitle: '导出当前乐谱', publishLead: '创建乐谱、交换和播放文件。', backToScore: '返回乐谱',
+    palettes: '符号面板', instruments: '乐器', layout: '布局', properties: '属性', paletteSearch: '搜索符号面板', instrumentHelp: '管理分谱、五线谱、乐器和 MIDI 输入。', propertyHelp: '选择音符或休止符后可编辑属性。', selection: '所选内容', score: '乐谱', dotted: '附点', stem: '符干', fingering: '指法', stringNumber: '弦号', scoreProperties: '项目属性…', pageSettingsAction: '页面设置…', textStyle: '文本样式…', editHistory: '编辑历史', modeHome: '主页', modeScore: '乐谱', modePublish: '发布', parts: '分谱', partView: '分谱视图', timeline: '时间线', piano: '钢琴', navigator: '导航器', theme: '主题', homeTitle: '创建或打开乐谱', homeLead: '从模板开始，或继续编辑本地乐谱。', newScore: '新建乐谱', openScore: '打开乐谱', continueEditing: '继续编辑', recentScores: '最近使用的乐谱', browse: '打开其他…', publishTitle: '导出当前乐谱', publishLead: '创建乐谱、交换和播放文件。', backToScore: '返回乐谱',
   },
 };
 let language = LANGUAGE_COPY[storedValue(LANGUAGE_KEY)] ? storedValue(LANGUAGE_KEY) : 'en';
@@ -112,7 +112,7 @@ function applyLanguage(nextLanguage = language) {
 function saveLanguagePreference(nextLanguage) { language = LANGUAGE_COPY[nextLanguage] ? nextLanguage : 'en'; storeValue(LANGUAGE_KEY, language); applyLanguage(language); }
 function refreshWorkspaceLanguage() {
   const copy = LANGUAGE_COPY[language]; if (!copy) return;
-  relabelNoteInputToolbar();
+  relabelNoteInputToolbar(); relabelPlaybackToolbar(); relabelFileIo();
   const sidebarNames = { palettes: copy.palettes, instruments: copy.instruments, layout: copy.layout, properties: copy.properties };
   Object.entries(sidebarNames).forEach(([name, label]) => { const tab = document.querySelector(`.sidebar-tabs [data-sidebar="${name}"]`); if (tab) tab.textContent = label; const heading = document.querySelector(`.sidebar-${name} .sidebar-panel-heading strong`); if (heading) heading.textContent = label; });
   const search = $('palette-search'); if (search) { search.placeholder = copy.paletteSearch; search.setAttribute('aria-label', copy.paletteSearch); }
@@ -125,7 +125,7 @@ function refreshWorkspaceLanguage() {
   const scoreHeading = document.querySelector('.property-score h2'); if (scoreHeading) scoreHeading.textContent = copy.score;
   [['property-score-settings', copy.scoreProperties], ['property-page-settings', copy.pageSettingsAction], ['property-text-style', copy.textStyle], ['property-history', copy.editHistory]].forEach(([id, label]) => { if ($(id)) $(id).textContent = label; });
   document.querySelectorAll('.composer-mode-button').forEach((button) => { button.textContent = { home: copy.modeHome, score: copy.modeScore, publish: copy.modePublish }[button.dataset.mode] || button.textContent; });
-  [['home-title', copy.homeTitle], ['home-lead', copy.homeLead], ['home-new-title', copy.newScore], ['home-open-title', copy.openScore], ['home-continue-title', copy.continueEditing], ['home-recent-title', copy.recentScores], ['home-browse-button', copy.browse], ['publish-title', copy.publishTitle], ['publish-lead', copy.publishLead], ['publish-back-button', copy.backToScore]].forEach(([id, label]) => { if ($(id)) $(id).textContent = label; });
+  [['home-title', copy.homeTitle], ['home-lead', copy.homeLead], ['home-new-title', copy.newScore], ['home-open-title', copy.openScore], ['home-continue-title', copy.continueEditing], ['home-recent-title', copy.recentScores], ['home-browse-button', copy.browse], ['publish-title', copy.publishTitle], ['publish-lead', copy.publishLead], ['publish-back-button', copy.backToScore], ['publish-export-button', window.AcordeFileIo?.label('Export…', language) || 'Export…'], ['publish-print-button', window.AcordeFileIo?.label('Print…', language) || 'Print…']].forEach(([id, label]) => { if ($(id)) $(id).textContent = label; });
   if ($('parts-button')) $('parts-button').textContent = copy.parts;
   if ($('part-view-button')) $('part-view-button').textContent = copy.partView;
   document.querySelector('#timeline-panel .utility-panel-heading strong')?.replaceChildren(document.createTextNode(copy.timeline));
@@ -921,18 +921,20 @@ function highlightPlayback(address) { if (address === highlightedPlaybackAddress
 const selectionPlayButton = document.createElement('button'); selectionPlayButton.id = 'selection-play-button'; selectionPlayButton.className = 'transport-button small'; selectionPlayButton.textContent = 'Selection'; selectionPlayButton.title = 'Select a measure range first'; selectionPlayButton.disabled = true; $('play-button').after(selectionPlayButton);
 const shortcutList = document.querySelector('#shortcuts-dialog dl'); if (shortcutList) { const entries = [['H', 'Hairpin tool'], ['Space', 'Play / stop']]; entries.forEach(([termText, descriptionText]) => { if ([...shortcutList.querySelectorAll('dt')].some((item) => item.textContent === termText)) return; const term = document.createElement('dt'); term.textContent = termText; const description = document.createElement('dd'); description.textContent = descriptionText; shortcutList.append(term, description); }); }
 installShortcutEditor(); renderShortcutEditor();
-function updatePlaybackFrame(start) { if (!$('play-button').classList.contains('playing')) return; const elapsed = Math.max(0, audioContext.currentTime - start); while (playbackEventCursor + 1 < scheduledEvents.length && scheduledEvents[playbackEventCursor + 1].time_secs <= elapsed) playbackEventCursor += 1; const active = scheduledEvents[playbackEventCursor]?.time_secs <= elapsed ? scheduledEvents[playbackEventCursor] : null; highlightPlayback(active?.address); const total = playbackDuration || 0; $('timecode').textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(Math.floor(elapsed % 60)).padStart(2, '0')} / ${String(Math.floor(total / 60)).padStart(2, '0')}:${String(Math.floor(total % 60)).padStart(2, '0')}`; document.querySelector('.transport-progress').style.width = `${Math.min(100, total ? elapsed / total * 100 : 0)}%`; playbackFrame = requestAnimationFrame(() => updatePlaybackFrame(start)); }
+function updatePlaybackFrame(start) { if (!$('play-button').classList.contains('playing')) return; const elapsed = Math.max(0, audioContext.currentTime - start); while (playbackEventCursor + 1 < scheduledEvents.length && scheduledEvents[playbackEventCursor + 1].time_secs <= elapsed) playbackEventCursor += 1; const active = scheduledEvents[playbackEventCursor]?.time_secs <= elapsed ? scheduledEvents[playbackEventCursor] : null; highlightPlayback(active?.address); const total = playbackDuration || 0; $('timecode').textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(Math.floor(elapsed % 60)).padStart(2, '0')} / ${String(Math.floor(total / 60)).padStart(2, '0')}:${String(Math.floor(total % 60)).padStart(2, '0')}`; setPlaybackTime(elapsed + playbackOffset); document.querySelector('.transport-progress').style.width = `${Math.min(100, total ? elapsed / total * 100 : 0)}%`; playbackFrame = requestAnimationFrame(() => updatePlaybackFrame(start)); }
 async function prepareSoundfontEvents(events) { const soundfont = mixerState.soundfont; if (!soundfont.path || !soundfont.preset) return { events, diagnostics: [] }; try { const data = await window.acorde.readSoundfont(soundfont.path); const prepared = await window.acorde.prepareSoundfontPlayback({ data: Array.from(data), providerVersion: soundfont.version || 'acorde-soundfont/1.2.2', bank: soundfont.preset.bank, program: soundfont.preset.program, channels: soundfont.channels, events }); const samples = prepared?.samples && typeof prepared.samples === 'object' ? prepared.samples : {}; const hydrated = Array.isArray(prepared?.events) ? prepared.events.map((event) => event?.soundfont_sample_key && samples[event.soundfont_sample_key] ? { ...event, decoded_sample: samples[event.soundfont_sample_key] } : event) : events; return { events: hydrated, diagnostics: Array.isArray(prepared?.diagnostics) ? prepared.diagnostics : [] }; } catch (error) { return { events, diagnostics: [`soundfont-playback-fallback:${userFacingError(error)}`] }; } }
-function stopPlayback() { audioBackend.stopAll(); if (playbackTimer) clearTimeout(playbackTimer); if (positionTimer) clearInterval(positionTimer); if (playbackFrame) cancelAnimationFrame(playbackFrame); playbackTimer = null; positionTimer = null; playbackFrame = null; scheduledEvents = []; playbackEventCursor = 0; playbackDuration = 0; highlightPlayback(null); $('position-label').textContent = 'Measure — · Beat —'; $('position-label').removeAttribute('title'); document.querySelector('.transport-progress').classList.remove('running'); document.querySelector('.transport-progress').style.width = '0'; $('play-button').classList.remove('playing'); $('play-button').textContent = '▶'; }
-async function startPlayback(offset = 0, selection = null) { if (!currentScore) return; stopPlayback(); audioContext = await audioBackend.resume(); audioBackend.setMasterControls(mixerState.master); const bpm = Number($('bpm-select').value) || null; const lastMeasure = currentScore.parts[0].staves[0].measures.length - 1; const loopRegion = loopEnabled && !selection ? (selectedRange || [0, lastMeasure]) : null; const allEvents = (await window.acorde.playbackEvents(currentScore, { bpm, loopRegion })).filter((item) => mixerState.metronome || !item.is_metronome); const rangeEvents = selection ? allEvents.filter((item) => { const measure = Number(item.address?.split(':')[2]); return Number.isInteger(measure) && measure >= selection[0] && measure <= selection[1]; }) : allEvents; const baseTime = selection && rangeEvents.length ? Math.min(...rangeEvents.map((item) => item.time_secs)) : 0; const normalizedEvents = rangeEvents.map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - baseTime) })); const fullDuration = normalizedEvents.reduce((max, item) => Math.max(max, item.time_secs + item.duration_secs), 0); scheduledEvents = normalizedEvents.filter((item) => item.time_secs + item.duration_secs > offset).map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - offset) })); playbackDuration = Math.max(0, fullDuration - offset); const soundfontPrepared = await prepareSoundfontEvents(scheduledEvents); if (soundfontPrepared.diagnostics.length) showDiagnostics({ format: 'soundfont', diagnostics: soundfontPrepared.diagnostics.map((loss_reason) => ({ code: 'soundfont.playback', severity: /^(soundfont-playback-fallback|decode-failed:|missing-zone:)/.test(loss_reason) ? 'Warning' : 'Info', loss_reason })) }); const start = audioContext.currentTime + 0.05; const byPart = new Map(); soundfontPrepared.events.forEach((item) => { const partIndex = item.is_metronome ? -1 : item.part_index; if (!byPart.has(partIndex)) byPart.set(partIndex, []); byPart.get(partIndex).push(item); }); const hasChannelSolo = Object.values(mixerState.channels).some((channel) => channel?.solo); byPart.forEach((events, partIndex) => { const channel = partIndex < 0 ? {} : { ...(mixerState.channels[partIndex] || {}) }; if (mixerState.soloPiano && partIndex > 0) channel.mute = true; if (hasChannelSolo && partIndex >= 0 && !mixerState.channels[partIndex]?.solo) channel.mute = true; audioBackend.schedule(events, start, channel, partIndex); }); $('play-button').classList.add('playing'); $('play-button').textContent = 'Ⅱ'; document.querySelector('.transport-progress').classList.add('running'); positionTimer = setInterval(async () => { const elapsed = Math.max(0, audioContext.currentTime - start); const position = await window.acorde.playbackPosition(elapsed + offset + baseTime, bpm); if (position) { $('position-label').textContent = `Measure ${position.measure_index + 1} · Beat ${position.beat.toFixed(2)}`; $('position-label').title = `Playback position from acorde: measure ${position.measure_index + 1}, beat ${position.beat.toFixed(2)}`; } }, 100); updatePlaybackFrame(start); playbackTimer = setTimeout(stopPlayback, (playbackDuration + 0.2) * 1000); }
+function stopPlayback() { audioBackend.stopAll(); if (playbackTimer) clearTimeout(playbackTimer); if (positionTimer) clearInterval(positionTimer); if (playbackFrame) cancelAnimationFrame(playbackFrame); playbackTimer = null; positionTimer = null; playbackFrame = null; scheduledEvents = []; playbackEventCursor = 0; playbackDuration = 0; highlightPlayback(null); $('position-label').textContent = 'Measure — · Beat —'; $('position-label').removeAttribute('title'); resetPlaybackCounters(); document.querySelector('.transport-progress').classList.remove('running'); document.querySelector('.transport-progress').style.width = '0'; $('play-button').classList.remove('playing'); setPlayButtonState(false); }
+async function startPlayback(offset = 0, selection = null) { if (!currentScore) return; stopPlayback(); audioContext = await audioBackend.resume(); audioBackend.setMasterControls(mixerState.master); const bpm = Number($('bpm-select').value) || null; const lastMeasure = currentScore.parts[0].staves[0].measures.length - 1; const loopRegion = loopEnabled && !selection ? (selectedRange || [0, lastMeasure]) : null; const allEvents = (await window.acorde.playbackEvents(currentScore, { bpm, loopRegion })).filter((item) => mixerState.metronome || !item.is_metronome); const rangeEvents = selection ? allEvents.filter((item) => { const measure = Number(item.address?.split(':')[2]); return Number.isInteger(measure) && measure >= selection[0] && measure <= selection[1]; }) : allEvents; const baseTime = selection && rangeEvents.length ? Math.min(...rangeEvents.map((item) => item.time_secs)) : 0; const normalizedEvents = rangeEvents.map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - baseTime) })); const fullDuration = normalizedEvents.reduce((max, item) => Math.max(max, item.time_secs + item.duration_secs), 0); scheduledEvents = normalizedEvents.filter((item) => item.time_secs + item.duration_secs > offset).map((item) => ({ ...item, time_secs: Math.max(0, item.time_secs - offset) })); playbackDuration = Math.max(0, fullDuration - offset); const soundfontPrepared = await prepareSoundfontEvents(scheduledEvents); if (soundfontPrepared.diagnostics.length) showDiagnostics({ format: 'soundfont', diagnostics: soundfontPrepared.diagnostics.map((loss_reason) => ({ code: 'soundfont.playback', severity: /^(soundfont-playback-fallback|decode-failed:|missing-zone:)/.test(loss_reason) ? 'Warning' : 'Info', loss_reason })) }); const start = audioContext.currentTime + 0.05; const byPart = new Map(); soundfontPrepared.events.forEach((item) => { const partIndex = item.is_metronome ? -1 : item.part_index; if (!byPart.has(partIndex)) byPart.set(partIndex, []); byPart.get(partIndex).push(item); }); const hasChannelSolo = Object.values(mixerState.channels).some((channel) => channel?.solo); byPart.forEach((events, partIndex) => { const channel = partIndex < 0 ? {} : { ...(mixerState.channels[partIndex] || {}) }; if (mixerState.soloPiano && partIndex > 0) channel.mute = true; if (hasChannelSolo && partIndex >= 0 && !mixerState.channels[partIndex]?.solo) channel.mute = true; audioBackend.schedule(events, start, channel, partIndex); }); $('play-button').classList.add('playing'); setPlayButtonState(true); document.querySelector('.transport-progress').classList.add('running'); positionTimer = setInterval(async () => { const elapsed = Math.max(0, audioContext.currentTime - start); const position = await window.acorde.playbackPosition(elapsed + offset + baseTime, bpm); if (position) { $('position-label').textContent = `Measure ${position.measure_index + 1} · Beat ${position.beat.toFixed(2)}`; setPlaybackMeasureBeat(position); $('position-label').title = `Playback position from acorde: measure ${position.measure_index + 1}, beat ${position.beat.toFixed(2)}`; } }, 100); updatePlaybackFrame(start); playbackTimer = setTimeout(stopPlayback, (playbackDuration + 0.2) * 1000); }
 const guardedStartPlayback = startPlayback;
 let playbackStartInFlight = false;
+let playbackOffset = 0; let playbackSelection = null; let playbackStartedAt = null;
 startPlayback = async (...args) => {
   if (playbackStartInFlight) return;
   const measures = currentScore?.parts?.[0]?.staves?.[0]?.measures;
   if (!Array.isArray(measures) || measures.length === 0) return;
   playbackStartInFlight = true;
-  try { return await guardedStartPlayback(...args); } finally { playbackStartInFlight = false; }
+  playbackOffset = Math.max(0, Number(args[0]) || 0); playbackSelection = args[1] || null;
+  try { const result = await guardedStartPlayback(...args); playbackStartedAt = audioContext?.currentTime ?? null; return result; } finally { playbackStartInFlight = false; }
 };
 $('play-button').addEventListener('click', async () => { if ($('play-button').classList.contains('playing')) stopPlayback(); else { try { await startPlayback(); } catch (error) { stopPlayback(); uiAlert(`再生できませんでした: ${userFacingError(error)}`); } } });
 const playButton = $('play-button'); playButton?.setAttribute('aria-label', 'Play or stop score'); const loopButton = $('loop-button'); loopButton?.setAttribute('aria-label', 'Toggle loop playback');
@@ -974,7 +976,7 @@ $('mixer-button').addEventListener('click', refreshAudioOutputs);
 $('mixer-button').addEventListener('click', () => { if (!audioDeviceChangeBound && navigator.mediaDevices?.addEventListener) { navigator.mediaDevices.addEventListener('devicechange', refreshAudioOutputs); audioDeviceChangeBound = true; } });
 $('audio-output-select').addEventListener('change', async () => { mixerState.outputDeviceId = $('audio-output-select').value || null; audioBackend.outputDeviceId = mixerState.outputDeviceId; try { if (audioContext) await audioBackend.setOutputDevice(mixerState.outputDeviceId); } catch { mixerState.outputDeviceId = null; audioBackend.outputDeviceId = null; $('audio-output-select').value = ''; } saveMixer(); });
 function applyLiveMixerControls() { const hasChannelSolo = Object.values(mixerState.channels).some((channel) => channel?.solo); Object.entries(mixerState.channels).forEach(([index, state]) => { if (audioContext) audioBackend.setChannelControls(Number(index), { ...state, mute: state.mute || (hasChannelSolo && !state.solo) || (mixerState.soloPiano && Number(index) > 0) }); }); if (audioContext) audioBackend.setMasterControls(mixerState.master); }
-$('mixer-apply').addEventListener('click', () => { mixerState.master.volume = Number($('master-volume').value); mixerState.master.pan = Number($('master-pan').value); mixerState.master.mute = $('master-mute').checked; mixerState.soloPiano = $('master-solo').checked; mixerState.metronome = $('metronome-toggle').checked; document.querySelectorAll('.channel-row').forEach((row) => { const index = Number(row.dataset.partIndex); mixerState.channels[index] = { volume: Number(row.querySelector('[data-channel="volume"]').value), pan: Number(row.querySelector('[data-channel="pan"]').value), mute: row.querySelector('[data-channel="mute"]').checked, solo: row.querySelector('[data-channel="solo"]').checked }; }); applyLiveMixerControls(); saveMixer(); });
+$('mixer-apply').addEventListener('click', () => { mixerState.master.volume = Number($('master-volume').value); mixerState.master.pan = Number($('master-pan').value); mixerState.master.mute = $('master-mute').checked; mixerState.soloPiano = $('master-solo').checked; mixerState.metronome = $('metronome-toggle').checked; syncMetronomeButton(); document.querySelectorAll('.channel-row').forEach((row) => { const index = Number(row.dataset.partIndex); mixerState.channels[index] = { volume: Number(row.querySelector('[data-channel="volume"]').value), pan: Number(row.querySelector('[data-channel="pan"]').value), mute: row.querySelector('[data-channel="mute"]').checked, solo: row.querySelector('[data-channel="solo"]').checked }; }); applyLiveMixerControls(); saveMixer(); });
 $('soundfont-button').addEventListener('click', async () => { const path = await window.acorde.chooseSoundfont(); if (!path) return; mixerState.soundfont = window.AcordeAudioProfile.soundfont(path); $('soundfont-path').textContent = `${path} (analyzing with acorde-soundfont...)`; saveMixer(); await refreshSoundfontStatus(); });
 $('soundfont-preset-select').addEventListener('change', () => { const [bank, program] = $('soundfont-preset-select').value.split(':').map(Number); mixerState.soundfont.preset = Number.isInteger(bank) && Number.isInteger(program) ? (mixerState.soundfont.presets || []).find((preset) => preset.bank === bank && preset.program === program) || null : null; saveMixer(); });
 $('soundfont-channels-select').addEventListener('change', () => { mixerState.soundfont.channels = Number($('soundfont-channels-select').value) === 2 ? 2 : 1; saveMixer(); });
@@ -989,12 +991,12 @@ $('history-dialog').addEventListener('close', syncApplicationMenuState);
  $('diagnostics-export').addEventListener('click', async () => { if (!lastDiagnosticsReport) return; try { const saved = await window.acorde.saveSupportBundle({ suggestedName: 'acorde-support-bundle.json', diagnostics: [lastDiagnosticsReport] }); if (saved) $('file-name').textContent = saved.split(/[\\/]/).pop(); } catch (error) { uiAlert(`support bundleを書き出せませんでした: ${userFacingError(error)}`); } });
 $('shortcuts-button').addEventListener('click', () => { renderShortcutEditor(); $('shortcuts-dialog').showModal(); });
 $('template-button').addEventListener('click', () => $('template-dialog').showModal());
-$('template-form').addEventListener('submit', async (event) => { event.preventDefault(); if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore($('template-select').value); currentScore = result.score; selectedAddress = null; selectedRange = null; activePartIndex = 0; activeVoiceIndex = 0; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); commitRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; $('template-dialog').close(); clearDirty(); } catch (error) { uiAlert(`テンプレートから新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
+$('template-form').addEventListener('submit', async (event) => { event.preventDefault(); if (event.submitter?.value === 'cancel') { $('template-dialog').close(); return; } if (dirty && !await uiConfirm('Discard unsaved changes and create a new score?')) return; try { const result = await window.acorde.newScore($('template-select').value, newScoreTemplateOptions()); currentScore = result.score; selectedAddress = null; selectedRange = null; activePartIndex = 0; activeVoiceIndex = 0; history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory(); updateScoreHeader(); showDiagnostics(result.report); commitRenderedScore(result.svg); $('file-name').textContent = 'Untitled score'; $('template-dialog').close(); clearDirty(); await applyNewScoreSetup(); } catch (error) { uiAlert(`テンプレートから新規譜面を作成できませんでした: ${userFacingError(error)}`); } });
 $('time-select').addEventListener('change', async () => { if (!currentScore) return; const [numerator, denominator] = $('time-select').value.split('/').map(Number); try { await applyCommand({ type: 'set_time_signature', numerator, denominator }, 'SetTimeSignature'); } catch (error) { uiAlert(`拍子を変更できませんでした: ${userFacingError(error)}`); updateScoreHeader(); } });
 $('key-select').addEventListener('change', async () => { if (!currentScore) return; try { await applyCommand({ type: 'set_key_signature', fifths: Number($('key-select').value) }, 'SetKeySignature'); } catch (error) { uiAlert(`調号を変更できませんでした: ${userFacingError(error)}`); updateScoreHeader(); } });
 $('add-measure-button').addEventListener('click', async () => { if (!currentScore) return; try { await applyCommand({ type: 'add_measure', after_index: currentScore.parts[0].staves[0].measures.length - 1 }, 'AddMeasure'); } catch (error) { uiAlert(`小節を追加できませんでした: ${userFacingError(error)}`); } });
 $('delete-measure-button').addEventListener('click', async () => { if (!currentScore) return; const count = currentScore.parts[0].staves[0].measures.length; if (count <= 1) return; try { await applyCommand({ type: 'delete_measure', measure_index: count - 1 }, 'DeleteMeasure'); } catch (error) { uiAlert(`小節を削除できませんでした: ${userFacingError(error)}`); } });
-$('score-settings-form').addEventListener('submit', async (event) => { event.preventDefault(); accessibilityState.reducedMotion = $('reduced-motion').checked; accessibilityState.highContrast = $('high-contrast').checked; saveAccessibilityPreferences(); if (!currentScore) return; const bpm = Number($('tempo-input').value); const midiChannel = Number($('midi-channel-input').value) - 1; const midiProgram = Number($('midi-program-input').value) - 1; const semitones = Number($('transpose-input').value); const staffIndex = Number($('staff-select')?.value || 0); if (!Number.isInteger(bpm) || bpm < 1 || bpm > 400 || !Number.isInteger(midiChannel) || midiChannel < 0 || midiChannel > 15 || !Number.isInteger(midiProgram) || midiProgram < 0 || midiProgram > 127 || !Number.isInteger(semitones) || semitones < -48 || semitones > 48) return; try { await applyCommand({ type: 'batch', commands: [{ type: 'set_metadata', title: $('title-input').value.trim() || null, composer: $('composer-input').value.trim() || null, lyricist: $('lyricist-input').value.trim() || null, copyright: $('copyright-input').value.trim() || null, work_number: $('work-number-input').value.trim() || null, movement_title: $('movement-title-input').value.trim() || null }, { type: 'set_tempo', bpm }, { type: 'set_midi_instrument', part_index: activePartIndex, midi_channel: midiChannel, midi_program: midiProgram }, { type: 'set_clef', part_index: activePartIndex, staff_index: staffIndex, clef: $('clef-select').value }, { type: 'set_transpose', part_index: activePartIndex, staff_index: staffIndex, semitones }], label: 'UpdateScoreSettings' }, 'UpdateScoreSettings'); $('score-settings').close(); } catch (error) { uiAlert(`スコア設定を変更できませんでした: ${userFacingError(error)}`); } });
+$('score-settings-form').addEventListener('submit', async (event) => { event.preventDefault(); if (event.submitter?.value === 'cancel') { $('score-settings').close(); return; } accessibilityState.reducedMotion = $('reduced-motion').checked; accessibilityState.highContrast = $('high-contrast').checked; saveAccessibilityPreferences(); if (!currentScore) return; const bpm = Number($('tempo-input').value); const midiChannel = Number($('midi-channel-input').value) - 1; const midiProgram = Number($('midi-program-input').value) - 1; const semitones = Number($('transpose-input').value); const staffIndex = Number($('staff-select')?.value || 0); if (!Number.isInteger(bpm) || bpm < 1 || bpm > 400 || !Number.isInteger(midiChannel) || midiChannel < 0 || midiChannel > 15 || !Number.isInteger(midiProgram) || midiProgram < 0 || midiProgram > 127 || !Number.isInteger(semitones) || semitones < -48 || semitones > 48) return; try { await applyCommand({ type: 'batch', commands: [{ type: 'set_metadata', title: $('title-input').value.trim() || null, composer: $('composer-input').value.trim() || null, lyricist: $('lyricist-input').value.trim() || null, copyright: $('copyright-input').value.trim() || null, work_number: $('work-number-input').value.trim() || null, movement_title: $('movement-title-input').value.trim() || null }, { type: 'set_tempo', bpm }, { type: 'set_midi_instrument', part_index: activePartIndex, midi_channel: midiChannel, midi_program: midiProgram }, { type: 'set_clef', part_index: activePartIndex, staff_index: staffIndex, clef: $('clef-select').value }, { type: 'set_transpose', part_index: activePartIndex, staff_index: staffIndex, semitones }], label: 'UpdateScoreSettings' }, 'UpdateScoreSettings'); $('score-settings').close(); } catch (error) { uiAlert(`スコア設定を変更できませんでした: ${userFacingError(error)}`); } });
 async function applyScoreSettingsFromButton(event) {
   event.preventDefault();
   accessibilityState.reducedMotion = $('reduced-motion').checked;
@@ -1263,14 +1265,14 @@ function installMuseScoreWorkspaceLayout() {
   const scoreActions = document.createElement('div'); scoreActions.className = 'musescore-score-actions'; scoreActions.setAttribute('aria-label', 'Score panels');
   const partsButton = document.createElement('button'); partsButton.id = 'parts-button'; partsButton.className = 'quiet'; partsButton.textContent = 'Parts'; partsButton.addEventListener('click', () => { document.querySelector('.left-rail')?.classList.remove('hidden'); window.activateComposerSidebar?.('instruments'); }); scoreActions.append(partsButton);
   [['part-view-button', 'Part view'], ['mixer-button', 'Mixer']].forEach(([id, label]) => { const button = $(id); if (!button) return; button.dataset.shortLabel = label; scoreActions.append(button); });
-  const playback = document.createElement('div'); playback.className = 'musescore-playback'; playback.setAttribute('aria-label', 'Playback toolbar'); ['play-button', 'loop-button', 'bpm-select'].forEach((id) => { const control = $(id); if (control) playback.append(control); });
-  ['selection-play-button', 'transport-track', 'timecode'].forEach((id) => { const control = $(id); if (control) playback.append(control); });
+  const playback = document.createElement('div'); playback.className = 'musescore-playback'; playback.setAttribute('aria-label', 'Playback toolbar'); installPlaybackToolbar(playback);
   topbar.insertBefore(scoreActions, topActions); topbar.insertBefore(playback, topActions);
   topActions.classList.add('command-sources');
 
-  const home = document.createElement('section'); home.id = 'composer-home'; home.className = 'composer-mode-page hidden'; home.innerHTML = '<div class="mode-page-inner"><p class="mode-eyebrow">Acorde Composer</p><h1 id="home-title">Create and open scores</h1><p id="home-lead" class="mode-lead">Start from a template or continue a local score.</p><div class="mode-card-grid"><button type="button" data-action="template-button"><strong id="home-new-title">New score</strong><span>Choose a score template</span></button><button type="button" data-action="open-button"><strong id="home-open-title">Open score</strong><span>MusicXML, MXL, MIDI, or ABC</span></button><button type="button" data-mode-target="score"><strong id="home-continue-title">Continue editing</strong><span>Return to the current score</span></button></div><section class="home-recent"><div class="home-section-heading"><div><p class="mode-eyebrow">Recent</p><h2 id="home-recent-title">Recent scores</h2></div><button id="home-browse-button" type="button" class="quiet" data-action="open-button">Browse…</button></div><div id="home-recent-list" class="home-recent-list" aria-live="polite"></div></section></div>';
-  const publish = document.createElement('section'); publish.id = 'composer-publish'; publish.className = 'composer-mode-page hidden'; publish.innerHTML = '<div class="mode-page-inner"><p class="mode-eyebrow">Publish</p><div class="publish-heading"><div><h1 id="publish-title">Export the current score</h1><p id="publish-lead" class="mode-lead">Create notation, exchange, and playback files from one place.</p></div><div class="publish-document"><strong id="publish-document-name">Untitled score</strong><span id="publish-document-status">Saved</span></div></div><div class="publish-grid"><button type="button" data-action="save-button"><strong>MusicXML</strong><span>Editable score exchange</span></button><button type="button" data-action="midi-save-button"><strong>MIDI</strong><span>Playback and DAW exchange</span></button><button type="button" data-action="abc-save-button"><strong>ABC</strong><span>Plain-text notation</span></button><button type="button" data-action="svg-save-button"><strong>SVG</strong><span>Scalable score image</span></button><button type="button" data-action="pdf-save-button"><strong>PDF</strong><span>Print-ready document</span></button><button type="button" data-action="print-button"><strong>Print</strong><span>System print dialog</span></button></div><button id="publish-back-button" type="button" class="quiet" data-mode-target="score">Back to score</button></div>';
+  const home = document.createElement('section'); home.id = 'composer-home'; home.className = 'composer-mode-page hidden'; home.innerHTML = '<div class="mode-page-inner"><p class="mode-eyebrow">Acorde Composer</p><h1 id="home-title">Create and open scores</h1><p id="home-lead" class="mode-lead">Start from a template or continue a local score.</p><div class="mode-card-grid"><button type="button" data-action="template-button"><strong id="home-new-title">New score</strong><span>Choose a score template</span></button><button type="button" data-action="open-button"><strong id="home-open-title">Open score</strong><span>MusicXML, MXL, MIDI, or ABC</span></button><button type="button" data-mode-target="score"><strong id="home-continue-title">Continue editing</strong><span>Return to the current score</span></button></div><section class="home-recent"><div class="home-section-heading"><div><p class="mode-eyebrow">Recent</p><h2 id="home-recent-title">Recent scores</h2></div><button id="home-browse-button" type="button" class="quiet" data-action="open-button">Open other…</button></div><div id="home-recent-list" class="home-recent-list" aria-live="polite"></div></section></div>';
+  const publish = document.createElement('section'); publish.id = 'composer-publish'; publish.className = 'composer-mode-page hidden'; publish.innerHTML = '<div class="mode-page-inner"><p class="mode-eyebrow">Publish</p><div class="publish-heading"><div><h1 id="publish-title">Export the current score</h1><p id="publish-lead" class="mode-lead">Create notation, exchange, and playback files from one place.</p></div><div class="publish-document"><strong id="publish-document-name">Untitled score</strong><span id="publish-document-status">Saved</span></div></div><div class="publish-actions"><button id="publish-print-button" type="button" class="quiet" data-action="print-button">Print…</button><button id="publish-export-button" type="button" class="primary" data-export-format="">Export…</button></div><div class="publish-grid"><button type="button" data-export-format="pdf"><strong>PDF</strong><span>Print-ready document</span></button><button type="button" data-export-format="svg"><strong>SVG</strong><span>Scalable score image</span></button><button type="button" data-export-format="musicxml"><strong>MusicXML</strong><span>Editable score exchange</span></button><button type="button" data-export-format="midi"><strong>MIDI</strong><span>Playback and DAW exchange</span></button><button type="button" data-export-format="abc"><strong>ABC</strong><span>Plain-text notation</span></button><button type="button" data-action="print-button"><strong>Print</strong><span>System print dialog</span></button></div><button id="publish-back-button" type="button" class="quiet" data-mode-target="score">Back to score</button></div>';
   document.body.insertBefore(home, document.querySelector('.workspace')); document.body.insertBefore(publish, document.querySelector('.workspace'));
+  publish.querySelectorAll('[data-export-format]').forEach((button) => button.addEventListener('click', () => openExportDialog(button.dataset.exportFormat || null)));
   [home, publish].forEach((page) => { page.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => $(button.dataset.action)?.click())); page.querySelectorAll('[data-mode-target]').forEach((button) => button.addEventListener('click', () => setApplicationMode(button.dataset.modeTarget))); });
 
   const documentTabs = document.createElement('div'); documentTabs.id = 'score-document-tabs'; documentTabs.className = 'score-document-tabs'; documentTabs.setAttribute('role', 'tablist'); documentTabs.setAttribute('aria-label', 'Score and parts'); const tabsRow = document.createElement('div'); tabsRow.className = 'score-tabs-row'; editor.insertBefore(tabsRow, toolbar); tabsRow.append(documentTabs); renderDocumentTabs();
@@ -1448,6 +1450,7 @@ function installUiSemantics() {
   document.querySelector('.transport')?.setAttribute('aria-label', 'Playback controls');
   const labels = { 'undo-button': 'Undo', 'redo-button': 'Redo', 'play-button': 'Play score', 'loop-button': 'Loop playback' };
   Object.entries(labels).forEach(([id, label]) => { const element = $(id); if (element) { element.setAttribute('aria-label', label); element.title = label; } });
+  relabelPlaybackToolbar();
   const engine = document.querySelector('.engine-badge');
   if (engine) engine.title = engine.querySelector('small')?.textContent || 'acorde engine status';
   const soundfont = $('soundfont-indicator');
@@ -1484,7 +1487,7 @@ async function dispatchApplicationMenuCommand(command) {
     'show-parts': () => showSidebar('instruments'), 'save-as': () => saveCurrentDocument(true),
     cut: async () => { await copySelected(); await deleteSelected(); }, copy: () => copySelected(), paste: () => pasteNote(), delete: () => deleteSelected(),
     'select-all': () => selectAllMeasures(), 'select-section': () => selectCurrentSection(), 'find-go-to': () => findOrGoToMeasure(), 'clear-recent': () => window.acorde.clearRecentFiles?.(),
-    'recent-score': () => openRecentScoreAt(definition.recentIndex), 'open-export': () => { const menu = $('export-menu'); if (menu) menu.open = true; $('page-preset')?.focus(); },
+    'recent-score': () => openRecentScoreAt(definition.recentIndex), 'open-export': () => openExportDialog(), 'save-copy': () => saveDocumentCopy(),
     tuplet: () => applyTupletValue(TUPLET_MENU_PRESETS[definition.tuplet]), 'staff-text': () => openTextStyleEditor('Generic'),
     dynamics: () => { const details = $('dynamic-select')?.closest('details'); if (details) details.open = true; $('dynamic-select')?.focus(); }, 'technique-text': () => openTextStyleEditor('Technique'),
     hairpin: () => { $('hairpin-kind').value = command === 'add:crescendo' ? 'Crescendo' : 'Decrescendo'; $('hairpin-tool').click(); },
@@ -1507,7 +1510,7 @@ async function dispatchApplicationMenuCommand(command) {
     'step-duration': () => { const values = ['sixtyfourth', 'thirtysecond', 'sixteenth', 'eighth', 'quarter', 'half', 'whole']; const current = Math.max(0, values.indexOf($('duration-select').value)); const next = Math.max(0, Math.min(values.length - 1, current + definition.direction)); $('duration-select').value = values[next]; $('duration-select').dispatchEvent(new Event('change', { bubbles: true })); },
     'set-accidental': () => { $('accidental-select').value = definition.accidental; $('accidental-select').dispatchEvent(new Event('change', { bubbles: true })); },
     'voice-direct': () => setActiveVoice(definition.voice, true), 'enter-pitch': () => enterPitchAtCursor(definition.pitch), 'cross-staff-step': () => moveSelectedCrossStaff(definition.direction),
-    'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1), 'flip-direction': () => flipSelectedStem(),
+    'voice-step': () => stepActiveVoice(command === 'voice:next' ? 1 : -1), 'insert-measures': () => insertMeasuresBeforeSelection(definition.count), 'append-measures': () => appendMeasures(), 'system-breaks': () => editSystemBreaks(), 'exchange-voices': () => exchangeSelectedVoices(definition.voices), 'split-measure': () => splitMeasureAtSelection(), 'join-measures': () => joinSelectedMeasures(), 'remove-range': () => removeSelectedRange(), 'respell': () => runScoreTool({ type: 'respell_score_to_key' }, 'RespellPitches'), 'remove-trailing-measures': () => runScoreTool({ type: 'remove_trailing_empty_measures' }, 'RemoveTrailingEmptyMeasures'), 'flip-direction': () => flipSelectedStem(),
   };
   return rendererCommandHandlers[definition.handler]?.();
 }
@@ -1575,3 +1578,236 @@ async function flipSelectedStem() {
   const renderedUp = stem ? Number(stem.getAttribute('y2')) < Number(stem.getAttribute('y1')) : null;
   await applySelectionProperty('stem', model.nextStemDirection({ renderedUp, stem: snapshot.stem }));
 }
+function playbackIsRunning() { return Boolean($('play-button')?.classList.contains('playing')); }
+function currentPlaybackElapsed() { return playbackIsRunning() && audioContext && playbackStartedAt !== null ? Math.max(0, audioContext.currentTime - playbackStartedAt) + playbackOffset : 0; }
+function installPlaybackToolbar(playback) {
+  const model = window.AcordePlaybackToolbar;
+  const control = (id) => { let element = $(id); if (!element) { element = document.createElement('button'); element.id = id; element.type = 'button'; } element.classList.add('pb-button'); return element; };
+  const rewind = control('rewind-button'); rewind.addEventListener('click', rewindPlayback);
+  const play = control('play-button'); const loop = control('loop-button');
+  loop.addEventListener('click', () => loop.setAttribute('aria-pressed', String(Boolean(loopEnabled))));
+  const metronome = control('metronome-button'); metronome.addEventListener('click', toggleMetronomeFromToolbar);
+  const settings = control('playback-settings-button'); settings.setAttribute('aria-haspopup', 'dialog'); settings.setAttribute('aria-expanded', 'false'); settings.setAttribute('aria-controls', 'playback-settings-popover');
+  if (model) { rewind.innerHTML = model.icon('rewind'); loop.innerHTML = model.icon('loop'); metronome.innerHTML = model.icon('metronome'); settings.innerHTML = model.icon('settings'); }
+  loop.setAttribute('aria-pressed', String(Boolean(loopEnabled)));
+  const popover = document.createElement('div'); popover.id = 'playback-settings-popover'; popover.className = 'playback-popover hidden'; popover.setAttribute('role', 'dialog');
+  const heading = (key) => { const element = document.createElement('p'); element.className = 'playback-popover-heading'; element.dataset.label = key; return element; };
+  const rangeRow = document.createElement('div'); rangeRow.className = 'playback-popover-row';
+  const selectionButton = $('selection-play-button'); if (selectionButton) { selectionButton.className = 'quiet playback-selection-button'; rangeRow.append(selectionButton); }
+  const seekRow = document.createElement('div'); seekRow.className = 'playback-popover-row playback-seek-row';
+  ['transport-track', 'timecode'].forEach((id) => { const element = $(id); if (element) seekRow.append(element); });
+  popover.append(heading('Playback range'), rangeRow, heading('Seek'), seekRow);
+  document.body.append(popover);
+  const closePopover = () => { popover.classList.add('hidden'); settings.setAttribute('aria-expanded', 'false'); };
+  settings.addEventListener('click', () => {
+    const opening = popover.classList.contains('hidden');
+    if (!opening) { closePopover(); return; }
+    const bounds = settings.getBoundingClientRect();
+    popover.style.top = `${Math.round(bounds.bottom + 6)}px`; popover.style.right = `${Math.max(8, Math.round(window.innerWidth - bounds.right))}px`;
+    popover.classList.remove('hidden'); settings.setAttribute('aria-expanded', 'true'); (popover.querySelector('button:not(:disabled)') || popover).focus?.();
+  });
+  document.addEventListener('pointerdown', (event) => { if (!popover.classList.contains('hidden') && !popover.contains(event.target) && !settings.contains(event.target)) closePopover(); });
+  popover.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.stopPropagation(); closePopover(); settings.focus(); } });
+  popover.tabIndex = -1;
+  const counters = document.createElement('div'); counters.className = 'playback-counters'; counters.setAttribute('role', 'group');
+  const time = document.createElement('span'); time.id = 'playback-time'; const measureBeat = document.createElement('span'); measureBeat.id = 'playback-measure-beat';
+  counters.append(time, measureBeat);
+  const speed = $('bpm-select'); if (speed) speed.classList.add('playback-speed');
+  playback.append(rewind, play, loop, metronome, settings, counters, ...(speed ? [speed] : []));
+  // The toolbar is still detached here, so initialize through element references; later
+  // relabel/sync calls (language refresh, playback state changes) look elements up by id.
+  if (model) { play.innerHTML = model.icon('play'); time.textContent = model.formatTime(0); measureBeat.textContent = model.formatMeasureBeat(null); }
+  play.setAttribute('aria-pressed', 'false');
+  const metronomeOn = Boolean(mixerState?.metronome); metronome.classList.toggle('active', metronomeOn); metronome.setAttribute('aria-pressed', String(metronomeOn));
+}
+function relabelPlaybackToolbar() {
+  const model = window.AcordePlaybackToolbar; if (!model) return;
+  const text = (key) => model.label(key, language);
+  model.CONTROLS.forEach((definition) => { const element = $(definition.id); if (!element || definition.id === 'play-button') return; element.title = text(definition.label); element.setAttribute('aria-label', text(definition.label)); });
+  setPlayButtonState(playbackIsRunning());
+  const counters = document.querySelector('.playback-counters'); if (counters) counters.setAttribute('aria-label', text('Playback position'));
+  if ($('playback-time')) $('playback-time').title = text('Elapsed time');
+  if ($('playback-measure-beat')) $('playback-measure-beat').title = text('Measure and beat');
+  const speed = $('bpm-select');
+  if (speed) { speed.setAttribute('aria-label', text('Playback speed')); speed.title = text('Playback speed'); [...speed.options].forEach((option) => { option.textContent = Number(option.value) > 0 ? model.tempoLabel(option.value) : `♩ = ${text('Score tempo')}`; }); }
+  document.querySelectorAll('#playback-settings-popover .playback-popover-heading').forEach((element) => { element.textContent = text(element.dataset.label); });
+  const popover = $('playback-settings-popover'); if (popover) popover.setAttribute('aria-label', text('Playback settings'));
+  const selectionButton = $('selection-play-button'); if (selectionButton) { selectionButton.textContent = text('Play selected measures'); if (!selectedRange) selectionButton.title = text('Select a measure range first'); }
+  const track = $('transport-track'); if (track) { track.setAttribute('role', 'slider'); track.setAttribute('aria-label', text('Seek')); }
+}
+function setPlayButtonState(playing) {
+  const model = window.AcordePlaybackToolbar; const button = $('play-button'); if (!button) return;
+  const name = model ? model.label(playing ? 'Stop' : 'Play', language) : (playing ? 'Stop' : 'Play');
+  if (model) button.innerHTML = model.icon(playing ? 'stop' : 'play'); else button.textContent = playing ? 'Ⅱ' : '▶';
+  button.title = `${name} (Space)`; button.setAttribute('aria-label', name); button.setAttribute('aria-pressed', String(Boolean(playing)));
+}
+function setPlaybackTime(seconds) { const model = window.AcordePlaybackToolbar; const element = $('playback-time'); if (model && element) element.textContent = model.formatTime(seconds); }
+function setPlaybackMeasureBeat(position) { const model = window.AcordePlaybackToolbar; const element = $('playback-measure-beat'); if (model && element) element.textContent = model.formatMeasureBeat(position); }
+function resetPlaybackCounters() { setPlaybackTime(0); setPlaybackMeasureBeat(null); }
+function syncMetronomeButton() { const button = $('metronome-button'); if (!button) return; const on = Boolean(mixerState?.metronome); button.classList.toggle('active', on); button.setAttribute('aria-pressed', String(on)); }
+async function restartPlaybackAt(offset) { try { await startPlayback(offset, playbackSelection); } catch (error) { stopPlayback(); uiAlert(`再生できませんでした: ${userFacingError(error)}`); } }
+async function toggleMetronomeFromToolbar() {
+  mixerState.metronome = !mixerState.metronome; const checkbox = $('metronome-toggle'); if (checkbox) checkbox.checked = mixerState.metronome;
+  saveMixer(); syncMetronomeButton();
+  if (playbackIsRunning()) await restartPlaybackAt(currentPlaybackElapsed());
+}
+async function rewindPlayback() { if (playbackIsRunning()) await restartPlaybackAt(0); else resetPlaybackCounters(); }
+function fileIoText(key) { return window.AcordeFileIo?.label(key, language) || key; }
+function currentDocumentStem() { return window.AcordeFileIo?.safeFileStem($('file-name')?.textContent || '') || 'score'; }
+async function saveDocumentCopy() {
+  if (!currentScore) return uiAlert('先に楽譜を開いてください。');
+  try {
+    const report = await window.acorde.serializeMusicxmlReport(currentScore); showDiagnostics(report);
+    await window.acorde.saveDocument({ suggestedName: `${currentDocumentStem()} copy.musicxml`, content: report.output, copy: true });
+  } catch (error) { uiAlert(`コピーを保存できませんでした: ${userFacingError(error)}`); }
+}
+function installExportDialog() {
+  const model = window.AcordeFileIo; if (!model || $('export-dialog')) return;
+  const dialog = document.createElement('dialog'); dialog.id = 'export-dialog'; dialog.className = 'export-dialog';
+  dialog.innerHTML = '<form method="dialog" class="export-form"><h2 data-fileio-label="Export">Export</h2><div class="export-layout"><fieldset class="export-targets"><legend data-fileio-label="What to export">What to export</legend><div id="export-target-list" class="export-target-list"></div></fieldset><fieldset class="export-options"><legend data-fileio-label="Export as">Export as</legend><select id="export-format" aria-label="Export format"></select><p id="export-format-description" class="muted"></p><div id="export-page-options" class="export-page-options"><p class="export-subheading" data-fileio-label="Page settings">Page settings</p></div><p id="export-note" class="muted export-note" data-fileio-label="Parts can be exported as MusicXML or MIDI.">Parts can be exported as MusicXML or MIDI.</p></fieldset></div><div class="dialog-actions"><button type="button" id="export-cancel" class="quiet" data-fileio-label="Cancel">Cancel</button><button type="button" id="export-confirm" class="primary" data-fileio-label="Export…">Export…</button></div></form>';
+  document.body.append(dialog);
+  const format = dialog.querySelector('#export-format');
+  ['Graphics', 'Score'].forEach((group) => { const optgroup = document.createElement('optgroup'); optgroup.dataset.fileioGroup = group; optgroup.label = group; model.EXPORT_FORMATS.filter((item) => item.group === group).forEach((item) => optgroup.append(new Option(item.label, item.id))); format.append(optgroup); });
+  const pageOptions = dialog.querySelector('#export-page-options');
+  ['page-preset', 'page-orientation', 'page-margin'].forEach((id) => { const control = $(id); if (control) pageOptions.append(control); });
+  format.addEventListener('change', syncExportDialog);
+  dialog.querySelector('#export-cancel').addEventListener('click', () => dialog.close());
+  dialog.querySelector('#export-confirm').addEventListener('click', async () => {
+    const selected = dialog.querySelector('#export-target-list input:checked')?.value || 'score';
+    const formatId = format.value; dialog.close();
+    await runExport(formatId, model.parseExportTarget(selected));
+  });
+  relabelFileIo();
+}
+function renderExportTargets() {
+  const model = window.AcordeFileIo; const host = $('export-target-list'); if (!model || !host) return;
+  const previous = host.querySelector('input:checked')?.value || 'score';
+  host.replaceChildren(...model.exportTargets(currentScore).map((target) => {
+    const row = document.createElement('label'); row.className = 'export-target';
+    const input = document.createElement('input'); input.type = 'radio'; input.name = 'export-target'; input.value = target.value; input.checked = target.value === previous; input.addEventListener('change', syncExportDialog);
+    const text = document.createElement('span'); text.textContent = target.partIndex === null ? fileIoText(target.label) : target.label; text.dataset.partIndex = target.partIndex === null ? '' : String(target.partIndex);
+    row.append(input, text); return row;
+  }));
+  if (!host.querySelector('input:checked')) host.querySelector('input')?.click();
+}
+function syncExportDialog() {
+  const model = window.AcordeFileIo; const dialog = $('export-dialog'); if (!model || !dialog) return;
+  const format = model.exportFormat(dialog.querySelector('#export-format').value);
+  dialog.querySelector('#export-format-description').textContent = fileIoText(format.description);
+  dialog.querySelector('#export-page-options').classList.toggle('hidden', !format.pageOptions);
+  const partInputs = [...dialog.querySelectorAll('#export-target-list input')].filter((input) => input.value !== 'score');
+  partInputs.forEach((input) => { input.disabled = !format.parts; if (!format.parts && input.checked) dialog.querySelector('#export-target-list input[value="score"]').checked = true; });
+  dialog.querySelector('#export-note').classList.toggle('hidden', format.parts || partInputs.length === 0);
+}
+function openExportDialog(formatId = null) {
+  if (!currentScore) return uiAlert('先に楽譜を開いてください。');
+  installExportDialog(); const dialog = $('export-dialog'); if (!dialog) return;
+  if (formatId) dialog.querySelector('#export-format').value = window.AcordeFileIo.exportFormat(formatId).id;
+  renderExportTargets(); syncExportDialog(); relabelFileIo();
+  if (!dialog.open) dialog.showModal();
+  dialog.querySelector('#export-format')?.focus();
+}
+async function runExport(formatId, partIndex = null) {
+  const model = window.AcordeFileIo; if (!model || !currentScore) return;
+  const format = model.exportFormat(formatId);
+  try {
+    if (partIndex === null) {
+      if (format.id === 'musicxml') { const report = await window.acorde.serializeMusicxmlReport(currentScore); showDiagnostics(report); await window.acorde.saveScore({ suggestedName: `${currentDocumentStem()}.musicxml`, content: report.output }); return; }
+      if (format.id === 'midi') { const report = await window.acorde.serializeMidiReport(currentScore); showDiagnostics(report); await window.acorde.saveMidi({ suggestedName: `${currentDocumentStem()}.mid`, data: report.output }); return; }
+      $({ pdf: 'pdf-save-button', svg: 'svg-save-button', abc: 'abc-save-button' }[format.id])?.click();
+      return;
+    }
+    if (!format.parts) return;
+    const part = await window.acorde.extractPart(currentScore, partIndex);
+    const stem = model.safeFileStem(`${currentDocumentStem()} - ${part.parts?.[0]?.name || `Part ${partIndex + 1}`}`);
+    if (format.id === 'musicxml') { const report = await window.acorde.serializeMusicxmlReport(part); showDiagnostics(report); await window.acorde.saveScore({ suggestedName: `${stem}.musicxml`, content: report.output }); }
+    if (format.id === 'midi') { const report = await window.acorde.serializeMidiReport(part); showDiagnostics(report); await window.acorde.saveMidi({ suggestedName: `${stem}.mid`, data: report.output }); }
+  } catch (error) { uiAlert(`書き出せませんでした: ${userFacingError(error)}`); }
+}
+function installNewScoreDialog() {
+  const model = window.AcordeFileIo; if (!model) return;
+  const key = $('new-score-key'); if (key && !key.options.length) model.KEY_SIGNATURES.forEach((item) => key.append(new Option(item.label, String(item.fifths), item.fifths === 0, item.fifths === 0)));
+  const time = $('new-score-time'); if (time && !time.options.length) model.TIME_SIGNATURES.forEach((value) => time.append(new Option(value, value, value === model.NEW_SCORE_DEFAULTS.time, value === model.NEW_SCORE_DEFAULTS.time)));
+}
+function newScoreTemplateOptions() { const model = window.AcordeFileIo; if (!model) return {}; const setup = model.normalizeNewScoreSetup({ fifths: Number($('new-score-key')?.value), time: $('new-score-time')?.value }); const [beats, beatType] = setup.time.split('/').map(Number); return { fifths: setup.fifths, beats, beatType }; }
+async function applyNewScoreSetup() {
+  const model = window.AcordeFileIo; if (!model || !currentScore) return;
+  const setup = model.normalizeNewScoreSetup({ title: $('new-score-title')?.value, composer: $('new-score-composer')?.value, fifths: Number($('new-score-key')?.value), time: $('new-score-time')?.value, tempo: Number($('new-score-tempo')?.value), measures: Number($('new-score-measures')?.value) });
+  const existing = currentScore.parts?.[0]?.staves?.[0]?.measures?.length || 1;
+  try {
+    for (const chunk of model.chunkCommands(model.newScoreSetupCommands(setup, existing))) await applyCommand(chunk.length === 1 ? chunk[0] : { type: 'batch', commands: chunk, label: 'NewScoreSetup' }, 'NewScoreSetup');
+  } catch (error) { uiAlert(`楽譜の初期設定を適用できませんでした: ${userFacingError(error)}`); }
+  history.past.length = 0; history.future.length = 0; scoreCommands.length = 0; updateHistory();
+  if (setup.title) $('file-name').textContent = setup.title;
+  clearDirty();
+}
+function relabelFileIo() {
+  const model = window.AcordeFileIo; if (!model) return;
+  document.querySelectorAll('[data-fileio-label]').forEach((element) => { element.textContent = fileIoText(element.dataset.fileioLabel); });
+  document.querySelectorAll('#export-format optgroup').forEach((group) => { group.label = fileIoText(group.dataset.fileioGroup); });
+  const dialog = $('export-dialog'); if (dialog?.querySelector('#export-format')) { dialog.setAttribute('aria-label', fileIoText('Export')); const format = model.exportFormat(dialog.querySelector('#export-format').value); dialog.querySelector('#export-format-description').textContent = fileIoText(format.description); }
+  document.querySelectorAll('#export-target-list span[data-part-index=""]').forEach((element) => { element.textContent = fileIoText('Main score'); });
+  const template = $('template-select'); if (template) [...template.options].forEach((option) => { option.dataset.sourceLabel ||= option.textContent; option.textContent = fileIoText(option.dataset.sourceLabel); });
+}
+installNewScoreDialog(); installExportDialog();
+// MuseScore Studio Edit/Add/Format/Tools measure operations. Command construction lives in
+// score-editing.js; work larger than Acorde's 64-operation batch limit is applied in
+// consecutive batches.
+const scoreEditing = window.AcordeScoreEditing;
+function editingText(key) { return scoreEditing.text(key, language); }
+function editingMeasureRange() {
+  if (Array.isArray(selectedRange) && selectedRange.length === 2) return scoreEditing.normalizeRange(selectedRange);
+  if (selectedAddress && Number.isInteger(selectedAddress.measure)) return [selectedAddress.measure, selectedAddress.measure];
+  return null;
+}
+function scoreMeasureCount() { return currentScore?.parts?.[0]?.staves?.[0]?.measures?.length || 0; }
+async function applyCommandsInBatches(commands, label, failureText = null) {
+  const chunks = window.AcordeFileIo ? window.AcordeFileIo.chunkCommands(commands) : [commands];
+  try { for (const chunk of chunks) if (chunk.length) await applyCommand(chunk.length === 1 ? chunk[0] : { type: 'batch', commands: chunk, label }, label); return true; }
+  catch (error) { const detail = userFacingError(error).replace(/^Error invoking remote method '[^']+': (?:Error: )?/, ''); uiAlert(failureText ? `${failureText}\n\n${detail}` : `${editingText('failed')}: ${detail}`); return false; }
+}
+async function promptMeasureCount() { return scoreEditing.parseCount(await uiPrompt(editingText('count'), '1')); }
+async function insertMeasuresBeforeSelection(count) {
+  if (!currentScore) return;
+  const range = editingMeasureRange(); if (!range) return uiAlert(editingText('selectMeasures'));
+  if (range[0] === 0) return uiAlert(editingText('firstMeasure'));
+  const total = count || await promptMeasureCount(); if (!total) return;
+  await applyCommandsInBatches(scoreEditing.insertMeasureCommands(range[0], total), 'InsertMeasures');
+}
+async function appendMeasures() {
+  if (!currentScore) return;
+  const total = await promptMeasureCount(); if (!total) return;
+  await applyCommandsInBatches(scoreEditing.appendMeasureCommands(scoreMeasureCount(), total), 'AppendMeasures');
+}
+async function editSystemBreaks() {
+  if (!currentScore) return;
+  const value = await uiPrompt(editingText('interval'), '4'); if (value === null || value === undefined || String(value).trim() === '') return;
+  // Only an explicit measure range limits the change; otherwise the whole score is re-broken.
+  const command = scoreEditing.systemBreakCommand(Number(value), Array.isArray(selectedRange) ? editingMeasureRange() : null); if (!command) return;
+  await applyCommandsInBatches([command], 'SystemBreaks');
+}
+async function exchangeSelectedVoices(voices) {
+  if (!currentScore) return;
+  const range = editingMeasureRange(); if (!range) return uiAlert(editingText('selectMeasures'));
+  const address = { part: selectedAddress?.part ?? activePartIndex ?? 0, staff: selectedAddress?.staff ?? Number($('staff-select')?.value || 0) };
+  const command = scoreEditing.exchangeVoicesCommand(address, range, voices); if (!command) return;
+  await applyCommandsInBatches([command], 'ExchangeVoices');
+}
+async function splitMeasureAtSelection() {
+  if (!currentScore) return;
+  const measure = selectedAddress ? currentScore.parts?.[selectedAddress.part]?.staves?.[selectedAddress.staff]?.measures?.[selectedAddress.measure] : null;
+  const command = scoreEditing.splitMeasureCommand(measure, selectedAddress); if (!command) return uiAlert(editingText('selectNote'));
+  if (await applyCommandsInBatches([command], 'SplitMeasure', editingText('splitAlign'))) { selectedRange = null; selectedAddress = null; }
+}
+async function joinSelectedMeasures() {
+  if (!currentScore) return;
+  const commands = scoreEditing.joinMeasureCommands(editingMeasureRange()); if (!commands) return uiAlert(editingText('selectTwo'));
+  if (await applyCommandsInBatches(commands, 'JoinMeasures', editingText('joinFit'))) { selectedRange = null; selectedAddress = null; }
+}
+async function removeSelectedRange() {
+  if (!currentScore) return;
+  const range = editingMeasureRange(); if (!range) return uiAlert(editingText('selectMeasures'));
+  const commands = scoreEditing.removeRangeCommands(range, scoreMeasureCount()); if (!commands) return uiAlert(editingText('keepOne'));
+  if (await applyCommandsInBatches(commands, 'RemoveSelectedRange')) { selectedRange = null; selectedAddress = null; }
+}
+async function runScoreTool(command, label) { if (!currentScore) return; await applyCommandsInBatches([command], label); }

@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('acorde', {
   closeWindow: () => ipcRenderer.invoke('app:closeWindow'),
   clearRecentFiles: () => ipcRenderer.invoke('app:clearRecentFiles'),
   showScoreContextMenu: (state) => ipcRenderer.invoke('app:showScoreContextMenu', state),
-  newScore: (template = 'piano') => ipcRenderer.invoke('file:new', { template }),
+  newScore: (template = 'piano', options = {}) => ipcRenderer.invoke('file:new', { template, fifths: options?.fifths, beats: options?.beats, beatType: options?.beatType }),
   openScore: () => ipcRenderer.invoke('file:open'),
   openRecentScore: (index) => ipcRenderer.invoke('file:openPath', { filePath: index }),
   recentFiles: () => ipcRenderer.invoke('file:recent'),

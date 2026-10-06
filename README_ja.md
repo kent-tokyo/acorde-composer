@@ -8,12 +8,12 @@ MusicXML、MIDI、ABCに対応する、ローカル処理中心の楽譜編集�
 
 最初は無料の[Playground](https://kent-tokyo.github.io/acorde-composer/playground/)を推奨します。MusicXMLを新規作成または読み込み、小節を選択して音符、休符、テキスト、voiceを編集し、結果を書き出せます。
 
-最新の公開版は **v0.2.3**（`acorde` v1.2.17）です。アイコン式の音符入力ツールバー、voice操作、undo／redoの配置、Navigatorの初期状態、ショートカットをMuseScoreの操作に近づけました。Apple Silicon向けmacOS DMGは実験版です。アプリ全体をad-hoc署名して厳密に検証していますが、Developer ID署名も公証もないため、Gatekeeperに止められる場合があります。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
+最新の公開版は **v0.2.4**（`acorde` v1.2.17）です。再生ツールバー、新規作成／エクスポート画面、小節操作、voice交換、音符入力ツールバー、Navigator、ショートカットをMuseScoreの操作に近づけました。Apple Silicon向けmacOS DMGは実験版です。アプリ全体をad-hoc署名して厳密に検証していますが、Developer ID署名も公証もないため、Gatekeeperに止められる場合があります。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
 
 ## 主な機能
 
 - MusicXML、MIDI、ABCの編集・交換、SVG描画、PDF／印刷入口
-- 音符・休符・テキスト・基本記譜の編集、voice選択、undo／redo、保存・再読込
+- 音符・休符・テキスト・基本記譜・小節・voiceの編集、undo／redo、コピー保存、エクスポート、再読込
 - MuseScoreに近いHome／Score／Publish、Palettes、Instruments、Properties、part、Navigator、Timeline、Piano、Mixer、workspace、ショートカット
 - `acorde`の再生データを使ったoscillatorまたは検証済みSF2／SF3 PCM再生
 - AI／OMR提案を確認してから適用するreview workflow

@@ -15,7 +15,7 @@ Acorde Composerへ既存のMusicXMLを移すときは、元ファイルを上書
 
 `qa/fixtures/multivoice-ui.musicxml`はvoice 1/2と`backup`を含みます。parse → edit → save → reloadのdevelopment UI契約はUI contract testsと`npm run test:workspace`で確認します。
 
-Acorde v1.2.4以降は宣言済みstaffとcross-staffをmaterializeします。構造round-trip fixtureはありますが、v0.2.3の20件のpackaged manual QAは`not-run`のため、Windows、信頼済み署名artifact、clean machineを含む配布品質は未検証です。
+Acorde v1.2.4以降は宣言済みstaffとcross-staffをmaterializeします。構造round-trip fixtureはありますが、v0.2.4の20件のpackaged manual QAは`not-run`のため、Windows、信頼済み署名artifact、clean machineを含む配布品質は未検証です。
 
 ## 確認できないもの
 

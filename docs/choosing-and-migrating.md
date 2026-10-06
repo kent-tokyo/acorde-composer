@@ -19,7 +19,7 @@ DAW、成熟した商用記譜ソフト、MuseSounds、汎用OMRサービスの�
 | 再生 | oscillatorまたは検証済みSoundFont PCM | asset、音色、長時間再生、配布license |
 | 配布 | manifest、checksum、SBOM、NOTICE、QA report | 署名、対象OS、clean-machine QA |
 
-公開版v0.2.3はAcorde v1.2.17を使います。native VST、実provider、MuseSounds相当音源、信頼済みDeveloper ID／Authenticode installer、Windows packaged QAは未完了です。
+公開版v0.2.4はAcorde v1.2.17を使います。native VST、実provider、MuseSounds相当音源、信頼済みDeveloper ID／Authenticode installer、Windows packaged QAは未完了です。
 
 ## MuseScoreから移る場合
 

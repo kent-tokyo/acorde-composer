@@ -396,3 +396,58 @@ select:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .musescore-history .tool { width:30px; height:30px; padding:0; display:inline-grid; place-items:center; font-size:16px; color:var(--ink); }
 :root[data-theme="dark"] .musescore-history { background:#202631; }
 @media print { .musescore-history { display:none !important; } }
+/* MuseScore Studio playback toolbar: Rewind, Play, Loop, Metronome, Playback settings | time, measure.beat | speed. */
+.topbar .musescore-playback { gap:2px; padding:3px 6px; }
+.musescore-playback .pb-button { width:30px; height:30px; min-width:30px; padding:0; display:inline-grid; place-items:center; border:0; border-radius:6px; background:transparent; color:var(--ink); font-size:14px; }
+.musescore-playback .pb-button:hover { background:var(--accent-soft); }
+.musescore-playback .pb-button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+.musescore-playback #play-button { border-radius:50%; background:var(--accent); color:#fff; }
+.musescore-playback .pb-button:not(#play-button).active, .musescore-playback .pb-button:not(#play-button)[aria-pressed="true"], .musescore-playback #playback-settings-button[aria-expanded="true"] { background:var(--accent-soft); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+.pb-icon { display:block; pointer-events:none; }
+.playback-counters { display:flex; align-items:center; gap:10px; margin-left:4px; padding:0 8px; border-left:1px solid var(--line); color:var(--ink); font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+#playback-time { min-width:56px; }
+#playback-measure-beat { min-width:30px; }
+.topbar .musescore-playback #bpm-select.playback-speed { display:inline-block !important; field-sizing:content; max-width:120px; min-height:28px; padding:0 4px; border:0; border-left:1px solid var(--line); border-radius:0; background:transparent; color:var(--ink); font:inherit; font-size:12px; font-variant-numeric:tabular-nums; }
+.playback-popover { position:fixed; z-index:60; width:280px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--ink); box-shadow:0 12px 32px #20283b26; font-size:12px; }
+.playback-popover-heading { margin:0 0 6px; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
+.playback-popover-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.playback-popover-row:last-child { margin-bottom:0; }
+.playback-popover .playback-selection-button { width:100%; text-align:left; }
+.playback-popover .transport-track { display:block; flex:1; max-width:none; height:6px; cursor:pointer; }
+.playback-popover .timecode { display:inline; min-width:0; color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; }
+:root[data-theme="dark"] .playback-popover { background:#202631; border-color:#343b4d; }
+@media (max-width:1100px) { #playback-time { display:none; } }
+@media print { .playback-popover { display:none !important; } }
+/* Dark theme: the top bar previously kept its light surface while text switched to light ink. */
+:root[data-theme="dark"] .topbar { background:#1a1f29; border-bottom-color:#343b4d; }
+:root[data-theme="dark"] .topbar .quiet { background:#232a36; border-color:#343b4d; color:var(--ink); }
+:root[data-theme="dark"] .musescore-playback { background:#202631; border-color:#343b4d; }
+:root[data-theme="dark"] .topbar .musescore-playback #bpm-select.playback-speed { color:var(--ink); }
+:root[data-theme="dark"] .topbar .musescore-playback #bpm-select.playback-speed option { background:#202631; }
+:root[data-theme="dark"] .topbar .document-title { color:var(--ink); }
+/* MuseScore Studio-style File → Export… dialog and New score dialog. */
+.export-dialog { width:min(640px, calc(100vw - 32px)); }
+.export-form h2, .new-score-form h2 { margin:0 0 14px; font-size:17px; }
+.export-layout { display:grid; grid-template-columns:minmax(160px, 220px) 1fr; gap:16px; }
+.export-layout fieldset { margin:0; padding:10px 12px; border:1px solid var(--line); border-radius:8px; min-width:0; }
+.export-layout legend { padding:0 4px; color:var(--muted); font-size:11px; font-weight:700; }
+.export-target-list { display:flex; flex-direction:column; gap:6px; max-height:260px; overflow:auto; }
+.export-target { display:flex; align-items:center; gap:8px; font-size:12px; }
+.export-target input:disabled + span { color:var(--muted); }
+#export-format { width:100%; min-height:32px; border:1px solid var(--line); border-radius:6px; background:var(--panel); color:var(--ink); font:inherit; }
+#export-format-description { margin:6px 0 10px; font-size:11px; }
+.export-page-options { display:grid; gap:6px; }
+.export-page-options select { min-height:30px; border:1px solid var(--line); border-radius:6px; background:var(--panel); color:var(--ink); font:inherit; }
+.export-subheading { margin:4px 0 0; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
+.export-note { margin:10px 0 0; font-size:11px; }
+.new-score-dialog { width:min(620px, calc(100vw - 32px)); }
+.new-score-dialog .new-score-form { width:auto; }
+.new-score-step { margin-bottom:14px; }
+.new-score-step h3 { margin:0 0 8px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
+#template-select { width:100%; min-height:62px; padding:4px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--ink); font:inherit; }
+#template-select option { padding:6px 8px; border-radius:5px; }
+.new-score-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+.new-score-grid label { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted); }
+.new-score-grid input, .new-score-grid select { min-height:30px; padding:0 8px; border:1px solid var(--line); border-radius:6px; background:var(--panel); color:var(--ink); font:inherit; font-size:12px; }
+.publish-actions { display:flex; gap:8px; margin:0 0 16px; }
+@media (max-width:640px) { .export-layout, .new-score-grid { grid-template-columns:1fr; } }

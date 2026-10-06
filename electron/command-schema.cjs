@@ -1,4 +1,5 @@
 const COMMAND_TYPES = new Set([
+  'exchange_voices', 'join_measures', 'remove_trailing_empty_measures', 'set_system_break_interval', 'respell_score_to_key', 'split_measure',
   'add_measure', 'add_note', 'add_part', 'add_pitch', 'add_staff',
   'delete_measure', 'delete_note', 'delete_part', 'delete_staff',
   'set_clef', 'set_duration', 'set_key_signature', 'set_measure_text', 'set_metadata',
@@ -61,8 +62,22 @@ function assertCommand(command, path = 'command') {
     return command;
   }
   if (typeof command.type !== 'string' || !COMMAND_TYPES.has(command.type)) throw new Error(`${path}.type is not supported`);
-  for (const key of ['part_index', 'staff_index', 'measure_index', 'text_index', 'voice', 'voice_index', 'note_index', 'position', 'after_index']) {
+  for (const key of ['part_index', 'staff_index', 'measure_index', 'text_index', 'voice', 'voice_index', 'note_index', 'position', 'after_index', 'start_measure', 'end_measure', 'interval']) {
     if (command[key] !== undefined) assertNonNegativeInteger(command[key], `${path}.${key}`);
+  }
+  if (command.type === 'exchange_voices') {
+    for (const key of ['part_index', 'staff_index', 'start_measure', 'end_measure', 'first_voice', 'second_voice']) assertNonNegativeInteger(command[key], `${path}.${key}`);
+    if (command.first_voice > 3 || command.second_voice > 3 || command.first_voice === command.second_voice) throw new Error(`${path} must exchange two different voices 1-4`);
+    if (command.end_measure < command.start_measure) throw new Error(`${path}.end_measure must not precede start_measure`);
+  }
+  if (command.type === 'join_measures') assertNonNegativeInteger(command.measure_index, `${path}.measure_index`);
+  if (command.type === 'split_measure') {
+    assertNonNegativeInteger(command.measure_index, `${path}.measure_index`);
+    if (typeof command.split_at_beats !== 'number' || !Number.isFinite(command.split_at_beats) || command.split_at_beats <= 0 || command.split_at_beats > 1024) throw new Error(`${path}.split_at_beats must be a positive beat offset`);
+  }
+  if (command.type === 'set_system_break_interval') {
+    assertNonNegativeInteger(command.interval, `${path}.interval`);
+    if (command.interval > 999) throw new Error(`${path}.interval is too large`);
   }
   if (command.type === 'set_measure_text') {
     if (!Object.hasOwn(command, 'text')) throw new Error(`${path}.text is required`);

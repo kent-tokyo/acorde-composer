@@ -224,8 +224,8 @@ ipcMain.handle('file:openPath', async (event, { filePath }) => {
 });
 ipcMain.handle('file:recent', async () => (await readRecentFiles()).map(({ name, path: filePath, openedAt }) => ({ name, path: filePath, openedAt })));
 
-ipcMain.handle('file:new', async (event, { template = 'piano' } = {}) => {
-  const xml = buildNewScoreXml(template);
+ipcMain.handle('file:new', async (event, { template = 'piano', fifths, beats, beatType } = {}) => {
+  const xml = buildNewScoreXml(template, { fifths, beats, beatType });
   const owner = ownerId(event);
   const report = await callEngine(owner, { op: 'parse_musicxml_report', xml });
   await callEngine(owner, { op: 'load_score', score: report.score });
@@ -234,10 +234,11 @@ ipcMain.handle('file:new', async (event, { template = 'piano' } = {}) => {
   return { score: report.score, report, svg };
 });
 
-ipcMain.handle('file:saveDocument', async (event, { suggestedName, content, saveAs = false } = {}) => {
+ipcMain.handle('file:saveDocument', async (event, { suggestedName, content, saveAs = false, copy = false } = {}) => {
   if (typeof content !== 'string') throw new TypeError('MusicXML document content is required');
   const ownerId = event.sender.id;
-  let filePath = saveAs ? null : documentSaveTargets.get(ownerId);
+  // "Save a copy" always asks for a path and never retargets the open document.
+  let filePath = saveAs || copy ? null : documentSaveTargets.get(ownerId);
   if (!filePath) {
     const window = BrowserWindow.fromWebContents(event.sender);
     const result = await dialog.showSaveDialog(window, {
@@ -248,6 +249,7 @@ ipcMain.handle('file:saveDocument', async (event, { suggestedName, content, save
     filePath = ensureMusicXmlPath(result.filePath);
   }
   await fs.writeFile(filePath, content, 'utf8');
+  if (copy) return filePath;
   documentSaveTargets.set(ownerId, filePath);
   await rememberRecentFile(filePath);
   return filePath;

@@ -24,15 +24,16 @@ test('menu items dispatch stable renderer commands', () => {
   const edit = template.find((item) => item.label === '&Edit').submenu;
   file[0].click();
   file.find((item) => item.label === 'Close').click();
-  file.find((item) => item.label === 'Export…').submenu.find((item) => item.label === 'Export SVG…').click();
+  file.find((item) => item.label === 'Export…').click();
+  file.find((item) => item.label === 'Save a Copy…').click();
   edit[0].click();
-  edit.find((item) => item.label === 'Select').submenu.find((item) => item.label === 'Select All').click();
+  edit.find((item) => item.label === 'Select All').click();
   edit.find((item) => item.label === 'Find / Go to…').click();
   template.find((item) => item.label === '&View').submenu.find((item) => item.label === 'Mixer').click();
   const add = template.find((item) => item.label === '&Add').submenu;
   add.find((item) => item.label === 'Tuplets').submenu.find((item) => item.label === 'Triplet').click();
   add.find((item) => item.label === 'Lines').submenu.find((item) => item.label === 'Diminuendo').click();
-  assert.deepEqual(commands, ['file:new', 'file:close', 'file:export-svg', 'edit:undo', 'edit:select-all', 'edit:find-go-to', 'view:mixer', 'add:tuplet:3', 'add:diminuendo']);
+  assert.deepEqual(commands, ['file:new', 'file:close', 'file:export', 'file:save-copy', 'edit:undo', 'edit:select-all', 'edit:find-go-to', 'view:mixer', 'add:tuplet:3', 'add:diminuendo']);
 });
 
 test('Open Recent uses a bounded native submenu without trusting file labels', () => {
@@ -52,16 +53,18 @@ test('Open Recent uses a bounded native submenu without trusting file labels', (
 test('familiar MuseScore destinations retain their menu ownership', () => {
   const template = buildApplicationMenuTemplate({ send() {}, platform: 'linux' });
   const menu = (label) => template.find((item) => item.label === `&${label}`).submenu;
-  assert.deepEqual(menu('File').filter((item) => item.type !== 'separator' && item.role !== 'quit').map((item) => item.label), ['New Score…', 'Open…', 'Open Recent', 'Close', 'Save', 'Save As…', 'Import / OMR…', 'Project Properties…', 'Parts…', 'Export…', 'Print…']);
+  // MuseScore Studio File menu: one Export… dialog instead of per-format items, plus Save a copy.
+  assert.deepEqual(menu('File').filter((item) => item.type !== 'separator' && item.role !== 'quit').map((item) => item.label), ['New…', 'Open…', 'Open Recent', 'Close', 'Save', 'Save As…', 'Save a Copy…', 'Import PDF…', 'Export…', 'Project Properties…', 'Parts…', 'Print…']);
   assert.ok(menu('File').some((item) => item.label === 'Parts…'));
-  assert.ok(menu('File').findIndex((item) => item.label === 'Parts…') < menu('File').findIndex((item) => item.label === 'Export…'));
-  assert.deepEqual(menu('File').find((item) => item.label === 'Export…').submenu.map((item) => item.label), ['Export MusicXML…', 'Export MIDI…', 'Export ABC…', 'Export SVG…', 'Export PDF…']);
+  assert.ok(menu('File').findIndex((item) => item.label === 'Export…') < menu('File').findIndex((item) => item.label === 'Project Properties…'));
+  assert.equal(menu('File').find((item) => item.label === 'Export…').submenu, undefined, 'Export… opens the export dialog');
   assert.ok(menu('File').findIndex((item) => item.label === 'Project Properties…') < menu('File').findIndex((item) => item.label === 'Parts…'));
   assert.ok(menu('Edit').some((item) => item.label === 'Cut'));
   assert.deepEqual(menu('Edit').slice(0, 3).map((item) => item.label), ['Undo', 'Redo', 'History']);
-  const selectMenu = menu('Edit').find((item) => item.label === 'Select');
-  assert.ok(menu('Edit').findIndex((item) => item.label === 'Delete') < menu('Edit').findIndex((item) => item.label === 'Select'));
-  assert.deepEqual(selectMenu.submenu.map((item) => item.label), ['Select All', 'Select Section']);
+  // MuseScore Studio lists Select all / Select section directly in Edit, after Delete.
+  assert.ok(menu('Edit').findIndex((item) => item.label === 'Delete') < menu('Edit').findIndex((item) => item.label === 'Select All'));
+  assert.ok(menu('Edit').findIndex((item) => item.label === 'Select All') + 1 === menu('Edit').findIndex((item) => item.label === 'Select Section'));
+  assert.equal(menu('Edit').find((item) => item.label === 'Select'), undefined);
   assert.equal(menu('Edit').find((item) => item.label === 'Find / Go to…').accelerator, 'CmdOrCtrl+F');
   assert.deepEqual(menu('View').slice(0, 10).map((item) => item.label), ['Palettes', 'Search Palettes', 'Master Palette', 'Instruments', 'Properties', 'History', 'Navigator', 'Timeline', 'Piano', 'Mixer']);
   const toolbars = menu('View').find((item) => item.label === 'Toolbars');
@@ -81,16 +84,19 @@ test('familiar MuseScore destinations retain their menu ownership', () => {
   assert.deepEqual(menu('Add').map((item) => item.label), ['Notes', 'Tuplets', 'Measures', 'Text', 'Lines', 'Chords and Fretboard Diagrams']);
   assert.ok(menu('Add').some((item) => item.label === 'Measures'));
   assert.deepEqual(menu('Add').find((item) => item.label === 'Tuplets').submenu.map((item) => item.label), ['Duplet', 'Triplet', 'Quadruplet', 'Quintuplet', 'Sextuplet', 'Septuplet', 'Octuplet', 'Nonuplet']);
-  assert.deepEqual(menu('Add').find((item) => item.label === 'Measures').submenu.map((item) => item.label), ['Append One Measure at End of Score']);
+  assert.deepEqual(menu('Add').find((item) => item.label === 'Measures').submenu.filter((item) => item.type !== 'separator').map((item) => item.label), ['Insert One Measure Before Selection', 'Insert Measures…', 'Append One Measure at End of Score', 'Append Measures…']);
+  assert.equal(menu('Add').find((item) => item.label === 'Measures').submenu[0].accelerator, 'Insert');
+  assert.equal(menu('Add').find((item) => item.label === 'Measures').submenu.find((item) => item.label === 'Append One Measure at End of Score').accelerator, 'CmdOrCtrl+B');
   assert.deepEqual(menu('Add').find((item) => item.label === 'Text').submenu.map((item) => item.label).filter(Boolean), ['Staff Text…', 'Dynamics…', 'Expression…', 'Rehearsal Mark…', 'Fingering…', 'Chord Symbol…', 'Lyrics…', 'Tempo…', 'Technique Text…']);
   assert.deepEqual(menu('Add').find((item) => item.label === 'Lines').submenu.map((item) => item.label), ['Slur', 'Crescendo', 'Diminuendo', 'Ottava Alta', 'Ottava Bassa', 'Pedal', 'Glissando', 'Trill Line']);
   assert.deepEqual(menu('Add').find((item) => item.label === 'Chords and Fretboard Diagrams').submenu.map((item) => item.label), ['Chord Symbol…']);
-  assert.deepEqual(menu('Format').map((item) => item.label), ['Style…', 'Page Settings…', 'Layout Density…']);
+  assert.deepEqual(menu('Format').filter((item) => item.type !== 'separator').map((item) => item.label), ['Style…', 'Page Settings…', 'Add/Remove System Breaks…', 'Layout Density…']);
   assert.ok(!menu('Format').some((item) => item.label === 'Score Properties…'));
   assert.ok(menu('Format').some((item) => item.label === 'Page Settings…'));
-  assert.deepEqual(menu('Tools').find((item) => item.label === 'Voices').submenu.map((item) => item.label), ['Use voice 1', 'Use voice 2', 'Use voice 3', 'Use voice 4']);
+  assert.deepEqual(menu('Tools').find((item) => item.label === 'Voices').submenu.filter((item) => item.type !== 'separator').map((item) => item.label), ['Use voice 1', 'Use voice 2', 'Use voice 3', 'Use voice 4', 'Exchange Voice 1-2', 'Exchange Voice 1-3', 'Exchange Voice 1-4', 'Exchange Voice 2-3', 'Exchange Voice 2-4', 'Exchange Voice 3-4']);
+  assert.deepEqual(menu('Tools').find((item) => item.label === 'Measures').submenu.map((item) => item.label), ['Split Measure Before Selected Note', 'Join Selected Measures', 'Remove Selected Range']);
   assert.ok(menu('Format').some((item) => item.label === 'Layout Density…'));
-  assert.deepEqual(menu('Tools').map((item) => item.label), ['Voices', 'Transpose…']);
+  assert.deepEqual(menu('Tools').filter((item) => item.type !== 'separator').map((item) => item.label), ['Voices', 'Measures', 'Transpose…', 'Respell Pitches', 'Remove Empty Trailing Measures']);
   assert.ok(!menu('Tools').some((item) => item.label === 'Playback'));
   assert.equal(menu('Plugins')[0].label, 'Manage Plugins…');
   assert.deepEqual(menu('Help').slice(0, 2).map((item) => item.label), ['Acorde Composer Documentation', 'MuseScore UI Reference']);
@@ -138,11 +144,11 @@ test('application menu follows the selected English, Japanese, or Chinese UI lan
   assert.deepEqual(japanese.slice(1).map((item) => item.label), ['ファイル', '編集', '表示', '追加', 'フォーマット', 'ツール', 'プラグイン', 'ヘルプ']);
   assert.equal(japanese[1].submenu[0].label, '新規…');
   assert.ok(japanese.find((item) => item.label === '編集').submenu.some((item) => item.label === '小節に移動…'));
-  assert.deepEqual(japanese.find((item) => item.label === 'ファイル').submenu.find((item) => item.label === 'エクスポート…').submenu.map((item) => item.label), ['MusicXMLを書き出す…', 'MIDIを書き出す…', 'ABCを書き出す…', 'SVGを書き出す…', 'PDFを書き出す…']);
+  assert.ok(['コピーを保存…', 'PDFをインポート…', 'エクスポート…'].every((label) => japanese.find((item) => item.label === 'ファイル').submenu.some((item) => item.label === label)));
   const chinese = buildApplicationMenuTemplate({ send() {}, platform: 'win32', language: 'zh' });
   assert.deepEqual(chinese.map((item) => item.label), ['文件(&F)', '编辑(&E)', '视图(&V)', '添加(&A)', '格式(&O)', '工具(&T)', '插件(&P)', '帮助(&H)']);
   assert.equal(chinese[0].submenu.find((item) => item.label === '分谱…').label, '分谱…');
-  assert.deepEqual(chinese[0].submenu.find((item) => item.label === '导出…').submenu.map((item) => item.label), ['导出 MusicXML…', '导出 MIDI…', '导出 ABC…', '导出 SVG…', '导出 PDF…']);
+  assert.ok(['保存副本…', '导入 PDF…', '导出…'].every((label) => chinese[0].submenu.some((item) => item.label === label)));
 });
 
 test('main, preload, and renderer keep the application-menu bridge connected', () => {

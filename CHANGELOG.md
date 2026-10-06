@@ -6,6 +6,14 @@ This file records user-visible releases and the current development delta. Detai
 
 No changes yet.
 
+## 0.2.4 — 2026-10-07
+
+- Rebuilt the playback toolbar around the MuseScore Studio order: rewind, play, loop, metronome, playback settings, elapsed time, measure-and-beat position, and score tempo.
+- Added a MuseScore-oriented New score flow with template, title, composer, key, time, tempo, and measure-count settings; added Save a copy and one unified Export dialog for PDF, SVG, MusicXML, MIDI, and ABC.
+- Expanded score editing with measure insertion, append, split, join, range removal, automatic system breaks, voice exchange, pitch respelling, and removal of trailing empty measures through validated Acorde commands.
+- Added English, Japanese, and Chinese labels plus focused unit and Electron E2E coverage for the new playback, file, and score-editing workflows.
+- Verified 331 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, Playground E2E, and zero known production-dependency vulnerabilities. The 20 manual release-QA scenarios remain `not-run`.
+
 ## 0.2.3 — 2026-10-05
 
 - Updated all five Acorde crates to v1.2.17 and bound the release candidate to the matching clean local tag.

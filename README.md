@@ -8,12 +8,12 @@ A local-first desktop score editor for MusicXML, MIDI, and ABC. [`acorde`](https
 
 The free [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the recommended starting point. Create or open a MusicXML score, select a measure, edit notes, rests, text, and voices, then export the result.
 
-The latest desktop release is **v0.2.3**, built with `acorde` v1.2.17. Its icon-based note-input toolbar, voice controls, history placement, Navigator behavior, and shortcuts are closer to the MuseScore workflow. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
+The latest desktop release is **v0.2.4**, built with `acorde` v1.2.17. Its playback toolbar, New score and Export dialogs, measure tools, voice exchange, note-input toolbar, Navigator behavior, and shortcuts are closer to the MuseScore workflow. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
 
 ## Capabilities
 
 - Edit and exchange MusicXML, MIDI, and ABC; render SVG and use PDF/print entry points.
-- Enter notes and rests, edit common notation and text, select voices, undo/redo, save, and reopen.
+- Enter notes and rests; edit common notation, text, measures, and voices; undo/redo; save a copy; export; and reopen.
 - Use a MuseScore-oriented Home/Score/Publish shell with Palettes, Instruments, Properties, parts, Navigator, Timeline, Piano, Mixer, workspaces, and familiar shortcuts.
 - Play oscillator or validated SF2/SF3 PCM through `acorde` playback data.
 - Review AI and OMR proposals before validated commands can change the score.

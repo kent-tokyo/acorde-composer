@@ -8,12 +8,12 @@
 
 建议先使用免费的[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。可以新建或打开 MusicXML 乐谱，选择小节，编辑音符、休止符、文本和 voice，然后导出结果。
 
-最新公开版是 **v0.2.3**（`acorde` v1.2.17）。图标式音符输入工具栏、voice 操作、撤销／重做位置、Navigator 初始状态和快捷键更接近 MuseScore。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
+最新公开版是 **v0.2.4**（`acorde` v1.2.17）。播放工具栏、新建／导出窗口、小节操作、voice 交换、音符输入工具栏、Navigator 和快捷键更接近 MuseScore。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
 
 ## 主要功能
 
 - 编辑和交换 MusicXML、MIDI、ABC，生成 SVG，并提供 PDF／打印入口
-- 编辑音符、休止符、文本和常用记谱；选择 voice；撤销／重做；保存并重新打开
+- 编辑音符、休止符、文本、常用记谱、小节和 voice；撤销／重做；保存副本；导出并重新打开
 - 接近 MuseScore 的 Home／Score／Publish、Palettes、Instruments、Properties、part、Navigator、Timeline、Piano、Mixer、workspace 和快捷键
 - 使用`acorde`播放数据进行 oscillator 或已验证的 SF2／SF3 PCM 播放
 - AI／OMR 建议经审核后才能作为已验证命令修改乐谱
