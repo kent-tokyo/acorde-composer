@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | Score編集 | MuseScore型shell、menu、入力／再生toolbar、新規作成／Export、小節操作、voice 1〜4、3つの主要sidebar、utility panel、part tab、Mixer、workspaceを実装 | command／menu／UI contract tests、`npm run test:workspace` | breve／longa（Acorde #83）、全記譜要素の完全coverage、packaged manual UI QA |
 | 複数voice／staff | fixtureとdevelopment UI E2Eでvoice保持とvoice交換を検証。Acordeは宣言済みstaffとcross-staffをmaterialize | `qa/fixtures/multivoice-ui.musicxml`、`qa/fixtures/notation/cross-staff.musicxml` | v0.2.4 packaged manual E2E、Windows、信頼済み署名artifact、clean machine |
-| MusicXML／MIDI／ABC | 入出力とloss diagnosticsを実装。開発版はAcorde v1.2.17を利用 | `electron/notation-coverage.test.cjs`、`electron/import-diagnostics.test.cjs` | 汎用corpusと要素ごとの完全round-trip |
+| MusicXML／MIDI／ABC | 入出力とloss diagnosticsを実装。開発版はAcorde v1.3.0を利用 | `electron/notation-coverage.test.cjs`、`electron/import-diagnostics.test.cjs` | 汎用corpusと要素ごとの完全round-trip |
 | Playback | oscillatorと検証済みsample PCMを再生 | `electron/audio-backend.test.cjs`、`electron/soundfont-playback.test.cjs` | 長時間・聴感・production asset QA |
 | SoundFont | 64 MiB以下のinline asset、sample・resolved-zone boundary | `electron/soundfont-asset.test.cjs`、`electron/soundfont-playback.test.cjs` | 大きなassetのfile-path/stream IPC（Acorde #82）と配布license |
 | AI / OMR | proposal・license・timeout・redaction boundary | `electron/ai-provider-boundary.test.cjs`、`electron/omr-boundary.test.cjs` | 実provider binary、認証、契約、品質評価 |

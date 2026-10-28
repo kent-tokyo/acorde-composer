@@ -4,7 +4,7 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
-No changes yet.
+- Updated the five Acorde engine crates from v1.2.17 to v1.3.0 and synchronized the development UI engine label and dependency evidence.
 
 ## 0.2.4 — 2026-10-07
 

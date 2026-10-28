@@ -4,7 +4,7 @@
 
 | 主張 | 実装 | 検証 | artifact / fixture | 判定 |
 | --- | --- | --- | --- | --- |
-| Acordeだけを音楽処理依存にする | `engine/Cargo.toml`、`package.json` | `electron/package-contract.test.cjs` | `engine/Cargo.lock`（開発`main`: `acorde` 1.2.17） | local |
+| Acordeだけを音楽処理依存にする | `engine/Cargo.toml`、`package.json` | `electron/package-contract.test.cjs` | `engine/Cargo.lock`（開発`main`: `acorde` 1.3.0） | local |
 | MuseScore型のmenu、入力、panel配置を保つ | `src/command-registry.js`、`src/app.js`、`src/workspace-state.js` | command／menu／UI contract tests、`npm run test:workspace` | workspace schema v4 | development E2E |
 | 複数voiceを保持して保存・再読込する | `src/app.js`、engine IPC | `electron/ui-contract.test.cjs`、`npm run test:workspace` | `qa/fixtures/multivoice-ui.musicxml` | development E2E |
 | cross-staffを編集する | Composer notation UI、Acorde staff materialization | `electron/ui-contract.test.cjs` | `qa/fixtures/notation/cross-staff.musicxml` | packaged manual E2E待ち |
