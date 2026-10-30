@@ -4,7 +4,8 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
-- Updated the five Acorde engine crates from v1.2.17 to v1.3.0 and synchronized the development UI engine label and dependency evidence.
+- Updated the five Acorde engine crates from v1.2.17 to v1.3.2 and synchronized the development UI engine label, SoundFont provider version, and dependency evidence.
+- Rebuilt the bundled Playground WASM with Acorde v1.3.2 and updated its GitHub Pages build to the same release.
 
 ## 0.2.4 — 2026-10-07
 

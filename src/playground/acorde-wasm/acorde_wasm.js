@@ -296,7 +296,9 @@ export class ScoreEngine {
     /**
      * Add a new staff to an existing part. Returns a [`ChangeHint`] JSON string.
      *
-     * `clef`: `"Treble"` / `"Bass"` / `"Alto"` / `"Tenor"` / `"Percussion"`.
+     * `clef`: `"Treble"` / `"Bass"` / `"Alto"` / `"Tenor"` / `"Percussion"`, or an octave or C
+     * clef (`"Treble8vb"`, `"Treble8va"`, `"Bass8vb"`, `"Bass8va"`, `"Soprano"`,
+     * `"MezzoSoprano"`, `"Baritone"`).
      * @param {number} part_index
      * @param {string} clef
      * @returns {string}
@@ -572,7 +574,7 @@ export class ScoreEngine {
         const ret = wasm.scoreengine_get_redo_key(this.__wbg_ptr);
         let v1;
         if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            v1 = getStringFromWasm0(ret[0], ret[1]);
             wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         }
         return v1;
@@ -585,7 +587,7 @@ export class ScoreEngine {
         const ret = wasm.scoreengine_get_redo_label(this.__wbg_ptr);
         let v1;
         if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            v1 = getStringFromWasm0(ret[0], ret[1]);
             wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         }
         return v1;
@@ -620,7 +622,7 @@ export class ScoreEngine {
         const ret = wasm.scoreengine_get_undo_key(this.__wbg_ptr);
         let v1;
         if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            v1 = getStringFromWasm0(ret[0], ret[1]);
             wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         }
         return v1;
@@ -633,7 +635,7 @@ export class ScoreEngine {
         const ret = wasm.scoreengine_get_undo_label(this.__wbg_ptr);
         let v1;
         if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            v1 = getStringFromWasm0(ret[0], ret[1]);
             wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         }
         return v1;
@@ -706,6 +708,37 @@ export class ScoreEngine {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * Paste a versioned ScoreFragment at `target_json` as one undoable command.
+     *
+     * The fragment and target use the same JSON schema as the native core
+     * API. System clipboard access remains a host responsibility.
+     * @param {string} fragment_json
+     * @param {string} target_json
+     * @returns {string}
+     */
+    paste_score_fragment(fragment_json, target_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(fragment_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(target_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_paste_score_fragment(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
     /**
@@ -813,6 +846,39 @@ export class ScoreEngine {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Respell one staff's measure range `start_measure..end_measure` (end exclusive, undo-able).
+     * Returns a [`ChangeHint`] JSON string.
+     *
+     * `policy`: `"flat"`, `"sharp"`, or `"key"` (the key signature in effect at each measure).
+     * Tie chains crossing the range boundary keep one spelling.
+     * @param {number} part_index
+     * @param {number} staff_index
+     * @param {number} start_measure
+     * @param {number} end_measure
+     * @param {string} policy
+     * @returns {string}
+     */
+    respell_staff_region(part_index, staff_index, start_measure, end_measure, policy) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(policy, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_respell_staff_region(this.__wbg_ptr, part_index, staff_index, start_measure, end_measure, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -951,6 +1017,34 @@ export class ScoreEngine {
             return getStringFromWasm0(ptr3, len3);
         } finally {
             wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
+     * Hide or show a note or rest; a hidden one keeps its time and sound but is not drawn.
+     *
+     * `addr_json`: JSON-encoded `NoteAddr`.
+     * @param {string} addr_json
+     * @param {boolean} hidden
+     * @returns {string}
+     */
+    set_hidden(addr_json, hidden) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(addr_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.scoreengine_set_hidden(this.__wbg_ptr, ptr0, len0, hidden);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -1540,6 +1634,41 @@ export function best_fit_scale(pitches_json) {
 }
 
 /**
+ * Build the provider-neutral offline-render timing manifest as JSON.
+ *
+ * This produces semantic scheduling data only; audio synthesis, sample assets and
+ * encoding remain responsibilities of the calling host.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @param {string} request_json
+ * @returns {string}
+ */
+export function build_offline_render_manifest(score_json, options_json, request_json) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(request_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.build_offline_render_manifest(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * MIDI note number of the middle staff line for a `Clef` JSON value.
  *
  * Used for stem direction heuristics. Treble=71 (B4), Bass=50 (D3), Alto=60 (C4),
@@ -1819,6 +1948,41 @@ export function compute_print_layout(score_json, config_json) {
 }
 
 /**
+ * Compute the host-neutral physical print layout for one named linked score view.
+ *
+ * View-local measure capacity and explicit system/page boundaries are applied without
+ * changing the canonical score JSON.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @param {string} view_id
+ * @returns {string}
+ */
+export function compute_print_layout_for_view(score_json, config_json, view_id) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(view_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.compute_print_layout_for_view(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Detect the chord name from a JSON array of `Pitch` objects.
  *
  * Returns a `ChordSymbol` JSON object, or JSON `null` if fewer than 2 pitches are
@@ -1939,6 +2103,70 @@ export function explain_analysis_change(previous_json, current_json, address_jso
 }
 
 /**
+ * Export page-scoped semantic render trees using the same print configuration.
+ *
+ * The result carries canonical score addresses for notes/rests plus page-owned
+ * spanner and publication nodes; PDF/SVG encoding remains host-owned.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @returns {string}
+ */
+export function export_page_render_trees(score_json, config_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.export_page_render_trees(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Export page-scoped semantic nodes for one named linked score view.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @param {string} view_id
+ * @returns {string}
+ */
+export function export_page_render_trees_for_view(score_json, config_json, view_id) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(view_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.export_page_render_trees_for_view(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Extract a single part (0-based) from a score.
  * @param {string} score_json
  * @param {number} part_index
@@ -1962,6 +2190,38 @@ export function extract_part(score_json, part_index) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Extract a versioned, host-neutral score fragment as JSON.
+ *
+ * Selections are JSON-encoded `ScoreFragmentSelection` values. Clipboard
+ * transport and pasteboard access remain responsibilities of the calling host.
+ * @param {string} score_json
+ * @param {string} selections_json
+ * @returns {string}
+ */
+export function extract_score_fragment(score_json, selections_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(selections_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.extract_score_fragment(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -2229,6 +2489,58 @@ export function parse_abc_report(text) {
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.parse_abc_report(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Parse a Guitar Pro 6 (`.gpx`) or 7/8 (`.gp`) file (byte array) and return the score as JSON.
+ * @param {Uint8Array} data
+ * @returns {string}
+ */
+export function parse_gp(data) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_gp(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Parse a Guitar Pro 6/7/8 (`.gpx`/`.gp`) file and return an ImportReport JSON string.
+ * @param {Uint8Array} data
+ * @returns {string}
+ */
+export function parse_gp_report(data) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.parse_gp_report(ptr0, len0);
         var ptr2 = ret[0];
         var len2 = ret[1];
         if (ret[3]) {
@@ -2795,6 +3107,39 @@ export function pitch_from_str(s) {
 }
 
 /**
+ * Preview a structural command without changing the supplied score.
+ *
+ * The returned `StructuralChangePlan` reports whether the command can apply,
+ * affected note addresses, resulting voice structure, and conflict or
+ * validation diagnostics. Only score-structural commands are accepted.
+ * @param {string} score_json
+ * @param {string} command_json
+ * @returns {string}
+ */
+export function plan_structural_change(score_json, command_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(command_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.plan_structural_change(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Project scheduled playback events onto authored tablature positions.
  *
  * The result contains string/fret assignments and explicit diagnostics for missing positions,
@@ -2891,8 +3236,9 @@ export function render_score_metadata(score_json, layout_json, options_json) {
  *
  * `options_json` is a (partial) [`acorde_render_svg::SvgRenderOptions`] JSON object, e.g.
  * `{"width":900,"staff_size":24,"measures_per_system":4,"interactive":true}` — every field
- * has a default, so `"{}"` renders with defaults. This calls the exact same
- * `acorde_render_svg::render_svg` used natively — no browser/DOM-specific code path.
+ * has a default, so `"{}"` renders with defaults. An optional `staff_gap` in staff spaces
+ * uses the native [`acorde_render_svg::SvgRenderConfig`] path. The four-field Rust options
+ * struct remains source-compatible.
  * @param {string} score_json
  * @param {string} options_json
  * @returns {string}
@@ -3653,12 +3999,14 @@ export function to_playback_events(score_json, bpm, muted_parts_json) {
 }
 
 /**
- * Extended playback event generator accepting a full `PlaybackOptions` JSON.
+ * Extended playback event generator accepting partial or full `PlaybackOptions` JSON.
  *
  * Use this instead of [`to_playback_events`] when you need `loop_region` or other
  * options that cannot be expressed via positional parameters.
  *
- * `options_json` example: `{"bpm_override":null,"muted_parts":[],"loop_region":[2,5]}`
+ * Omitted fields use [`acorde_core::PlaybackOptions::default`]. For example,
+ * `{"loop_region":[2,5]}` restricts playback while retaining the default tempo,
+ * swing, and metronome behavior.
  * @param {string} score_json
  * @param {string} options_json
  * @returns {string}
@@ -3743,6 +4091,38 @@ export function validate_glyph_resource_descriptor(descriptor_json) {
 }
 
 /**
+ * Validate a persisted provider-neutral offline-render manifest.
+ *
+ * Hosts can call this after transport or storage, before handing the schedule
+ * to a synthesizer. It does not decode audio assets or invoke a provider.
+ * @param {string} manifest_json
+ */
+export function validate_offline_render_manifest(manifest_json) {
+    const ptr0 = passStringToWasm0(manifest_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.validate_offline_render_manifest(ptr0, len0);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
+ * Validate serialized page render trees against canonical score addresses.
+ * @param {string} score_json
+ * @param {string} trees_json
+ */
+export function validate_page_render_trees(score_json, trees_json) {
+    const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(trees_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.validate_page_render_trees(ptr0, len0, ptr1, len1);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
  * Validate a score. Returns a JSON `ValidationReport` with `errors` and `warnings` arrays.
  * @param {string} score_json
  * @returns {string}
@@ -3770,13 +4150,13 @@ export function validate_score(score_json) {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
-        __wbg___wbindgen_throw_9c31b086c2b26051: function(arg0, arg1) {
+        __wbg___wbindgen_throw_5d9e815e6fdf150f: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_getRandomValues_ef12552bf5acd2fe: function() { return handleError(function (arg0, arg1) {
+        __wbg_getRandomValues_a678b7300e8ed57f: function() { return handleError(function (arg0, arg1) {
             globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
         }, arguments); },
-        __wbindgen_cast_0000000000000001: function(arg0, arg1) {
+        __wbindgen_generic_0000000000000001: function(arg0, arg1) {
             // Cast intrinsic for `Ref(String) -> Externref`.
             const ret = getStringFromWasm0(arg0, arg1);
             return ret;
@@ -3931,11 +4311,15 @@ function __wbg_finalize_init(instance, module) {
 
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
+        if (!module.ok) {
+            throw new Error(`failed to fetch Wasm: ${module.status} ${module.statusText} fetching '${module.url}'`);
+        }
+
         if (typeof WebAssembly.instantiateStreaming === 'function') {
             try {
                 return await WebAssembly.instantiateStreaming(module, imports);
             } catch (e) {
-                const validResponse = module.ok && expectedResponseType(module.type);
+                const validResponse = expectedResponseType(module.type);
 
                 if (validResponse && module.headers.get('Content-Type') !== 'application/wasm') {
                     console.warn("`WebAssembly.instantiateStreaming` failed because your server does not serve Wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
