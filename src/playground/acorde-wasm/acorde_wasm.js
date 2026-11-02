@@ -1311,6 +1311,29 @@ export class ScoreEngine {
 if (Symbol.dispose) ScoreEngine.prototype[Symbol.dispose] = ScoreEngine.prototype.free;
 
 /**
+ * Describe stable accordion preset IDs, constraints and contract version.
+ * @returns {string}
+ */
+export function accordion_preset_capabilities() {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ret = wasm.accordion_preset_capabilities();
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
  * Return conservative analysis categories affected by a serialized engine change hint.
  * @param {string} change_hint_json
  * @returns {string}
@@ -1476,6 +1499,40 @@ export function analyze_score(score_json) {
 }
 
 /**
+ * Add display chord symbols backed by actual lower-hand block chords in a source score.
+ * Returns JSON with a newly annotated score, source/target note addresses, count and
+ * diagnostics. Neither input is modified; an absent source lower staff adds no symbols.
+ * @param {string} target_json
+ * @param {string} source_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function annotate_authored_chords(target_json, source_json, options_json) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(target_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(source_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.annotate_authored_chords(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Apply one JSON-encoded core command to a validated score without mutating the input.
  *
  * The result is `{ "score": <score>, "hint": <change hint> }`, allowing stateless browser
@@ -1541,6 +1598,67 @@ export function apply_score_patch(score_json, patches_json) {
 }
 
 /**
+ * Compose arbitrary supported layers and return a versioned, replayable configuration.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function arrange_accordion_layers(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_accordion_layers(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Arrange a score from a chosen preset ID and explicit chord selection.
+ * @param {string} score_json
+ * @param {string} selection_json
+ * @param {string} preset_id
+ * @returns {string}
+ */
+export function arrange_accordion_preset(score_json, selection_json, preset_id) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(selection_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(preset_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_accordion_preset(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
  * Arrange a score onto a 2-staff accordion part (treble = right hand,
  * bass = left hand), reassigned to the Accordion GM program and
  * octave-fit to its practical range. Returns JSON `{ score, notes }`
@@ -1571,6 +1689,214 @@ export function arrange_for_accordion(score_json, right_hand_part_index) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Reduce selected source parts onto two accordion staves using an explicit loss policy.
+ * Returns a score or source-located diagnostics with no partial lossless output.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function arrange_for_accordion_with_options(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_for_accordion_with_options(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Replay a persisted chord proposal through an independently selected preset.
+ * @param {string} score_json
+ * @param {string} resolved_json
+ * @param {string} preset_id
+ * @returns {string}
+ */
+export function arrange_from_chord_proposal(score_json, resolved_json, preset_id) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(resolved_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(preset_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_from_chord_proposal(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
+ * Replay a versioned free layer configuration against the matching source score.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @returns {string}
+ */
+export function arrange_from_resolved_layers(score_json, config_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_from_resolved_layers(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Recreate a score from a resolved configuration, without sampling.
+ * @param {string} score_json
+ * @param {string} config_json
+ * @returns {string}
+ */
+export function arrange_from_resolved_preset(score_json, config_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(config_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_from_resolved_preset(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Sustain an explicitly selected bass note, with optional chord-based melodic layers.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function arrange_with_drone(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_with_drone(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Build a two-staff accordion arrangement from a melody and explicit positioned chords.
+ * Returns a versioned result with a score on success or structured diagnostics on failure.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function arrange_with_explicit_chords(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_with_explicit_chords(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Compose typed accompaniment, explicit harmony and melodic-voice layers.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function arrange_with_layers(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.arrange_with_layers(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -1712,6 +2038,40 @@ export function command_key_from_json(cmd_json) {
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Compare independently parsed scores by written musical position. Returns note addresses,
+ * added/removed/modified classifications, changed fields and alignment diagnostics.
+ * Existing structural diff and patch operations are unchanged.
+ * @param {string} reference_json
+ * @param {string} current_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function compare_musical_positions(reference_json, current_json, options_json) {
+    let deferred5_0;
+    let deferred5_1;
+    try {
+        const ptr0 = passStringToWasm0(reference_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(current_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.compare_musical_positions(ptr0, len0, ptr1, len1, ptr2, len2);
+        var ptr4 = ret[0];
+        var len4 = ret[1];
+        if (ret[3]) {
+            ptr4 = 0; len4 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred5_0 = ptr4;
+        deferred5_1 = len4;
+        return getStringFromWasm0(ptr4, len4);
+    } finally {
+        wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
     }
 }
 
@@ -2163,6 +2523,35 @@ export function export_page_render_trees_for_view(score_json, config_json, view_
         return getStringFromWasm0(ptr4, len4);
     } finally {
         wasm.__wbindgen_free(deferred5_0, deferred5_1, 1);
+    }
+}
+
+/**
+ * Extract exact source chord positions and a loss-aware preset selection.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function extract_chord_plan(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.extract_chord_plan(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 
@@ -3200,6 +3589,36 @@ export function render_preflight(score_json) {
 }
 
 /**
+ * Render the exact pages of a previously computed and validated print layout as SVG strings.
+ * Returns a JSON array in page order. System breaks are taken from the supplied layout.
+ * @param {string} score_json
+ * @param {string} layout_json
+ * @returns {string}
+ */
+export function render_print_page_svgs(score_json, layout_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(layout_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.render_print_page_svgs(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Return deterministic SVG dimensions and NoteAddr-keyed hit-test bounds.
  * @param {string} score_json
  * @param {string} layout_json
@@ -3237,7 +3656,9 @@ export function render_score_metadata(score_json, layout_json, options_json) {
  * `options_json` is a (partial) [`acorde_render_svg::SvgRenderOptions`] JSON object, e.g.
  * `{"width":900,"staff_size":24,"measures_per_system":4,"interactive":true}` — every field
  * has a default, so `"{}"` renders with defaults. An optional `staff_gap` in staff spaces
- * uses the native [`acorde_render_svg::SvgRenderConfig`] path. The four-field Rust options
+ * uses the native [`acorde_render_svg::SvgRenderConfig`] path. Set
+ * `"auto_beam_unmarked":true` to display meter-aware beams for unmarked short notes.
+ * The four-field Rust options
  * struct remains source-compatible.
  * @param {string} score_json
  * @param {string} options_json
@@ -3869,6 +4290,64 @@ export function serialize_musicxml_report(score_json) {
 }
 
 /**
+ * Select a compatible free layer combination with a decimal u64 seed.
+ * @param {string} score_json
+ * @param {string} request_json
+ * @returns {string}
+ */
+export function shuffle_accordion_layers(score_json, request_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(request_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.shuffle_accordion_layers(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Choose and arrange an eligible preset with a 64-bit decimal seed.
+ * @param {string} score_json
+ * @param {string} request_json
+ * @returns {string}
+ */
+export function shuffle_accordion_preset(score_json, request_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(request_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.shuffle_accordion_preset(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
  * Load a bounded SF2/SF3 asset and return one deterministic preset-zone snapshot as JSON.
  *
  * Zone metadata is provider-neutral; decoding, synthesis, and licensed sample ownership stay
@@ -3888,6 +4367,35 @@ export function soundfont_preset_snapshot(data, provider_version, bank, program)
         const ptr1 = passStringToWasm0(provider_version, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.soundfont_preset_snapshot(ptr0, len0, ptr1, len1, bank, program);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Suggest bounded, explicitly attributed chord plans from a canonical melody.
+ * @param {string} score_json
+ * @param {string} request_json
+ * @returns {string}
+ */
+export function suggest_chord_plans(score_json, request_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(request_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.suggest_chord_plans(ptr0, len0, ptr1, len1);
         var ptr3 = ret[0];
         var len3 = ret[1];
         if (ret[3]) {
@@ -4006,7 +4514,8 @@ export function to_playback_events(score_json, bpm, muted_parts_json) {
  *
  * Omitted fields use [`acorde_core::PlaybackOptions::default`]. For example,
  * `{"loop_region":[2,5]}` restricts playback while retaining the default tempo,
- * swing, and metronome behavior.
+ * swing, and metronome behavior. `shared_dynamics` and `shared_hairpins` accept
+ * arrays of physical note addresses to share individual marks across a part's staves.
  * @param {string} score_json
  * @param {string} options_json
  * @returns {string}
@@ -4020,6 +4529,35 @@ export function to_playback_events_ex(score_json, options_json) {
         const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.to_playback_events_ex(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * Opt-in shared-unison playback. Each result contains one event and its source note addresses.
+ * @param {string} score_json
+ * @param {string} options_json
+ * @returns {string}
+ */
+export function to_playback_events_shared_unisons(score_json, options_json) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(score_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.to_playback_events_shared_unisons(ptr0, len0, ptr1, len1);
         var ptr3 = ret[0];
         var len3 = ret[1];
         if (ret[3]) {
@@ -4153,7 +4691,7 @@ function __wbg_get_imports() {
         __wbg___wbindgen_throw_5d9e815e6fdf150f: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_getRandomValues_a678b7300e8ed57f: function() { return handleError(function (arg0, arg1) {
+        __wbg_getRandomValues_869eb80731672410: function() { return handleError(function (arg0, arg1) {
             globalThis.crypto.getRandomValues(getArrayU8FromWasm0(arg0, arg1));
         }, arguments); },
         __wbindgen_generic_0000000000000001: function(arg0, arg1) {
