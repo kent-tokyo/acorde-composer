@@ -30,6 +30,11 @@ const ARRANGE_COPY = {
   ja: { sample: '旋律', presets: '伴奏', chords: '各小節のコード', voice: '重ねる旋律', arrange: 'この編曲を試す', restore: '原譜に戻す', original: '原曲を再生', arranged: '編曲を再生', accompaniment: '伴奏だけ', stop: '停止', loop: '繰り返す', edit: '譜面を編集', own: '自分の譜面を試す', file: 'MusicXML または ABC を開く', melody: '旋律パート', hint: '和声のない譜面は、編曲前にコードを入力してください。', none: 'なし', third: '下に3度', sixth: '下に6度', octave: '下に8度', samples: ['4拍子の旋律', '3拍子の旋律', 'スイングの旋律'], generated: '編曲完了：{count}音を追加しました。原曲と聴き比べてください。', source: '原譜に戻しました。編曲候補は下に保存されています。', invalid: '各小節にコードを1つ入力してください。例：C | Am | F | G', playing: '{which}を再生中。', saved: '以前の編曲候補' },
   zh: { sample: '旋律', presets: '伴奏', chords: '每小节和弦', voice: '附加旋律', arrange: '试听此编曲', restore: '返回原谱', original: '播放原曲', arranged: '播放编曲', accompaniment: '仅伴奏', stop: '停止', loop: '循环', edit: '编辑乐谱', own: '试用自己的乐谱', file: '打开 MusicXML 或 ABC', melody: '旋律声部', hint: '没有和声的乐谱请先填写和弦。', none: '无', third: '下方三度', sixth: '下方六度', octave: '下方八度', samples: ['四拍旋律', '三拍旋律', '摇摆旋律'], generated: '编曲完成：新增 {count} 个音符。请与原曲比较。', source: '已返回原谱。编曲候选保存在下方。', invalid: '请为每小节输入一个和弦，例如 C | Am | F | G。', playing: '正在播放{which}。', saved: '之前的编曲' },
 };
+const IMPORT_COPY = {
+  en: { full: 'Full original score', part: 'Part', staff: 'staff', voice: 'voice', choose: 'Select one melody voice and review one chord per measure.', empty: 'No melodic notes were found in this score.', chosen: 'Melody selected. Review the chord progression before arranging.', restored: 'Original score restored. Select a melody to arrange.', loaded: '{file} loaded. Review the chords before arranging.' },
+  ja: { full: '読み込んだ原譜全体', part: 'パート', staff: '段', voice: '声部', choose: '旋律の声部を1つ選び、各小節のコードを確認してください。', empty: '旋律の音符が見つかりませんでした。', chosen: '旋律を選びました。編曲前にコード進行を確認してください。', restored: '原譜全体に戻しました。編曲する旋律を選んでください。', loaded: '{file} を読み込みました。編曲前にコードを確認してください。' },
+  zh: { full: '导入的完整原谱', part: '声部', staff: '谱表', voice: '声部', choose: '请选择一个旋律声部并检查每小节的和弦。', empty: '此乐谱中没有找到旋律音符。', chosen: '已选择旋律，请在编曲前检查和弦。', restored: '已返回完整原谱，请选择要编曲的旋律。', loaded: '已导入 {file}，请在编曲前检查和弦。' },
+};
 let language = 'en';
 try { language = COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
 function applyLanguage(next = language) {
@@ -48,6 +53,7 @@ function applyLanguage(next = language) {
   ARRANGEMENT_SAMPLES.forEach((sample, index) => { $('sample-select').options[index].textContent = arrangement.samples[index] || { en: 'Harmony layers', ja: '重ねる旋律', zh: '旋律叠加' }[language]; });
   renderPresets();
   renderCandidates();
+  refreshMelodyLabels();
 }
 applyLanguage();
 
@@ -185,10 +191,19 @@ function currentSample() {
   return ARRANGEMENT_SAMPLES.find((item) => item.id === $('sample-select').value) || ARRANGEMENT_SAMPLES[0];
 }
 
+function availablePresets() {
+  if (!importedScoreJson || !sourceScoreJson) return currentSample().presets;
+  const score = JSON.parse(sourceScoreJson);
+  const meter = score.parts?.[0]?.staves?.[0]?.measures?.[0]?.time_sig || score.settings?.time_signature;
+  if (meter?.numerator === 3 && meter?.denominator === 4) return ['waltz-bass', 'held-chord', 'alternating-bass'];
+  if (meter?.numerator === 4 && meter?.denominator === 4) return ['bass-pulse', 'alternating-bass', 'offbeat-chords', 'swing-pulse'];
+  return ['held-chord', 'bass-pulse'];
+}
+
 function renderPresets() {
-  const sample = currentSample();
-  if (!sample.presets.includes(selectedPreset)) selectedPreset = sample.presets[0];
-  $('preset-options').replaceChildren(...sample.presets.map((id) => {
+  const presets = availablePresets();
+  if (!presets.includes(selectedPreset)) selectedPreset = presets[0];
+  $('preset-options').replaceChildren(...presets.map((id) => {
     const button = document.createElement('button');
     button.type = 'button'; button.textContent = localizedPreset(id, language);
     button.dataset.preset = id; button.setAttribute('aria-pressed', String(selectedPreset === id));
@@ -260,6 +275,19 @@ function arrangementChords() {
   return chords;
 }
 
+function arrangementFailure(diagnostics) {
+  const first = diagnostics?.[0];
+  if (!first) return 'This score cannot be arranged.';
+  const messages = {
+    en: { 'unsupported-source': 'Choose one monophonic melody voice before arranging.', 'missing-chords': 'Add one chord for each measure before arranging.', 'unsupported-chord': 'This chord is unavailable on the selected bass layout. Try a major or minor chord.', 'unsupported-meter': 'Choose an accompaniment that matches this time signature.', 'unsupported-rhythm': 'This rhythm does not fit the selected accompaniment. Try another pattern.', 'incompatible-harmony': 'The added voice cannot use these chord tones. Change the chord or choose no added voice.', 'out-of-range': 'The added voice would fall outside the accordion range.' },
+    ja: { 'unsupported-source': '単旋律の声部を1つ選んでから編曲してください。', 'missing-chords': '各小節のコードを入力してください。', 'unsupported-chord': 'このコードは選択中のベース配置では使えません。長調または短調のコードを試してください。', 'unsupported-meter': 'この拍子に合う伴奏を選んでください。', 'unsupported-rhythm': 'このリズムは選択中の伴奏に合いません。別のパターンを試してください。', 'incompatible-harmony': '追加旋律に合うコード音がありません。コードを変えるか、追加旋律を「なし」にしてください。', 'out-of-range': '追加旋律がアコーディオンの音域を超えます。' },
+    zh: { 'unsupported-source': '请先选择一个单旋律声部。', 'missing-chords': '请为每小节填写和弦。', 'unsupported-chord': '所选低音布局不支持此和弦，请尝试大三或小三和弦。', 'unsupported-meter': '请选择适合当前拍号的伴奏。', 'unsupported-rhythm': '此节奏与所选伴奏不兼容，请尝试其他节奏型。', 'incompatible-harmony': '附加旋律与和弦音不匹配，请修改和弦或取消附加旋律。', 'out-of-range': '附加旋律超出手风琴音域。' },
+  };
+  const message = messages[language][first.code] || first.message || first.code;
+  const measure = Number.isInteger(first.measure_index) ? ` (${language === 'ja' ? `第${first.measure_index + 1}小節` : language === 'zh' ? `第${first.measure_index + 1}小节` : `measure ${first.measure_index + 1}`})` : '';
+  return message + measure;
+}
+
 function arrangeScore() {
   try {
     if (!sourceScoreJson) return;
@@ -273,7 +301,7 @@ function arrangeScore() {
     const result = voice === 'unchanged'
       ? JSON.parse(acorde.arrange_accordion_preset(sourceScoreJson, JSON.stringify(selection), selectedPreset))
       : JSON.parse(acorde.arrange_accordion_layers(sourceScoreJson, JSON.stringify({ ...selection, accompaniment: preset.accompaniment, melodic_voice: voice, swing: preset.swing })));
-    if (!result.score) throw new Error(result.diagnostics.map((item) => item.message || item.code).join(' ') || 'This score cannot be arranged.');
+    if (!result.score) throw new Error(arrangementFailure(result.diagnostics));
     candidateScoreJson = JSON.stringify(result.score);
     const candidate = { scoreJson: candidateScoreJson, generated: result.generated_notes || [], preset: selectedPreset, voice, config: result.resolved_config };
     savedCandidates.unshift(candidate);
@@ -284,7 +312,7 @@ function arrangeScore() {
     $('play-accompaniment-button').disabled = !candidate.generated.length;
     const message = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
     $('arrangement-summary').textContent = `${message} ${{ en: 'Amber notes were added by Acorde.', ja: '琥珀色の音符が Acorde による追加分です。', zh: '琥珀色音符由 Acorde 添加。' }[language]}`; setStatus(message);
-  } catch (error) { setStatus(String(error), true); $('arrangement-summary').textContent = String(error); }
+  } catch (error) { const message = error.message || String(error); setStatus(message, true); $('arrangement-summary').textContent = message; }
 }
 
 function restoreOriginal() {
@@ -311,8 +339,22 @@ function loadSample() {
 
 function resetMelodyPicker() {
   const picker = $('melody-select');
-  picker.replaceChildren(new Option('Part 1', 'full'));
+  picker.replaceChildren(new Option(IMPORT_COPY[language].full, 'full'));
   picker.disabled = true;
+}
+
+function refreshMelodyLabels() {
+  const picker = $('melody-select');
+  if (!picker) return;
+  if (!importedScoreJson) { if (picker.options[0]) picker.options[0].textContent = IMPORT_COPY[language].full; return; }
+  const original = JSON.parse(importedScoreJson);
+  const copy = IMPORT_COPY[language];
+  [...picker.options].forEach((option) => {
+    if (option.value === 'full') { option.textContent = copy.full; return; }
+    const [partIndex, staffIndex, voiceIndex] = option.value.split(':').map(Number);
+    option.textContent = `${original.parts[partIndex]?.name || `${copy.part} ${partIndex + 1}`} · ${copy.staff} ${staffIndex + 1} · ${copy.voice} ${voiceIndex + 1}`;
+  });
+  if (picker.value === 'full' && !picker.disabled) $('own-score-hint').textContent = copy.choose;
 }
 
 function populateMelodyPicker(score) {
@@ -322,23 +364,24 @@ function populateMelodyPicker(score) {
     const voiceCount = Math.max(0, ...staff.measures.map((measure) => measure.voices?.length || 0));
     for (let voiceIndex = 0; voiceIndex < voiceCount; voiceIndex++) {
       if (!staff.measures.some((measure) => measure.voices?.[voiceIndex]?.some((note) => !note.is_rest))) continue;
-      choices.push(new Option(`${part.name || `Part ${partIndex + 1}`} · staff ${staffIndex + 1} · voice ${voiceIndex + 1}`, `${partIndex}:${staffIndex}:${voiceIndex}`));
+      choices.push(new Option('', `${partIndex}:${staffIndex}:${voiceIndex}`));
     }
   }));
   const needsChoice = choices.length > 1 || score.parts.length > 1 || score.parts[0]?.staves?.length > 1;
-  picker.replaceChildren(...(needsChoice ? [new Option('Full original score', 'full')] : []), ...choices);
+  picker.replaceChildren(...(needsChoice ? [new Option('', 'full')] : []), ...choices);
   picker.disabled = !needsChoice;
+  refreshMelodyLabels();
   if (needsChoice) {
     picker.value = 'full';
     $('arrange-button').disabled = true;
-    $('own-score-hint').textContent = 'Select one melody voice and review one chord per measure.';
+    $('own-score-hint').textContent = IMPORT_COPY[language].choose;
   } else if (choices.length) {
     picker.value = choices[0].value;
     $('arrange-button').disabled = false;
     $('own-score-hint').textContent = ARRANGE_COPY[language].hint;
   } else {
     $('arrange-button').disabled = true;
-    $('own-score-hint').textContent = 'No melodic notes were found in this score.';
+    $('own-score-hint').textContent = IMPORT_COPY[language].empty;
   }
 }
 
@@ -358,10 +401,11 @@ function selectMelody() {
     }
     engine.replace_score(JSON.stringify(score));
     refreshScore();
+    renderPresets();
     $('arrange-button').disabled = value === 'full';
     const measures = score.parts[0]?.staves[0]?.measures?.length || 0;
     $('chord-input').value = Array(measures).fill('C').join(' | ');
-    setStatus(value === 'full' ? 'Original score restored. Select a melody to arrange.' : 'Melody selected. Review the chord progression before arranging.');
+    setStatus(value === 'full' ? IMPORT_COPY[language].restored : IMPORT_COPY[language].chosen);
   } catch (error) { setStatus(`Could not select melody: ${error}`, true); }
 }
 
@@ -384,7 +428,7 @@ async function loadFile(event) {
     $('chord-input').value = Array(measures).fill('C').join(' | ');
     $('abc-input').value = /\.abc$/i.test(file.name) ? content : '';
     $('arrangement-summary').textContent = '';
-    setStatus(`${file.name} loaded. Review the chords before arranging.`);
+    setStatus(IMPORT_COPY[language].loaded.replace('{file}', file.name));
   } catch (error) { setStatus(`Could not open score: ${error}`, true); }
   finally { event.target.value = ''; }
 }
