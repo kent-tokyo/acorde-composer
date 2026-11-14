@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Try Acorde Composer in your browser: edit a small score with the Acorde MusicXML and ABC engine." />
+    <meta name="description" content="Hear Acorde arrange a melody: compare accompaniment patterns, added voices, and your own MusicXML or ABC score in the browser." />
     <title>Acorde Composer Playground</title>
     <link rel="stylesheet" href="./playground.css" />
   </head>
@@ -20,9 +20,18 @@
           </select>
         </label>
         <span class="engine-status" id="engine-status">Loading acorde engine…</span>
-        <h1 id="hero-title">Edit a score in your browser</h1>
-        <p id="hero-description">Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.</p>
+        <h1 id="hero-title">Hear what an arrangement changes</h1>
+        <p id="hero-description">Choose a melody, try an accompaniment, and compare it with the original.</p>
       </header>
+      <section class="arrangement-bar" aria-label="Arrangement demo">
+        <label for="sample-select"><span id="sample-label">Melody</span><select id="sample-select"><option value="four-four">Four-beat melody</option><option value="waltz">Three-beat melody</option><option value="swing">Swing melody</option><option value="harmony">Harmony layers</option></select></label>
+        <div><span id="preset-label">Accompaniment</span><div id="preset-options" class="preset-options" role="group" aria-label="Accompaniment patterns"></div></div>
+        <label for="chord-input"><span id="chord-label">Chords, one per measure</span><input id="chord-input" type="text" value="C | Am | F | G" spellcheck="false" /></label>
+        <label for="voice-select"><span id="voice-label">Added melodic voice</span><select id="voice-select"><option value="unchanged">None</option><option value="third-below">Third below</option><option value="sixth-below">Sixth below</option><option value="octave-below">Octave below</option></select></label>
+        <div class="arrangement-actions"><button id="arrange-button" class="primary" disabled>Try this arrangement</button><button id="restore-button" disabled>Return to original</button></div>
+        <p id="arrangement-summary" class="arrangement-summary" role="status"></p>
+        <div id="saved-candidates" class="saved-candidates" aria-live="polite"></div>
+      </section>
       <section class="workspace" aria-label="Score playground">
         <section class="score-card">
           <div class="card-heading">
@@ -32,6 +41,8 @@
             </div>
             <div class="actions"><button id="download-button" class="primary" disabled>Download MusicXML</button></div>
           </div>
+          <div class="playback-toolbar" role="group" aria-label="Playback comparison"><button id="play-source-button" disabled>Play original</button><button id="play-arranged-button" disabled>Play arrangement</button><button id="play-accompaniment-button" disabled>Accompaniment only</button><button id="stop-button" disabled>Stop</button><label class="loop-control"><input id="loop-toggle" type="checkbox" /><span id="loop-label">Loop</span></label></div>
+          <details class="editing-details"><summary id="editing-summary">Edit the score</summary>
           <div class="playground-editor-toolbar" role="toolbar" aria-label="Editing tools">
             <div class="toolbar-group">
               <button id="add-note-button" class="tool primary" disabled><span aria-hidden="true">♩</span> <span id="add-note-label">Add note</span></button>
@@ -51,11 +62,19 @@
               <span class="toolbar-divider" aria-hidden="true"></span>
               <button id="reset-score-button" class="tool" disabled><span aria-hidden="true">↺</span> <span id="reset-score-label">Reset</span></button>
             </div>
-          </div>
+          </div></details>
           <div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div>
           <p id="status" class="status" role="status"></p>
         </section>
         <aside class="controls">
+          <div class="control-section">
+            <h2 id="own-score-title">Try your own score</h2>
+            <label for="score-file" id="score-file-label">Open MusicXML or ABC</label>
+            <input id="score-file" type="file" accept=".musicxml,.xml,.abc,text/xml,text/plain" />
+            <label for="melody-select" id="melody-label">Melody part</label>
+            <select id="melody-select" disabled><option value="0">Part 1</option></select>
+            <p id="own-score-hint">Add chords before arranging a score without harmony.</p>
+          </div>
           <div class="control-section">
             <h2 id="import-title">Import ABC</h2>
             <label for="abc-input" id="abc-label">ABC notation</label>
@@ -74,6 +93,7 @@
         <a href="https://github.com/kent-tokyo/acorde-composer/blob/main/README_zh.md">简体中文</a>
       </footer>
     </main>
-    <script type="module" src="./playground.js?v=0.2.4-1"></script>
+    <script src="../audio-backend.js"></script>
+    <script type="module" src="./playground.js?v=arrangement-1"></script>
   </body>
 </html>

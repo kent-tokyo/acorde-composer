@@ -6,6 +6,7 @@ on:
     paths:
       - 'playground/**'
       - 'src/playground/**'
+      - 'src/audio-backend.js'
       - 'scripts/assemble-playground-site.cjs'
       - 'scripts/test-playground-e2e.cjs'
       - 'package.json'
@@ -45,7 +46,7 @@ jobs:
         with:
           repository: kent-tokyo/acorde
           path: acorde
-          ref: v1.3.8
+          ref: v1.3.12
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:

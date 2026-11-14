@@ -1,9 +1,19 @@
 import init, * as acorde from './acorde-wasm/acorde_wasm.js';
+import { ARRANGEMENT_SAMPLES, localizedPreset, makeSelection } from './arrangement-data.js';
 
 const SAMPLE_ABC = `X:1\nT:Playground sketch\nM:4/4\nL:1/4\nK:C\nC D E F | G A B c |`;
 const $ = (id) => document.getElementById(id);
 let engine = null;
 let scoreJson = '';
+let sourceScoreJson = '';
+let candidateScoreJson = '';
+let selectedPreset = '';
+let savedCandidates = [];
+let audioBackend = null;
+let playbackTimer = null;
+let playbackGeneration = 0;
+let activePlayback = null;
+let importedScoreJson = '';
 const LANGUAGE_KEY = 'acorde-composer.language.v1';
 const COPY = {
   en: { label: 'Language', hero: 'Edit a score in your browser', description: 'Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.', live: 'LIVE SCORE', undo: 'Undo', redo: 'Redo', download: 'Download MusicXML', import: 'Import ABC', abc: 'ABC notation', load: 'Load ABC into Acorde', local: 'Local-first demo', localDescription: 'No score data is uploaded. The browser calls the bundled acorde-wasm module directly.', ready: 'Ready. Try an edit or load your own ABC notation.', loaded: 'ABC parsed by acorde and loaded into the editor.', exported: 'MusicXML exported locally.', selected: 'Selected {address}. Use the note-input toolbar to edit the score.' },
@@ -15,16 +25,29 @@ const EDITOR_COPY = {
   ja: { entry: '音符入力', entryDescription: '音高と音価を選び、最後の小節へ追加します。', pitch: '音高', duration: '音価', addNote: '音符を追加', addRest: '休符を追加', addMeasure: '小節を追加', score: '譜面設定', tempo: 'テンポ（BPM）', applyTempo: 'テンポを適用', reset: 'サンプル譜面に戻す', addedNote: '{pitch}の{duration}音符を追加しました。', addedRest: '{duration}休符を追加しました。', addedMeasure: '小節を追加しました。', tempoChanged: 'テンポを{tempo} BPMに設定しました。', resetDone: 'サンプル譜面に戻しました。', eighth: '8分', quarter: '4分', half: '2分', whole: '全' },
   zh: { entry: '音符输入', entryDescription: '选择音高和时值，然后追加到最后一个小节。', pitch: '音高', duration: '时值', addNote: '添加音符', addRest: '添加休止符', addMeasure: '添加小节', score: '乐谱设置', tempo: '速度（BPM）', applyTempo: '应用速度', reset: '重置示例乐谱', addedNote: '已添加{pitch}{duration}音符。', addedRest: '已添加{duration}休止符。', addedMeasure: '已添加小节。', tempoChanged: '速度已设为{tempo} BPM。', resetDone: '已重置示例乐谱。', eighth: '八分', quarter: '四分', half: '二分', whole: '全' },
 };
+const ARRANGE_COPY = {
+  en: { sample: 'Melody', presets: 'Accompaniment', chords: 'Chords, one per measure', voice: 'Added melodic voice', arrange: 'Try this arrangement', restore: 'Return to original', original: 'Play original', arranged: 'Play arrangement', accompaniment: 'Accompaniment only', stop: 'Stop', loop: 'Loop', edit: 'Edit the score', own: 'Try your own score', file: 'Open MusicXML or ABC', melody: 'Melody part', hint: 'Add chords before arranging a score without harmony.', none: 'None', third: 'Third below', sixth: 'Sixth below', octave: 'Octave below', samples: ['Four-beat melody', 'Three-beat melody', 'Swing melody'], generated: 'Arrangement ready: {count} added notes. Compare it with the original.', source: 'Original score restored. Your arrangement is saved below.', invalid: 'Use one chord per measure, for example C | Am | F | G.', playing: 'Playing {which}.', saved: 'Previous arrangements' },
+  ja: { sample: '旋律', presets: '伴奏', chords: '各小節のコード', voice: '重ねる旋律', arrange: 'この編曲を試す', restore: '原譜に戻す', original: '原曲を再生', arranged: '編曲を再生', accompaniment: '伴奏だけ', stop: '停止', loop: '繰り返す', edit: '譜面を編集', own: '自分の譜面を試す', file: 'MusicXML または ABC を開く', melody: '旋律パート', hint: '和声のない譜面は、編曲前にコードを入力してください。', none: 'なし', third: '下に3度', sixth: '下に6度', octave: '下に8度', samples: ['4拍子の旋律', '3拍子の旋律', 'スイングの旋律'], generated: '編曲完了：{count}音を追加しました。原曲と聴き比べてください。', source: '原譜に戻しました。編曲候補は下に保存されています。', invalid: '各小節にコードを1つ入力してください。例：C | Am | F | G', playing: '{which}を再生中。', saved: '以前の編曲候補' },
+  zh: { sample: '旋律', presets: '伴奏', chords: '每小节和弦', voice: '附加旋律', arrange: '试听此编曲', restore: '返回原谱', original: '播放原曲', arranged: '播放编曲', accompaniment: '仅伴奏', stop: '停止', loop: '循环', edit: '编辑乐谱', own: '试用自己的乐谱', file: '打开 MusicXML 或 ABC', melody: '旋律声部', hint: '没有和声的乐谱请先填写和弦。', none: '无', third: '下方三度', sixth: '下方六度', octave: '下方八度', samples: ['四拍旋律', '三拍旋律', '摇摆旋律'], generated: '编曲完成：新增 {count} 个音符。请与原曲比较。', source: '已返回原谱。编曲候选保存在下方。', invalid: '请为每小节输入一个和弦，例如 C | Am | F | G。', playing: '正在播放{which}。', saved: '之前的编曲' },
+};
 let language = 'en';
 try { language = COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
 function applyLanguage(next = language) {
   language = COPY[next] ? next : 'en'; const copy = COPY[language]; document.documentElement.lang = language;
   const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
   [['language-label', copy.label], ['hero-title', copy.hero], ['hero-description', copy.description], ['live-score-label', copy.live], ['undo-label', copy.undo], ['redo-label', copy.redo], ['download-button', copy.download], ['import-title', copy.import], ['abc-label', copy.abc], ['load-abc-button', copy.load], ['local-demo-title', copy.local], ['local-demo-description', copy.localDescription]].forEach(([id, value]) => text(id, value));
+  text('hero-title', { en: 'Hear what an arrangement changes', ja: '編曲すると、どう変わる？', zh: '听听编曲带来的变化' }[language]);
+  text('hero-description', { en: 'Choose a melody, try an accompaniment, and compare it with the original.', ja: '旋律と伴奏を選び、原曲と聴き比べましょう。', zh: '选择旋律与伴奏，和原曲听一听差别。' }[language]);
   const select = $('language-select'); if (select) select.value = language;
   const editor = EDITOR_COPY[language];
   [['pitch-label', editor.pitch], ['duration-label', editor.duration], ['add-note-label', editor.addNote], ['add-rest-label', editor.addRest], ['add-measure-label', editor.addMeasure], ['tempo-label', editor.tempo], ['apply-tempo-label', editor.applyTempo], ['reset-score-label', editor.reset]].forEach(([id, value]) => text(id, value));
   [['Eighth', editor.eighth], ['Quarter', editor.quarter], ['Half', editor.half], ['Whole', editor.whole]].forEach(([value, label]) => { const option = $('duration-select')?.querySelector(`option[value="${value}"]`); if (option) option.textContent = label; });
+  const arrangement = ARRANGE_COPY[language];
+  [['sample-label', arrangement.sample], ['preset-label', arrangement.presets], ['chord-label', arrangement.chords], ['voice-label', arrangement.voice], ['arrange-button', arrangement.arrange], ['restore-button', arrangement.restore], ['play-source-button', arrangement.original], ['play-arranged-button', arrangement.arranged], ['play-accompaniment-button', arrangement.accompaniment], ['stop-button', arrangement.stop], ['loop-label', arrangement.loop], ['editing-summary', arrangement.edit], ['own-score-title', arrangement.own], ['score-file-label', arrangement.file], ['melody-label', arrangement.melody], ['own-score-hint', arrangement.hint]].forEach(([id, value]) => text(id, value));
+  ['none', 'third', 'sixth', 'octave'].forEach((key, index) => { $('voice-select').options[index].textContent = arrangement[key]; });
+  ARRANGEMENT_SAMPLES.forEach((sample, index) => { $('sample-select').options[index].textContent = arrangement.samples[index] || { en: 'Harmony layers', ja: '重ねる旋律', zh: '旋律叠加' }[language]; });
+  renderPresets();
+  renderCandidates();
 }
 applyLanguage();
 
@@ -40,11 +63,32 @@ function refreshHistoryButtons() {
 
 function refreshScore() {
   scoreJson = engine.get_score();
-  const score = JSON.parse(scoreJson);
+  sourceScoreJson = scoreJson;
+  candidateScoreJson = '';
+  savedCandidates = [];
+  stopPlayback();
+  $('restore-button').disabled = true;
+  $('play-arranged-button').disabled = true;
+  $('play-accompaniment-button').disabled = true;
+  $('arrange-button').disabled = false;
+  $('play-source-button').disabled = false;
+  renderCandidates();
+  renderVisibleScore();
+  $('tempo-input').value = String(JSON.parse(scoreJson).settings?.tempo_bpm || 120);
+  refreshHistoryButtons();
+}
+
+function renderVisibleScore() {
+  const visibleJson = candidateScoreJson || sourceScoreJson;
+  if (!visibleJson) return;
+  const score = JSON.parse(visibleJson);
   $('score-title').textContent = score.metadata?.title || 'Untitled score';
-  $('score-view').innerHTML = acorde.render_score_svg(scoreJson, JSON.stringify({ width: 900, interactive: true }));
+  $('score-view').innerHTML = acorde.render_score_svg(visibleJson, JSON.stringify({ width: 900, interactive: true }));
   const svg = $('score-view').querySelector('svg');
+  const candidate = savedCandidates.find((item) => item.scoreJson === candidateScoreJson);
+  const generated = new Set((candidate?.generated || []).map((addr) => `${addr.part}:${addr.staff}:${addr.measure}:${addr.voice}:${addr.note}`));
   svg?.querySelectorAll('[data-acorde-kind="note"]').forEach((note) => {
+    if (generated.has(note.dataset.noteAddr)) note.classList.add('generated-note');
     const box = note.getBBox();
     const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     hit.setAttribute('x', String(box.x - 8)); hit.setAttribute('y', String(box.y - 8));
@@ -58,8 +102,6 @@ function refreshScore() {
   $('add-measure-button').disabled = false;
   $('apply-tempo-button').disabled = false;
   $('reset-score-button').disabled = false;
-  $('tempo-input').value = String(score.settings?.tempo_bpm || 120);
-  refreshHistoryButtons();
 }
 
 $('score-view').addEventListener('click', (event) => {
@@ -113,8 +155,7 @@ function setTempo() {
 
 function resetScore() {
   try {
-    engine.replace_score(acorde.parse_abc(SAMPLE_ABC));
-    refreshScore();
+    loadSample();
     setStatus(EDITOR_COPY[language].resetDone);
   } catch (error) { setStatus(`Could not edit the score: ${error}`, true); }
 }
@@ -124,6 +165,8 @@ async function loadAbc() {
     const source = $('abc-input').value.trim();
     if (!source) throw new Error('Enter ABC notation first.');
     engine.replace_score(acorde.parse_abc(source));
+    importedScoreJson = '';
+    resetMelodyPicker();
     refreshScore();
     setStatus(COPY[language].loaded);
   } catch (error) { setStatus(`Could not parse ABC: ${error}`, true); }
@@ -131,19 +174,225 @@ async function loadAbc() {
 
 async function downloadMusicxml() {
   try {
-    const xml = acorde.serialize_musicxml(scoreJson);
+    const xml = acorde.serialize_musicxml(candidateScoreJson || sourceScoreJson);
     const url = URL.createObjectURL(new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' }));
-    const link = document.createElement('a'); link.href = url; link.download = 'acorde-playground.musicxml'; link.click();
+    const link = document.createElement('a'); link.href = url; link.download = candidateScoreJson ? 'acorde-arrangement.musicxml' : 'acorde-playground.musicxml'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 0); setStatus(COPY[language].exported);
   } catch (error) { setStatus(`Could not export MusicXML: ${error}`, true); }
+}
+
+function currentSample() {
+  return ARRANGEMENT_SAMPLES.find((item) => item.id === $('sample-select').value) || ARRANGEMENT_SAMPLES[0];
+}
+
+function renderPresets() {
+  const sample = currentSample();
+  if (!sample.presets.includes(selectedPreset)) selectedPreset = sample.presets[0];
+  $('preset-options').replaceChildren(...sample.presets.map((id) => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = localizedPreset(id, language);
+    button.dataset.preset = id; button.setAttribute('aria-pressed', String(selectedPreset === id));
+    button.addEventListener('click', () => { selectedPreset = id; renderPresets(); });
+    return button;
+  }));
+}
+
+function renderCandidates() {
+  const container = $('saved-candidates');
+  if (!container) return;
+  container.replaceChildren();
+  if (!savedCandidates.length) return;
+  const label = document.createElement('strong'); label.textContent = ARRANGE_COPY[language].saved;
+  container.append(label);
+  for (const [index, candidate] of savedCandidates.entries()) {
+    const button = document.createElement('button'); button.type = 'button';
+    button.textContent = `${index + 1}. ${localizedPreset(candidate.preset, language)}${candidate.voice === 'unchanged' ? '' : ` + ${candidate.voice}`}`;
+    button.addEventListener('click', () => {
+      stopPlayback(); candidateScoreJson = candidate.scoreJson; activePlayback = null;
+      $('restore-button').disabled = false;
+      $('play-arranged-button').disabled = false;
+      $('play-accompaniment-button').disabled = !candidate.generated.length;
+      renderVisibleScore();
+      $('arrangement-summary').textContent = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
+    });
+    container.append(button);
+  }
+}
+
+function stopPlayback() {
+  playbackGeneration += 1;
+  if (playbackTimer) clearTimeout(playbackTimer);
+  playbackTimer = null;
+  audioBackend?.stopAll();
+  $('stop-button').disabled = true;
+  ['play-source-button', 'play-arranged-button', 'play-accompaniment-button'].forEach((id) => $(id).removeAttribute('aria-current'));
+}
+
+async function playScore(which) {
+  try {
+    stopPlayback();
+    const generation = playbackGeneration;
+    const candidate = savedCandidates.find((item) => item.scoreJson === candidateScoreJson);
+    if (which !== 'source' && !candidate) return;
+    const target = which === 'source' ? sourceScoreJson : candidateScoreJson;
+    let events = JSON.parse(acorde.to_playback_events_ex(target, '{}'));
+    if (which === 'accompaniment') {
+      const generated = new Set(candidate.generated.map((addr) => `${addr.part}:${addr.staff}:${addr.measure}:${addr.voice}:${addr.note}`));
+      events = events.filter((event) => generated.has(event.address));
+    }
+    if (!events.length) throw new Error('No playable notes in this selection.');
+    audioBackend ||= new window.AcordeAudioBackend();
+    const context = await audioBackend.resume();
+    if (generation !== playbackGeneration) return;
+    audioBackend.schedule(events, context.currentTime + 0.05);
+    $('stop-button').disabled = false;
+    $(`play-${which === 'source' ? 'source' : which === 'arranged' ? 'arranged' : 'accompaniment'}-button`).setAttribute('aria-current', 'true');
+    const duration = Math.max(...events.map((event) => event.time_secs + event.duration_secs)) + 0.15;
+    setStatus(ARRANGE_COPY[language].playing.replace('{which}', which === 'source' ? ARRANGE_COPY[language].original : which === 'arranged' ? ARRANGE_COPY[language].arranged : ARRANGE_COPY[language].accompaniment));
+    playbackTimer = setTimeout(() => { if (generation !== playbackGeneration) return; if ($('loop-toggle').checked) playScore(which); else stopPlayback(); }, duration * 1000);
+  } catch (error) { stopPlayback(); setStatus(String(error), true); }
+}
+
+function arrangementChords() {
+  const chords = $('chord-input').value.split('|').map((item) => item.trim());
+  const measures = JSON.parse(sourceScoreJson).parts?.[0]?.staves?.[0]?.measures?.length || 0;
+  if (chords.length !== measures || chords.some((chord) => !/^[A-G](?:#|b)?m?$/.test(chord))) throw new Error(ARRANGE_COPY[language].invalid);
+  return chords;
+}
+
+function arrangeScore() {
+  try {
+    if (!sourceScoreJson) return;
+    stopPlayback();
+    const selection = makeSelection(arrangementChords());
+    const voice = $('voice-select').value;
+    const capabilities = JSON.parse(acorde.accordion_preset_capabilities());
+    const preset = capabilities.presets.find((entry) => entry.id === selectedPreset);
+    if (!preset) throw new Error(`Unknown preset: ${selectedPreset}`);
+    if (preset.requires_free_bass) selection.bass_mode = 'free-bass';
+    const result = voice === 'unchanged'
+      ? JSON.parse(acorde.arrange_accordion_preset(sourceScoreJson, JSON.stringify(selection), selectedPreset))
+      : JSON.parse(acorde.arrange_accordion_layers(sourceScoreJson, JSON.stringify({ ...selection, accompaniment: preset.accompaniment, melodic_voice: voice, swing: preset.swing })));
+    if (!result.score) throw new Error(result.diagnostics.map((item) => item.message || item.code).join(' ') || 'This score cannot be arranged.');
+    candidateScoreJson = JSON.stringify(result.score);
+    const candidate = { scoreJson: candidateScoreJson, generated: result.generated_notes || [], preset: selectedPreset, voice, config: result.resolved_config };
+    savedCandidates.unshift(candidate);
+    savedCandidates = savedCandidates.slice(0, 6);
+    renderVisibleScore(); renderCandidates();
+    $('restore-button').disabled = false;
+    $('play-arranged-button').disabled = false;
+    $('play-accompaniment-button').disabled = !candidate.generated.length;
+    const message = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
+    $('arrangement-summary').textContent = `${message} ${{ en: 'Amber notes were added by Acorde.', ja: '琥珀色の音符が Acorde による追加分です。', zh: '琥珀色音符由 Acorde 添加。' }[language]}`; setStatus(message);
+  } catch (error) { setStatus(String(error), true); $('arrangement-summary').textContent = String(error); }
+}
+
+function restoreOriginal() {
+  stopPlayback(); candidateScoreJson = ''; renderVisibleScore();
+  $('restore-button').disabled = true; $('play-arranged-button').disabled = true; $('play-accompaniment-button').disabled = true;
+  $('arrangement-summary').textContent = ARRANGE_COPY[language].source;
+}
+
+function loadSample() {
+  try {
+    const sample = currentSample();
+    engine.replace_score(acorde.parse_abc(sample.abc));
+    importedScoreJson = '';
+    resetMelodyPicker();
+    $('chord-input').value = sample.chords.join(' | ');
+    $('abc-input').value = sample.abc;
+    $('voice-select').value = 'unchanged';
+    renderPresets(); refreshScore();
+    $('arrangement-summary').textContent = '';
+    setStatus(COPY[language].ready);
+  } catch (error) { setStatus(String(error), true); }
+}
+
+function resetMelodyPicker() {
+  const picker = $('melody-select');
+  picker.replaceChildren(new Option('Part 1', 'full'));
+  picker.disabled = true;
+}
+
+function populateMelodyPicker(score) {
+  const picker = $('melody-select');
+  const choices = [];
+  score.parts.forEach((part, partIndex) => part.staves.forEach((staff, staffIndex) => {
+    const voiceCount = Math.max(0, ...staff.measures.map((measure) => measure.voices?.length || 0));
+    for (let voiceIndex = 0; voiceIndex < voiceCount; voiceIndex++) {
+      if (!staff.measures.some((measure) => measure.voices?.[voiceIndex]?.some((note) => !note.is_rest))) continue;
+      choices.push(new Option(`${part.name || `Part ${partIndex + 1}`} · staff ${staffIndex + 1} · voice ${voiceIndex + 1}`, `${partIndex}:${staffIndex}:${voiceIndex}`));
+    }
+  }));
+  const needsChoice = choices.length > 1 || score.parts.length > 1 || score.parts[0]?.staves?.length > 1;
+  picker.replaceChildren(...(needsChoice ? [new Option('Full original score', 'full')] : []), ...choices);
+  picker.disabled = !needsChoice;
+  if (needsChoice) {
+    picker.value = 'full';
+    $('arrange-button').disabled = true;
+    $('own-score-hint').textContent = 'Select one melody voice and review one chord per measure.';
+  } else if (choices.length) {
+    picker.value = choices[0].value;
+    $('arrange-button').disabled = false;
+    $('own-score-hint').textContent = ARRANGE_COPY[language].hint;
+  } else {
+    $('arrange-button').disabled = true;
+    $('own-score-hint').textContent = 'No melodic notes were found in this score.';
+  }
+}
+
+function selectMelody() {
+  try {
+    if (!importedScoreJson) return;
+    const value = $('melody-select').value;
+    let score = JSON.parse(importedScoreJson);
+    if (value !== 'full') {
+      const [partIndex, staffIndex, voiceIndex] = value.split(':').map(Number);
+      const part = score.parts[partIndex];
+      const staff = part.staves[staffIndex];
+      staff.measures = staff.measures.map((measure) => ({ ...measure, voices: [measure.voices?.[voiceIndex] || [], [], [], []] }));
+      part.staves = [staff]; part.staff_groups = [];
+      score.parts = [part]; score.part_groups = []; score.spanners = []; score.views = [];
+      score.object_style_overrides = [];
+    }
+    engine.replace_score(JSON.stringify(score));
+    refreshScore();
+    $('arrange-button').disabled = value === 'full';
+    const measures = score.parts[0]?.staves[0]?.measures?.length || 0;
+    $('chord-input').value = Array(measures).fill('C').join(' | ');
+    setStatus(value === 'full' ? 'Original score restored. Select a melody to arrange.' : 'Melody selected. Review the chord progression before arranging.');
+  } catch (error) { setStatus(`Could not select melody: ${error}`, true); }
+}
+
+async function loadFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 2_000_000) throw new Error('Choose a score under 2 MB.');
+    const content = await file.text();
+    const parsed = /\.abc$/i.test(file.name) ? acorde.parse_abc(content) : acorde.parse_musicxml(content);
+    engine.replace_score(parsed);
+    importedScoreJson = engine.get_score();
+    refreshScore();
+    const score = JSON.parse(sourceScoreJson);
+    populateMelodyPicker(score);
+    $('voice-select').value = 'unchanged';
+    $('sample-select').value = ARRANGEMENT_SAMPLES[0].id;
+    renderPresets();
+    const measures = score.parts?.[0]?.staves?.[0]?.measures?.length || 0;
+    $('chord-input').value = Array(measures).fill('C').join(' | ');
+    $('abc-input').value = /\.abc$/i.test(file.name) ? content : '';
+    $('arrangement-summary').textContent = '';
+    setStatus(`${file.name} loaded. Review the chords before arranging.`);
+  } catch (error) { setStatus(`Could not open score: ${error}`, true); }
+  finally { event.target.value = ''; }
 }
 
 async function boot() {
   try {
     await init();
     engine = new acorde.ScoreEngine();
-    engine.replace_score(acorde.parse_abc(SAMPLE_ABC));
-    refreshScore();
+    loadSample();
     $('load-abc-button').disabled = false;
     $('engine-status').textContent = 'acorde engine ready';
     setStatus(COPY[language].ready);
@@ -160,6 +409,16 @@ $('apply-tempo-button').addEventListener('click', setTempo);
 $('reset-score-button').addEventListener('click', resetScore);
 $('load-abc-button').addEventListener('click', loadAbc);
 $('download-button').addEventListener('click', downloadMusicxml);
+$('sample-select').addEventListener('change', loadSample);
+$('arrange-button').addEventListener('click', arrangeScore);
+$('restore-button').addEventListener('click', restoreOriginal);
+$('play-source-button').addEventListener('click', () => playScore('source'));
+$('play-arranged-button').addEventListener('click', () => playScore('arranged'));
+$('play-accompaniment-button').addEventListener('click', () => playScore('accompaniment'));
+$('stop-button').addEventListener('click', stopPlayback);
+$('score-file').addEventListener('change', loadFile);
+$('melody-select').addEventListener('change', selectMelody);
+window.addEventListener('pagehide', () => { stopPlayback(); audioBackend?.dispose(); });
 $('undo-button').addEventListener('click', () => { engine.undo(); refreshScore(); setStatus('Undid the last edit.'); });
 $('redo-button').addEventListener('click', () => { engine.redo(); refreshScore(); setStatus('Redid the last edit.'); });
 $('language-select').addEventListener('change', (event) => { language = COPY[event.target.value] ? event.target.value : 'en'; localStorage.setItem(LANGUAGE_KEY, language); applyLanguage(language); });

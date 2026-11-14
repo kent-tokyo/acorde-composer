@@ -50,7 +50,7 @@ async function waitForText(locator, expected, message) {
     if (expected.test(text || '')) return text;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  throw new Error(`${message}; expected ${expected}`);
+  throw new Error(`${message}; expected ${expected}; received ${JSON.stringify(await locator.textContent().catch(() => ''))}`);
 }
 
 async function readStream(stream) {
@@ -84,6 +84,56 @@ async function main() {
     assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);
     assert.equal(await playground.locator('#download-button').isEnabled(), true);
 
+    let lastArrangedXml = '';
+    for (const sample of ['four-four', 'waltz', 'swing']) {
+      await playground.locator('#sample-select').selectOption(sample);
+      await playground.locator('#arrange-button').click();
+      await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, `${sample} arrangement failed`);
+      assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
+      assert.equal(await playground.locator('#play-accompaniment-button').isEnabled(), true);
+      const arrangedDownload = page.waitForEvent('download');
+      await playground.locator('#download-button').click();
+      const arranged = await arrangedDownload;
+      assert.equal(arranged.suggestedFilename(), 'acorde-arrangement.musicxml');
+      const arrangedXml = await readStream(await arranged.createReadStream());
+      assert.match(arrangedXml, /<score-partwise/);
+      lastArrangedXml = arrangedXml;
+      await playground.locator('#play-source-button').click();
+      await waitForText(playground.locator('#status'), /^Playing Play original\.$/, 'Original playback did not start');
+      await playground.locator('#stop-button').click();
+      await playground.locator('#play-accompaniment-button').click();
+      await waitForText(playground.locator('#status'), /^Playing Accompaniment only\.$/, 'Accompaniment playback did not start');
+      await playground.locator('#stop-button').click();
+      await playground.locator('#restore-button').click();
+      assert.equal(await playground.locator('#play-arranged-button').isEnabled(), false);
+    }
+    await playground.locator('#sample-select').selectOption('harmony');
+    await playground.locator('#voice-select').selectOption('third-below');
+    await playground.locator('#arrange-button').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Third-below layer failed');
+    await playground.locator('#voice-select').selectOption('sixth-below');
+    await playground.locator('#arrange-button').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Sixth-below layer failed');
+    assert.ok(await playground.locator('#saved-candidates button').count() >= 2);
+    await playground.locator('#score-file').setInputFiles({ name: 'arrangement.musicxml', mimeType: 'application/vnd.recordare.musicxml+xml', buffer: Buffer.from(lastArrangedXml) });
+    await waitForText(playground.locator('#status'), /arrangement\.musicxml loaded\./, 'MusicXML import failed');
+    assert.equal(await playground.locator('#melody-select').isEnabled(), true);
+    await playground.locator('#melody-select').selectOption('0:0:0');
+    assert.equal(await playground.locator('#arrange-button').isEnabled(), true, await playground.locator('#status').textContent());
+    await playground.locator('#arrange-button').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Imported melody arrangement failed');
+    await playground.locator('#restore-button').click();
+    await playground.locator('#saved-candidates button').first().focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
+    await playground.locator('#language-select').selectOption('ja');
+    assert.match(await playground.locator('#hero-title').textContent(), /編曲/);
+    await playground.locator('#language-select').selectOption('zh');
+    assert.match(await playground.locator('#hero-title').textContent(), /编曲/);
+    await playground.locator('#language-select').selectOption('en');
+    await playground.locator('#sample-select').selectOption('four-four');
+    await playground.locator('.editing-details summary').click();
+
     await playground.locator('#pitch-select').selectOption('D4');
     await playground.locator('#duration-select').selectOption('Half');
     await playground.locator('#add-note-button').click();
@@ -108,7 +158,10 @@ async function main() {
     const stream = await download.createReadStream();
     assert.ok(stream, 'MusicXML download stream is unavailable');
     assert.match(await readStream(stream), /<score-partwise/);
-    console.log('Playground E2E passed: WASM boot, edit, ABC import, and MusicXML export.');
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileOverflow = await playground.locator('body').evaluate((body) => body.scrollWidth - body.clientWidth);
+    assert.ok(mobileOverflow <= 1, `Playground overflows a 390px viewport by ${mobileOverflow}px`);
+    console.log('Playground E2E passed: WASM arrangement, A/B playback, added voices, MusicXML round trip, editing, localization, and mobile layout.');
   } finally {
     await browser?.close();
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

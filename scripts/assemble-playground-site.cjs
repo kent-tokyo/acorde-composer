@@ -7,6 +7,8 @@ const required = [
   'playground/index.html',
   'src/playground/index.html',
   'src/playground/playground.js',
+  'src/playground/arrangement-data.js',
+  'src/audio-backend.js',
   'src/playground/acorde-wasm/acorde_wasm.js',
   'src/playground/acorde-wasm/acorde_wasm_bg.wasm',
 ];
@@ -22,5 +24,6 @@ fs.mkdirSync(path.join(site, 'playground'), { recursive: true });
 fs.mkdirSync(path.join(site, 'src'), { recursive: true });
 fs.cpSync(path.join(root, 'playground'), path.join(site, 'playground'), { recursive: true });
 fs.cpSync(path.join(root, 'src/playground'), path.join(site, 'src/playground'), { recursive: true });
+fs.copyFileSync(path.join(root, 'src/audio-backend.js'), path.join(site, 'src/audio-backend.js'));
 fs.writeFileSync(path.join(site, '.nojekyll'), '');
 console.log(`Assembled Playground site: ${site}`);
