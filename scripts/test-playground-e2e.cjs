@@ -116,6 +116,17 @@ async function main() {
     await playground.locator('#arrange-button').click();
     await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Sixth-below layer failed');
     assert.ok(await playground.locator('#saved-candidates button').count() >= 2);
+    await playground.locator('body').evaluate(() => {
+      const original = window.AcordeAudioBackend.prototype.schedule;
+      window.AcordeAudioBackend.prototype.schedule = function (events, ...args) {
+        window.accompanimentTestEvents = events;
+        return original.call(this, events, ...args);
+      };
+    });
+    await playground.locator('#play-accompaniment-button').click();
+    const accompanimentStaffs = await playground.locator('body').evaluate(() => [...new Set(window.accompanimentTestEvents.map((event) => event.address?.split(':')[1]))]);
+    assert.deepEqual(accompanimentStaffs, ['1'], 'Accompaniment-only playback included the added melodic voice');
+    await playground.locator('#stop-button').click();
     await playground.locator('#score-file').setInputFiles({ name: 'arrangement.musicxml', mimeType: 'application/vnd.recordare.musicxml+xml', buffer: Buffer.from(lastArrangedXml) });
     await waitForText(playground.locator('#status'), /arrangement\.musicxml loaded\./, 'MusicXML import failed');
     assert.equal(await playground.locator('#melody-select').isEnabled(), true);

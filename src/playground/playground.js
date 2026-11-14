@@ -226,12 +226,16 @@ function renderCandidates() {
       stopPlayback(); candidateScoreJson = candidate.scoreJson; activePlayback = null;
       $('restore-button').disabled = false;
       $('play-arranged-button').disabled = false;
-      $('play-accompaniment-button').disabled = !candidate.generated.length;
+      $('play-accompaniment-button').disabled = !accompanimentNotes(candidate).length;
       renderVisibleScore();
       $('arrangement-summary').textContent = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
     });
     container.append(button);
   }
+}
+
+function accompanimentNotes(candidate) {
+  return candidate.generated.filter((address) => address.staff === 1);
 }
 
 function stopPlayback() {
@@ -252,7 +256,7 @@ async function playScore(which) {
     const target = which === 'source' ? sourceScoreJson : candidateScoreJson;
     let events = JSON.parse(acorde.to_playback_events_ex(target, '{}'));
     if (which === 'accompaniment') {
-      const generated = new Set(candidate.generated.map((addr) => `${addr.part}:${addr.staff}:${addr.measure}:${addr.voice}:${addr.note}`));
+      const generated = new Set(accompanimentNotes(candidate).map((addr) => `${addr.part}:${addr.staff}:${addr.measure}:${addr.voice}:${addr.note}`));
       events = events.filter((event) => generated.has(event.address));
     }
     if (!events.length) throw new Error('No playable notes in this selection.');
@@ -309,7 +313,7 @@ function arrangeScore() {
     renderVisibleScore(); renderCandidates();
     $('restore-button').disabled = false;
     $('play-arranged-button').disabled = false;
-    $('play-accompaniment-button').disabled = !candidate.generated.length;
+    $('play-accompaniment-button').disabled = !accompanimentNotes(candidate).length;
     const message = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
     $('arrangement-summary').textContent = `${message} ${{ en: 'Amber notes were added by Acorde.', ja: '琥珀色の音符が Acorde による追加分です。', zh: '琥珀色音符由 Acorde 添加。' }[language]}`; setStatus(message);
   } catch (error) { const message = error.message || String(error); setStatus(message, true); $('arrangement-summary').textContent = message; }
