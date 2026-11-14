@@ -158,13 +158,15 @@ async function main() {
     const stream = await download.createReadStream();
     assert.ok(stream, 'MusicXML download stream is unavailable');
     assert.match(await readStream(stream), /<score-partwise/);
-    await page.setViewportSize({ width: 390, height: 844 });
-    const mobileLayout = await playground.locator('body').evaluate((body) => ({
-      overflow: body.scrollWidth - window.innerWidth,
-      viewport: window.innerWidth,
-      offenders: [...body.querySelectorAll('*')].map((element) => ({ tag: element.tagName.toLowerCase(), id: element.id, className: typeof element.className === 'string' ? element.className : '', right: Math.round(element.getBoundingClientRect().right), scrollWidth: element.scrollWidth })).filter((item) => item.right > window.innerWidth + 1).slice(0, 12),
-    }));
-    assert.ok(mobileLayout.overflow <= 1, `Playground mobile overflow: ${JSON.stringify(mobileLayout)}`);
+    for (const width of [390, 374, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      const mobileLayout = await playground.locator('body').evaluate((body) => ({
+        overflow: body.scrollWidth - window.innerWidth,
+        viewport: window.innerWidth,
+        offenders: [...body.querySelectorAll('*')].map((element) => ({ tag: element.tagName.toLowerCase(), id: element.id, className: typeof element.className === 'string' ? element.className : '', right: Math.round(element.getBoundingClientRect().right), scrollWidth: element.scrollWidth })).filter((item) => item.right > window.innerWidth + 1).slice(0, 12),
+      }));
+      assert.ok(mobileLayout.overflow <= 1, `Playground mobile overflow at ${width}px: ${JSON.stringify(mobileLayout)}`);
+    }
     console.log('Playground E2E passed: WASM arrangement, A/B playback, added voices, MusicXML round trip, editing, localization, and mobile layout.');
   } finally {
     await browser?.close();

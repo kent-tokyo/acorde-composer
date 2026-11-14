@@ -33,3 +33,4 @@
 .control-section select { margin-bottom:2px; }
 .score-view .generated-note { filter:drop-shadow(0 0 4px #f59e0b); }
 @media (max-width:800px) { .arrangement-bar { grid-template-columns:1fr; padding:15px; } .arrangement-actions { width:100%; } .arrangement-actions button { flex:1; } .loop-control { margin-left:0; } }
+@media (max-width:800px) { .workspace,.arrangement-bar { grid-template-columns:minmax(0,1fr); } .workspace > *,.arrangement-bar > * { min-width:0; } .toolbar-history { flex-wrap:wrap; } .arrangement-actions { flex-direction:column; } .arrangement-actions button { width:100%; } }
