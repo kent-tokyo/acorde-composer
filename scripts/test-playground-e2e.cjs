@@ -87,6 +87,7 @@ async function main() {
     let lastArrangedXml = '';
     for (const sample of ['four-four', 'waltz', 'swing']) {
       await playground.locator('#sample-select').selectOption(sample);
+      assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), sample === 'swing' ? 'swing-pulse' : sample === 'waltz' ? 'waltz-bass' : 'bass-pulse');
       await playground.locator('#arrange-button').click();
       await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, `${sample} arrangement failed`);
       assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);

@@ -296,6 +296,7 @@ function restoreOriginal() {
 function loadSample() {
   try {
     const sample = currentSample();
+    selectedPreset = sample.presets[0];
     engine.replace_score(acorde.parse_abc(sample.abc));
     importedScoreJson = '';
     resetMelodyPicker();
