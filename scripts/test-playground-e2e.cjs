@@ -172,6 +172,7 @@ async function main() {
     await playground.locator('#load-abc-button').click();
     await waitForText(playground.locator('#status'), /^ABC parsed by acorde and loaded into the editor\.$/, 'ABC import did not complete');
     assert.equal(await playground.locator('#score-title').innerText(), 'Playground E2E');
+    assert.equal(await playground.locator('#chord-input').inputValue(), 'C');
 
     const downloadPromise = page.waitForEvent('download');
     await playground.locator('#download-button').click();

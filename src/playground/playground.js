@@ -174,6 +174,10 @@ async function loadAbc() {
     importedScoreJson = '';
     resetMelodyPicker();
     refreshScore();
+    renderPresets();
+    const measures = JSON.parse(sourceScoreJson).parts?.[0]?.staves?.[0]?.measures?.length || 0;
+    $('chord-input').value = Array(measures).fill('C').join(' | ');
+    $('own-score-hint').textContent = ARRANGE_COPY[language].hint;
     setStatus(COPY[language].loaded);
   } catch (error) { setStatus(`Could not parse ABC: ${error}`, true); }
 }
@@ -332,6 +336,7 @@ function loadSample() {
     engine.replace_score(acorde.parse_abc(sample.abc));
     importedScoreJson = '';
     resetMelodyPicker();
+    $('own-score-hint').textContent = ARRANGE_COPY[language].hint;
     $('chord-input').value = sample.chords.join(' | ');
     $('abc-input').value = sample.abc;
     $('voice-select').value = 'unchanged';
