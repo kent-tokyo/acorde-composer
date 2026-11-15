@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Hear Acorde Composer arrange a melody, compare it with the original, and export MusicXML in your browser." />
     <title>Acorde Composer Playground</title>
-    <style>html,body,iframe{margin:0;width:100%;height:100%;border:0}body{background:#f5f7fb}iframe{display:block;min-height:100vh}</style>
+    <style>html,body{margin:0;width:100%;border:0}body{background:#f5f7fb;color:#202638;font:15px system-ui,sans-serif}main{max-width:1180px;margin:auto;padding:20px 24px 4px}h1{font-size:22px;margin:0 0 8px}p{margin:0 0 8px;line-height:1.5}a{color:#4738bd}iframe{display:block;width:100%;min-height:100vh;border:0}</style>
   </head>
   <body>
-    <iframe src="../src/playground/index.html" title="Acorde Composer browser playground"></iframe>
+    <main>
+      <h1>Acorde Composer arrangement Playground</h1>
+      <p>Choose a short melody, add bass and chords or another voice, and hear the original followed by the arrangement. The browser demo imports MusicXML or ABC and exports MusicXML.</p>
+      <p><a href="https://acorde.dev/en/arrange/">Arrangement examples and supported input</a> · <a href="https://github.com/kent-tokyo/acorde-composer/releases">Desktop Composer releases</a></p>
+    </main>
+    <iframe id="playground-frame" src="../src/playground/index.html" title="Acorde Composer browser playground"></iframe>
+    <script>
+      const sample = new URLSearchParams(location.search).get('sample');
+      if (['four-four', 'waltz', 'harmony'].includes(sample)) document.getElementById('playground-frame').src = `../src/playground/index.html?sample=${sample}`;
+    </script>
   </body>
 </html>

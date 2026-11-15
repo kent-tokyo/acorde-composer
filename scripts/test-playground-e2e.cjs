@@ -67,6 +67,11 @@ async function main() {
   try {
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ acceptDownloads: true });
+    const usageEvents = [];
+    await context.route('https://acorde.dev/api/event', async (route) => {
+      usageEvents.push(JSON.parse(route.request().postData()));
+      await route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*' } });
+    });
     await context.addInitScript(() => localStorage.setItem('acorde-composer.language.v1', 'en'));
     const page = await context.newPage();
     await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });
@@ -74,6 +79,11 @@ async function main() {
     assert.equal(await page.locator('iframe[title="Acorde Composer browser playground"]').count(), 1);
     const playground = page.frameLocator('iframe[title="Acorde Composer browser playground"]');
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Acorde WASM did not become ready');
+    await page.goto(`http://127.0.0.1:${port}/playground/?sample=waltz`, { waitUntil: 'networkidle' });
+    await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Linked example did not load');
+    assert.equal(await playground.locator('#sample-select').inputValue(), 'waltz');
+    await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });
+    await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Default example did not load');
     assert.equal(await playground.locator('#abc-input').count(), 1);
     assert.equal(await playground.locator('#load-abc-button').count(), 1);
     assert.equal(await playground.locator('.playground-editor-toolbar').getAttribute('role'), 'toolbar');
@@ -83,6 +93,11 @@ async function main() {
     assert.equal(await playground.locator('#add-measure-button').isEnabled(), true);
     assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);
     assert.equal(await playground.locator('#download-button').isEnabled(), true);
+    await playground.locator('[data-showcase="harmony"]').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'One-click harmony example failed');
+    assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
+    await waitForText(playground.locator('#status'), /^Playing Play arrangement\.$/, 'One-click original-to-arrangement playback failed');
+    await playground.locator('#stop-button').click();
 
     let lastArrangedXml = '';
     for (const sample of ['four-four', 'waltz', 'swing']) {
@@ -190,6 +205,10 @@ async function main() {
       }));
       assert.ok(mobileLayout.overflow <= 1, `Playground mobile overflow at ${width}px: ${JSON.stringify(mobileLayout)}`);
     }
+    assert.ok(usageEvents.some((event) => event.event === 'first_play'));
+    assert.ok(usageEvents.some((event) => event.event === 'arrangement_generated'));
+    assert.ok(usageEvents.some((event) => event.event === 'musicxml_download'));
+    assert.ok(usageEvents.every((event) => Object.keys(event).sort().join(',') === 'event,locale,sample,seconds,surface'));
     console.log('Playground E2E passed: WASM arrangement, A/B playback, added voices, MusicXML round trip, editing, localization, and mobile layout.');
   } finally {
     await browser?.close();

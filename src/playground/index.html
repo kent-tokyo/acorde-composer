@@ -23,6 +23,15 @@
         <h1 id="hero-title">Hear what an arrangement changes</h1>
         <p id="hero-description">Choose a melody, try an accompaniment, and compare it with the original.</p>
       </header>
+      <section class="showcase" aria-label="Arrangement examples">
+        <h2 id="showcase-title">Hear three ways to arrange a melody</h2>
+        <div class="showcase-grid">
+          <button type="button" class="showcase-card" data-showcase="four-four"><strong>Bass and chords</strong><span>A steady pulse under the same melody</span></button>
+          <button type="button" class="showcase-card" data-showcase="waltz"><strong>Waltz accompaniment</strong><span>Bass on beat one, chords after it</span></button>
+          <button type="button" class="showcase-card" data-showcase="harmony"><strong>Harmony layer</strong><span>One more melodic line</span></button>
+        </div>
+        <p id="showcase-hint">Choose an example to hear the original followed by the arrangement.</p>
+      </section>
       <section class="arrangement-bar" aria-label="Arrangement demo">
         <label for="sample-select"><span id="sample-label">Melody</span><select id="sample-select"><option value="four-four">Four-beat melody</option><option value="waltz">Three-beat melody</option><option value="swing">Swing melody</option><option value="harmony">Harmony layers</option></select></label>
         <div><span id="preset-label">Accompaniment</span><div id="preset-options" class="preset-options" role="group" aria-label="Accompaniment patterns"></div></div>
@@ -41,7 +50,8 @@
             </div>
             <div class="actions"><button id="download-button" class="primary" disabled>Download MusicXML</button></div>
           </div>
-          <div class="playback-toolbar" role="group" aria-label="Playback comparison"><button id="play-source-button" disabled>Play original</button><button id="play-arranged-button" disabled>Play arrangement</button><button id="play-accompaniment-button" disabled>Accompaniment only</button><button id="stop-button" disabled>Stop</button><label class="loop-control"><input id="loop-toggle" type="checkbox" /><span id="loop-label">Loop</span></label></div>
+          <div class="playback-toolbar" role="group" aria-label="Playback comparison"><button id="compare-button" class="primary" disabled>Hear original, then arrangement</button><button id="play-source-button" disabled>Play original</button><button id="play-arranged-button" disabled>Play arrangement</button><button id="play-accompaniment-button" disabled>Accompaniment only</button><button id="stop-button" disabled>Stop</button><label class="loop-control"><input id="loop-toggle" type="checkbox" /><span id="loop-label">Loop</span></label></div>
+          <p class="score-legend" id="score-legend"><span class="legend-source"></span><span id="legend-source-label">Original notes</span><span class="legend-added"></span><span id="legend-added-label">Notes added by Acorde</span></p>
           <details class="editing-details"><summary id="editing-summary">Edit the score</summary>
           <div class="playground-editor-toolbar" role="toolbar" aria-label="Editing tools">
             <div class="toolbar-group">
