@@ -131,6 +131,14 @@ async function main() {
     await playground.locator('#arrange-button').click();
     await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Sixth-below layer failed');
     assert.ok(await playground.locator('#saved-candidates button').count() >= 2);
+    assert.match(await playground.locator('#saved-candidates button').first().textContent(), /Sixth below/);
+    assert.equal(await playground.locator('#saved-candidates button').first().getAttribute('aria-pressed'), 'true');
+    await playground.locator('#saved-candidates button').nth(1).click();
+    assert.equal(await playground.locator('#saved-candidates button').first().getAttribute('aria-pressed'), 'false');
+    assert.equal(await playground.locator('#saved-candidates button').nth(1).getAttribute('aria-pressed'), 'true');
+    await playground.locator('#language-select').selectOption('ja');
+    assert.match(await playground.locator('#saved-candidates button').nth(1).textContent(), /下に3度/);
+    await playground.locator('#language-select').selectOption('en');
     await playground.locator('body').evaluate(() => {
       const original = window.AcordeAudioBackend.prototype.schedule;
       window.AcordeAudioBackend.prototype.schedule = function (events, ...args) {

@@ -249,7 +249,9 @@ function renderCandidates() {
   container.append(label);
   for (const [index, candidate] of savedCandidates.entries()) {
     const button = document.createElement('button'); button.type = 'button';
-    button.textContent = `${index + 1}. ${localizedPreset(candidate.preset, language)}${candidate.voice === 'unchanged' ? '' : ` + ${candidate.voice}`}`;
+    const voiceKey = { 'third-below': 'third', 'sixth-below': 'sixth', 'octave-below': 'octave' }[candidate.voice];
+    button.textContent = `${index + 1}. ${localizedPreset(candidate.preset, language)}${voiceKey ? ` + ${ARRANGE_COPY[language][voiceKey]}` : ''}`;
+    button.setAttribute('aria-pressed', String(candidate.scoreJson === candidateScoreJson));
     button.addEventListener('click', () => {
       stopPlayback(); candidateScoreJson = candidate.scoreJson; activePlayback = null;
       selectedPreset = candidate.preset; $('voice-select').value = candidate.voice;
@@ -259,6 +261,7 @@ function renderCandidates() {
       $('play-accompaniment-button').disabled = !accompanimentNotes(candidate).length;
       renderVisibleScore();
       $('arrangement-summary').textContent = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
+      renderCandidates();
     });
     container.append(button);
   }
@@ -351,6 +354,7 @@ function arrangeScore() {
     if (!result.score) throw new Error(arrangementFailure(result.diagnostics));
     candidateScoreJson = JSON.stringify(result.score);
     const candidate = { scoreJson: candidateScoreJson, generated: result.generated_notes || [], preset: selectedPreset, voice, chords: arrangementChords(), config: result.resolved_config };
+    savedCandidates = savedCandidates.filter((item) => item.scoreJson !== candidateScoreJson);
     savedCandidates.unshift(candidate);
     savedCandidates = savedCandidates.slice(0, 6);
     renderVisibleScore(); renderCandidates();
@@ -364,6 +368,7 @@ function arrangeScore() {
 
 function restoreOriginal() {
   stopPlayback(); candidateScoreJson = ''; renderVisibleScore();
+  renderCandidates();
   $('restore-button').disabled = true; $('play-arranged-button').disabled = true; $('play-accompaniment-button').disabled = true;
   $('arrangement-summary').textContent = ARRANGE_COPY[language].source;
 }
