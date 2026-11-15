@@ -46,7 +46,7 @@ jobs:
         with:
           repository: kent-tokyo/acorde
           path: acorde
-          ref: v1.3.12
+          ref: v1.3.13
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
