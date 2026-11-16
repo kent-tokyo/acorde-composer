@@ -47,8 +47,12 @@ const IMPORT_COPY = {
   ja: { full: '読み込んだ原譜全体', part: 'パート', staff: '段', voice: '声部', choose: '旋律の声部を1つ選び、各小節のコードを確認してください。', empty: '旋律の音符が見つかりませんでした。', chosen: '旋律を選びました。編曲前にコード進行を確認してください。', restored: '原譜全体に戻しました。編曲する旋律を選んでください。', loaded: '{file} を読み込みました。編曲前にコードを確認してください。' },
   zh: { full: '导入的完整原谱', part: '声部', staff: '谱表', voice: '声部', choose: '请选择一个旋律声部并检查每小节的和弦。', empty: '此乐谱中没有找到旋律音符。', chosen: '已选择旋律，请在编曲前检查和弦。', restored: '已返回完整原谱，请选择要编曲的旋律。', loaded: '已导入 {file}，请在编曲前检查和弦。' },
 };
-let language = 'en';
-try { language = COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
+const requestedLanguage = new URLSearchParams(location.search).get('lang');
+const validLanguages = ['en', 'ja', 'zh'];
+let language = validLanguages.includes(requestedLanguage) ? requestedLanguage : 'en';
+if (!validLanguages.includes(requestedLanguage)) {
+  try { const storedLanguage = localStorage.getItem(LANGUAGE_KEY); if (validLanguages.includes(storedLanguage)) language = storedLanguage; } catch { /* Use English when storage is unavailable. */ }
+}
 function applyLanguage(next = language) {
   language = COPY[next] ? next : 'en'; const copy = COPY[language]; document.documentElement.lang = language;
   const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
@@ -490,9 +494,14 @@ async function boot() {
   try {
     await init();
     engine = new acorde.ScoreEngine();
-    const sample = new URLSearchParams(location.search).get('sample');
+    const query = new URLSearchParams(location.search);
+    const sample = query.get('sample');
     if (ARRANGEMENT_SAMPLES.some((item) => item.id === sample)) $('sample-select').value = sample;
     loadSample();
+    const preset = query.get('preset');
+    if (currentSample().presets.includes(preset)) { selectedPreset = preset; renderPresets(); }
+    const voice = query.get('voice');
+    if ([...$('voice-select').options].some((option) => option.value === voice)) $('voice-select').value = voice;
     $('load-abc-button').disabled = false;
     $('engine-status').textContent = 'acorde engine ready';
     setStatus(COPY[language].ready);

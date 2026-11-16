@@ -77,11 +77,21 @@ async function main() {
     await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });
 
     assert.equal(await page.locator('iframe[title="Acorde Composer browser playground"]').count(), 1);
-    const playground = page.frameLocator('iframe[title="Acorde Composer browser playground"]');
+    const playground = page.frameLocator('#playground-frame');
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Acorde WASM did not become ready');
     await page.goto(`http://127.0.0.1:${port}/playground/?sample=waltz`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Linked example did not load');
     assert.equal(await playground.locator('#sample-select').inputValue(), 'waltz');
+    await page.goto(`http://127.0.0.1:${port}/playground/?lang=ja&sample=harmony&preset=held-chord&voice=third-below`, { waitUntil: 'networkidle' });
+    await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Linked harmony settings did not load');
+    assert.equal(await page.locator('html').getAttribute('lang'), 'ja');
+    assert.equal(await page.locator('#examples-link').getAttribute('href'), 'https://acorde.dev/ja/arrange/');
+    assert.equal(await playground.locator('#language-select').inputValue(), 'ja');
+    assert.equal(await playground.locator('#sample-select').inputValue(), 'harmony');
+    assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), 'held-chord');
+    assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
+    await playground.locator('#arrange-button').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^編曲完了：\d+音を追加しました。/, 'Linked harmony arrangement failed');
     await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Default example did not load');
     assert.equal(await playground.locator('#abc-input').count(), 1);

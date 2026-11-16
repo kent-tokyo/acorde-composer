@@ -9,14 +9,34 @@
   </head>
   <body>
     <main>
-      <h1>Acorde Composer arrangement Playground</h1>
-      <p>Choose a short melody, add bass and chords or another voice, and hear the original followed by the arrangement. The browser demo imports MusicXML or ABC and exports MusicXML.</p>
-      <p><a href="https://acorde.dev/en/arrange/">Arrangement examples and supported input</a> · <a href="https://github.com/kent-tokyo/acorde-composer/releases">Desktop Composer releases</a></p>
+      <h1 id="page-title">Acorde Composer arrangement Playground</h1>
+      <p id="page-description">Choose a short melody, add bass and chords or another voice, and hear the original followed by the arrangement. The browser demo imports MusicXML or ABC and exports MusicXML.</p>
+      <p><a id="examples-link" href="https://acorde.dev/en/arrange/">Arrangement examples and supported input</a> · <a id="releases-link" href="https://github.com/kent-tokyo/acorde-composer/releases">Desktop Composer releases</a></p>
     </main>
-    <iframe id="playground-frame" src="../src/playground/index.html" title="Acorde Composer browser playground"></iframe>
+    <iframe id="playground-frame" title="Acorde Composer browser playground"></iframe>
     <script>
-      const sample = new URLSearchParams(location.search).get('sample');
-      if (['four-four', 'waltz', 'harmony'].includes(sample)) document.getElementById('playground-frame').src = `../src/playground/index.html?sample=${sample}`;
+      const query = new URLSearchParams(location.search);
+      const lang = ['en', 'ja', 'zh'].includes(query.get('lang')) ? query.get('lang') : 'en';
+      const copy = {
+        en: ['Acorde Composer arrangement Playground', 'Choose a short melody, add bass and chords or another voice, and hear the original followed by the arrangement. The browser demo imports MusicXML or ABC and exports MusicXML.', 'Arrangement examples and supported input', 'Desktop Composer releases', 'Acorde Composer browser playground'],
+        ja: ['Acorde Composer 編曲 Playground', '短い旋律にベースと和音、または別の声部を加え、原曲と編曲を聴き比べます。MusicXML・ABC を読み込み、MusicXML を書き出せる簡易デモです。', '編曲例と入力条件', 'デスクトップ版の Releases', 'Acorde Composer のブラウザ Playground'],
+        zh: ['Acorde Composer 编曲 Playground', '为短旋律加入低音与和弦或附加声部，对比原曲和编曲。此简易演示可导入 MusicXML 或 ABC，并导出 MusicXML。', '编曲示例与输入条件', '桌面版 Releases', 'Acorde Composer 浏览器 Playground'],
+      }[lang];
+      document.documentElement.lang = lang;
+      document.title = copy[0];
+      document.getElementById('page-title').textContent = copy[0];
+      document.getElementById('page-description').textContent = copy[1];
+      const examples = document.getElementById('examples-link');
+      examples.textContent = copy[2];
+      examples.href = `https://acorde.dev/${lang}/arrange/`;
+      document.getElementById('releases-link').textContent = copy[3];
+      const frame = document.getElementById('playground-frame');
+      frame.title = copy[4];
+      const frameQuery = new URLSearchParams();
+      frameQuery.set('lang', lang);
+      if (['four-four', 'waltz', 'swing', 'harmony'].includes(query.get('sample'))) frameQuery.set('sample', query.get('sample'));
+      for (const name of ['preset', 'voice']) if (query.has(name)) frameQuery.set(name, query.get(name));
+      frame.src = `../src/playground/index.html?${frameQuery}`;
     </script>
   </body>
 </html>
