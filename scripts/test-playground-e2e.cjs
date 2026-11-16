@@ -94,7 +94,7 @@ async function main() {
     assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
     assert.ok(usageEvents.some((event) => event.event === 'page_view' && event.sample === 'harmony' && event.locale === 'ja'));
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^編曲完了：\d+音を追加しました。/, 'Linked harmony arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^編曲完了：音符または和音を\d+個追加しました。/, 'Linked harmony arrangement failed');
     await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Default example did not load');
     assert.equal(await playground.locator('#abc-input').count(), 1);
@@ -107,7 +107,7 @@ async function main() {
     assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);
     assert.equal(await playground.locator('#download-button').isEnabled(), true);
     await playground.locator('[data-showcase="harmony"]').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'One-click harmony example failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'One-click harmony example failed');
     assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
     await waitForText(playground.locator('#status'), /^Playing Play arrangement\.$/, 'One-click original-to-arrangement playback failed');
     await playground.locator('#stop-button').click();
@@ -129,7 +129,7 @@ async function main() {
       await playground.locator('#sample-select').selectOption(sample);
       assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), sample === 'swing' ? 'swing-pulse' : sample === 'waltz' ? 'waltz-bass' : 'bass-pulse');
       await playground.locator('#arrange-button').click();
-      await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, `${sample} arrangement failed`);
+      await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, `${sample} arrangement failed`);
       assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
       assert.equal(await playground.locator('#play-accompaniment-button').isEnabled(), true);
       const arrangedDownload = page.waitForEvent('download');
@@ -151,10 +151,10 @@ async function main() {
     await playground.locator('#sample-select').selectOption('harmony');
     await playground.locator('#voice-select').selectOption('third-below');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Third-below layer failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Third-below layer failed');
     await playground.locator('#voice-select').selectOption('sixth-below');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Sixth-below layer failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Sixth-below layer failed');
     assert.ok(await playground.locator('#saved-candidates button').count() >= 2);
     assert.match(await playground.locator('#saved-candidates button').first().textContent(), /Sixth below/);
     assert.equal(await playground.locator('#saved-candidates button').first().getAttribute('aria-pressed'), 'true');
@@ -181,13 +181,13 @@ async function main() {
     await playground.locator('#melody-select').selectOption('0:0:0');
     assert.equal(await playground.locator('#arrange-button').isEnabled(), true, await playground.locator('#status').textContent());
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Imported melody arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Imported melody arrangement failed');
     const waltzAbc = 'X:1\nT:Own waltz\nM:3/4\nL:1/4\nK:C\nC E G | A G E | F A c | G E C |';
     await playground.locator('#score-file').setInputFiles({ name: 'own-waltz.abc', mimeType: 'text/plain', buffer: Buffer.from(waltzAbc) });
     await waitForText(playground.locator('#status'), /own-waltz\.abc loaded\./, 'ABC file import failed');
     assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), 'waltz-bass');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Imported waltz arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Imported waltz arrangement failed');
     await playground.locator('#restore-button').click();
     await playground.locator('#saved-candidates button').first().focus();
     await page.keyboard.press('Enter');
