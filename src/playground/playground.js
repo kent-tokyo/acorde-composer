@@ -18,7 +18,10 @@ let firstPlayTracked = false;
 const completedPlayback = new Set();
 const reportedComparisons = new Set();
 const openedAt = performance.now();
+// Enable the hosted collector after acorde.dev/api/event is deployed.
+const usageEnabled = ['127.0.0.1', 'localhost'].includes(location.hostname);
 function trackUsage(event, seconds = 0) {
+  if (!usageEnabled) return;
   const sample = importedScoreJson ? 'custom' : currentSample().id;
   fetch('https://acorde.dev/api/event', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ event, sample, locale: language, surface: 'playground', seconds: Math.min(120, Math.max(0, Math.round(seconds * 10) / 10)) }), keepalive: true }).catch(() => {});
 }
