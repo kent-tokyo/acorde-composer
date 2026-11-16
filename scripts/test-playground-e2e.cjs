@@ -79,9 +79,11 @@ async function main() {
     assert.equal(await page.locator('iframe[title="Acorde Composer browser playground"]').count(), 1);
     const playground = page.frameLocator('#playground-frame');
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Acorde WASM did not become ready');
+    assert.ok(usageEvents.some((event) => event.event === 'page_view' && event.sample === 'four-four' && event.locale === 'en'));
     await page.goto(`http://127.0.0.1:${port}/playground/?sample=waltz`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Linked example did not load');
     assert.equal(await playground.locator('#sample-select').inputValue(), 'waltz');
+    assert.ok(usageEvents.some((event) => event.event === 'page_view' && event.sample === 'waltz' && event.locale === 'en'));
     await page.goto(`http://127.0.0.1:${port}/playground/?lang=ja&sample=harmony&preset=held-chord&voice=third-below`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'Linked harmony settings did not load');
     assert.equal(await page.locator('html').getAttribute('lang'), 'ja');
@@ -90,6 +92,7 @@ async function main() {
     assert.equal(await playground.locator('#sample-select').inputValue(), 'harmony');
     assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), 'held-chord');
     assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
+    assert.ok(usageEvents.some((event) => event.event === 'page_view' && event.sample === 'harmony' && event.locale === 'ja'));
     await playground.locator('#arrange-button').click();
     await waitForText(playground.locator('#arrangement-summary'), /^編曲完了：\d+音を追加しました。/, 'Linked harmony arrangement failed');
     await page.goto(`http://127.0.0.1:${port}/playground/`, { waitUntil: 'networkidle' });

@@ -499,12 +499,13 @@ async function loadFile(event) {
 }
 
 async function boot() {
+  const query = new URLSearchParams(location.search);
+  const sample = query.get('sample');
+  if (ARRANGEMENT_SAMPLES.some((item) => item.id === sample)) $('sample-select').value = sample;
+  trackUsage('page_view');
   try {
     await init();
     engine = new acorde.ScoreEngine();
-    const query = new URLSearchParams(location.search);
-    const sample = query.get('sample');
-    if (ARRANGEMENT_SAMPLES.some((item) => item.id === sample)) $('sample-select').value = sample;
     loadSample();
     const preset = query.get('preset');
     if (currentSample().presets.includes(preset)) { selectedPreset = preset; renderPresets(); }
