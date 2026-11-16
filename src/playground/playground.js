@@ -16,6 +16,7 @@ let activePlayback = null;
 let importedScoreJson = '';
 let firstPlayTracked = false;
 const completedPlayback = new Set();
+const reportedComparisons = new Set();
 const openedAt = performance.now();
 function trackUsage(event, seconds = 0) {
   const sample = importedScoreJson ? 'custom' : currentSample().id;
@@ -24,7 +25,14 @@ function trackUsage(event, seconds = 0) {
 function recordCompleted(which) {
   if (which !== 'source' && which !== 'arranged') return;
   completedPlayback.add(which);
-  if (completedPlayback.size === 2) { trackUsage('both_completed'); completedPlayback.clear(); }
+  if (completedPlayback.size === 2) {
+    const sample = importedScoreJson ? 'custom' : currentSample().id;
+    if (!reportedComparisons.has(sample)) {
+      reportedComparisons.add(sample);
+      trackUsage('both_completed');
+    }
+    completedPlayback.clear();
+  }
 }
 const LANGUAGE_KEY = 'acorde-composer.language.v1';
 const COPY = {

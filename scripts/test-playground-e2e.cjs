@@ -109,6 +109,18 @@ async function main() {
     await waitForText(playground.locator('#status'), /^Playing Play arrangement\.$/, 'One-click original-to-arrangement playback failed');
     await playground.locator('#stop-button').click();
 
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await playground.locator('#compare-button').click();
+      await playground.locator('#play-arranged-button[aria-current="true"]').waitFor({ state: 'visible', timeout: 25_000 });
+      const deadline = Date.now() + 25_000;
+      while (Date.now() < deadline && await playground.locator('#stop-button').isEnabled()) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      assert.equal(await playground.locator('#stop-button').isEnabled(), false, 'A/B playback did not complete');
+    }
+    assert.equal(usageEvents.filter((event) => event.event === 'both_completed' && event.sample === 'harmony').length, 1,
+      'Repeated A/B playback must record one completion per sample and page view');
+
     let lastArrangedXml = '';
     for (const sample of ['four-four', 'waltz', 'swing']) {
       await playground.locator('#sample-select').selectOption(sample);
