@@ -90,7 +90,8 @@ async function main() {
     await playground.locator('#download-source-button').click();
     const original = await sourceDownload;
     assert.equal(original.suggestedFilename(), 'original.musicxml');
-    assert.match(await readStream(await original.createReadStream()), /<score-partwise/);
+    const originalXml = await readStream(await original.createReadStream());
+    assert.match(originalXml, /<score-partwise/);
     assert.match(await playground.locator('#developer-code').textContent(), /arrange_accordion_preset/);
 
     let lastArrangedXml = '';
@@ -107,6 +108,17 @@ async function main() {
       assert.equal(arranged.suggestedFilename(), 'acorde-arrangement.musicxml');
       const arrangedXml = await readStream(await arranged.createReadStream());
       assert.match(arrangedXml, /<score-partwise/);
+      if (sample === 'four-four') {
+        const code = await playground.locator('#developer-code').textContent();
+        const replayXml = await playground.locator('body').evaluate(async (_body, { code, originalXml }) => {
+          const acorde = await import('./acorde-wasm/acorde_wasm.js');
+          const body = code.replace(/^import init, \* as acorde from '[^']+';\nawait init\(\);\n/, '').replace("const xml = await (await fetch('./original.musicxml')).text();", 'const xml = originalXml;');
+          const run = new (Object.getPrototypeOf(async function () {}).constructor)('acorde', 'originalXml', `${body}\nreturn arrangedMusicXML;`);
+          return run(acorde, originalXml);
+        }, { code, originalXml });
+        const notes = (xml) => [...xml.matchAll(/<note>[\s\S]*?<\/note>/g)].map(([note]) => note.replace(/<notations>[\s\S]*?<\/notations>/g, '').match(/<pitch>[\s\S]*?<\/pitch>/)?.[0] || 'rest');
+        assert.deepEqual(notes(replayXml), notes(arrangedXml), 'Displayed code did not reproduce the arranged notes');
+      }
       lastArrangedXml = arrangedXml;
       await playground.locator('#play-source-button').click();
       await waitForText(playground.locator('#status'), /^Playing Play original\.$/, 'Original playback did not start');
@@ -137,6 +149,7 @@ async function main() {
     await playground.locator('#play-accompaniment-button').click();
     const accompanimentStaffs = await playground.locator('body').evaluate(() => [...new Set(window.accompanimentTestEvents.map((event) => event.address?.split(':')[1]))]);
     assert.deepEqual(accompanimentStaffs, ['1'], 'Accompaniment-only playback included the added melodic voice');
+    assert.equal(await playground.locator('body').evaluate(() => window.accompanimentTestEvents.every((event) => event.decoded_sample?.pcm?.length > 0)), true, 'The reed loop was not used for accompaniment playback');
     await playground.locator('#stop-button').click();
     await playground.locator('#score-file').setInputFiles({ name: 'arrangement.musicxml', mimeType: 'application/vnd.recordare.musicxml+xml', buffer: Buffer.from(lastArrangedXml) });
     await waitForText(playground.locator('#status'), /arrangement\.musicxml loaded\./, 'MusicXML import failed');

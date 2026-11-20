@@ -1,6 +1,7 @@
 import init, * as acorde from './acorde-wasm/acorde_wasm.js';
 import initAnalysis, * as acordeAnalysis from './acorde-analysis-wasm/acorde_analysis_wasm.js';
 import { ARRANGEMENT_SAMPLES, localizedPreset, makeSelection } from './arrangement-data.js';
+import { withReedVoice } from './reed-voice.js';
 
 const SAMPLE_ABC = `X:1\nT:Playground sketch\nM:4/4\nL:1/4\nK:C\nC D E F | G A B c |`;
 const $ = (id) => document.getElementById(id);
@@ -500,7 +501,13 @@ async function playScore(which) {
     audioBackend ||= new window.AcordeAudioBackend();
     const context = await audioBackend.resume();
     if (generation !== playbackGeneration) return;
-    audioBackend.schedule(events, context.currentTime + 0.05, { timbre: 'triangle', volume: 0.8 });
+    let simplifiedAudio = false;
+    try { audioBackend.schedule(withReedVoice(events), context.currentTime + 0.05, { volume: 0.8 }); }
+    catch {
+      audioBackend.stopAll();
+      audioBackend.schedule(events, context.currentTime + 0.05, { timbre: 'triangle', volume: 0.8 });
+      simplifiedAudio = true;
+    }
     if (!firstPlayTracked) { firstPlayTracked = true; trackUsage('first_play', (performance.now() - openedAt) / 1000); }
     $('stop-button').disabled = false;
     $(`play-${which === 'source' ? 'source' : which === 'arranged' ? 'arranged' : 'accompaniment'}-button`).setAttribute('aria-current', 'true');
@@ -516,7 +523,8 @@ async function playScore(which) {
       if (elapsed < duration) playbackFrame = requestAnimationFrame(updatePosition);
     };
     playbackFrame = requestAnimationFrame(updatePosition);
-    setStatus(ARRANGE_COPY[language].playing.replace('{which}', which === 'source' ? ARRANGE_COPY[language].original : which === 'arranged' ? ARRANGE_COPY[language].arranged : ARRANGE_COPY[language].accompaniment));
+    const playingCopy = ARRANGE_COPY[language].playing.replace('{which}', which === 'source' ? ARRANGE_COPY[language].original : which === 'arranged' ? ARRANGE_COPY[language].arranged : ARRANGE_COPY[language].accompaniment);
+    setStatus(simplifiedAudio ? `${playingCopy} ${{ en: 'Using the simple sound.', ja: '簡易音源で再生しています。', zh: '正在使用简易音源。' }[language]}` : playingCopy);
     playbackTimer = setTimeout(() => { if (generation !== playbackGeneration) return; recordCompleted(which); if ($('loop-toggle').checked) playScore(which); else stopPlayback(); }, duration * 1000);
     return duration;
   } catch (error) { stopPlayback(); setStatus(String(error), true); }
