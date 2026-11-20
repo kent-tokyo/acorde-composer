@@ -99,7 +99,7 @@ async function main() {
       await playground.locator('#sample-select').selectOption(sample);
       assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), sample === 'swing' ? 'swing-pulse' : sample === 'waltz' ? 'waltz-bass' : 'bass-pulse');
       await playground.locator('#arrange-button').click();
-      await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, `${sample} arrangement failed`);
+      await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, `${sample} arrangement failed`);
       assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
       assert.equal(await playground.locator('#play-accompaniment-button').isEnabled(), true);
       const arrangedDownload = page.waitForEvent('download');
@@ -148,7 +148,7 @@ async function main() {
     assert.equal(await playground.locator('#section-strip span').count(), 2);
     assert.match(await playground.locator('#section-strip').textContent(), /1–4.*5–8/);
     await playground.locator('#section-arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Section arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Section arrangement failed');
     assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
     const sectionCode = await playground.locator('#developer-code').textContent();
     assert.match(sectionCode, /arrange_from_resolved_plan/);
@@ -174,10 +174,10 @@ async function main() {
     await playground.locator('#sample-select').selectOption('harmony');
     await playground.locator('#voice-select').selectOption('third-below');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Third-below layer failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Third-below layer failed');
     await playground.locator('#voice-select').selectOption('sixth-below');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Sixth-below layer failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Sixth-below layer failed');
     assert.ok(await playground.locator('#saved-candidates button').count() >= 2);
     await playground.locator('body').evaluate(() => {
       const original = window.AcordeAudioBackend.prototype.schedule;
@@ -197,13 +197,13 @@ async function main() {
     await playground.locator('#melody-select').selectOption('0:0:0');
     assert.equal(await playground.locator('#arrange-button').isEnabled(), true, await playground.locator('#status').textContent());
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Imported melody arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Imported melody arrangement failed');
     const waltzAbc = 'X:1\nT:Own waltz\nM:3/4\nL:1/4\nK:C\nC E G | A G E | F A c | G E C |';
     await playground.locator('#score-file').setInputFiles({ name: 'own-waltz.abc', mimeType: 'text/plain', buffer: Buffer.from(waltzAbc) });
     await waitForText(playground.locator('#status'), /own-waltz\.abc loaded\./, 'ABC file import failed');
     assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), 'waltz-bass');
     await playground.locator('#arrange-button').click();
-    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Imported waltz arrangement failed');
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ notes or chords added\./, 'Imported waltz arrangement failed');
     await playground.locator('#restore-button').click();
     await playground.locator('#saved-candidates button').first().focus();
     await page.keyboard.press('Enter');

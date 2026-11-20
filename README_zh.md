@@ -2,13 +2,13 @@
 
 一款以本地处理为主、支持 MusicXML、MIDI 和 ABC 的乐谱编辑器。音乐处理只使用 [`acorde`](https://github.com/kent-tokyo/acorde)；Electron 负责桌面 UI、文件操作和外部 provider 边界。
 
-[English](README.md) · [日本語](README_ja.md) · [浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/) · [桌面版下载](https://github.com/kent-tokyo/acorde-composer/releases)
+[English](README.md) · [日本語](README_ja.md) · [桌面版下载](https://github.com/kent-tokyo/acorde-composer/releases) · [浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)
 
 ## 体验或安装
 
-建议先使用免费的[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)。可以新建或打开 MusicXML 乐谱，选择小节，编辑音符、休止符、文本和 voice，然后导出结果。
-
 最新公开版是 **v0.2.4**（`acorde` v1.2.17）。播放工具栏、新建／导出窗口、小节操作、voice 交换、音符输入工具栏、Navigator 和快捷键更接近 MuseScore。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
+
+[浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)提供简短的编曲演示。可以选择内置旋律或导入 MusicXML、ABC，加入低音与和弦或另一条旋律声部，比较编曲前后的乐谱和声音，再导出 MusicXML。更完整的乐谱编辑流程请使用桌面版。
 
 ## 主要功能
 

@@ -2,13 +2,13 @@
 
 A local-first desktop score editor for MusicXML, MIDI, and ABC. [`acorde`](https://github.com/kent-tokyo/acorde) is the only music-processing library; Electron handles the desktop UI, files, and external-provider boundaries.
 
-[Japanese](README_ja.md) · [Chinese](README_zh.md) · [Browser Playground](https://kent-tokyo.github.io/acorde-composer/playground/) · [Desktop downloads](https://github.com/kent-tokyo/acorde-composer/releases)
+[Japanese](README_ja.md) · [Chinese](README_zh.md) · [Desktop downloads](https://github.com/kent-tokyo/acorde-composer/releases) · [Browser Playground](https://kent-tokyo.github.io/acorde-composer/playground/)
 
 ## Try or install
 
-The free [Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is the recommended starting point. Create or open a MusicXML score, select a measure, edit notes, rests, text, and voices, then export the result.
-
 The latest desktop release is **v0.2.4**, built with `acorde` v1.2.17. Its playback toolbar, New score and Export dialogs, measure tools, voice exchange, note-input toolbar, Navigator behavior, and shortcuts are closer to the MuseScore workflow. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
+
+The [browser Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is a short arrangement demo. Start with a bundled melody or import MusicXML or ABC, add bass and chords or another melodic voice, compare the original and arrangement, and export MusicXML. The desktop app provides the broader score-editing workflow.
 
 ## Capabilities
 

@@ -90,7 +90,7 @@ async function main() {
       if (sample === 'harmony') await frame.locator('#voice-select').selectOption('third-below');
       await frame.locator('#arrange-button').click();
       const summary = await frame.locator('#arrangement-summary').textContent();
-      if (!/^Arrangement ready: \d+ added notes\./.test(summary || '')) throw new Error(`${sample}: ${summary}`);
+      if (!/^Arrangement ready: \d+ notes or chords added\./.test(summary || '')) throw new Error(`${sample}: ${summary}`);
       fs.writeFileSync(path.join(output, `${sample}-arranged.svg`), await frame.locator('#score-view svg').evaluate((element) => element.outerHTML));
       fs.writeFileSync(path.join(output, `${sample}-arranged.musicxml`), await downloaded(page, frame));
       const arrangedEvents = await events(frame, '#play-arranged-button');

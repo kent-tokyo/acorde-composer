@@ -1,3 +1,5 @@
+/* @ts-self-types="./acorde_wasm.d.ts" */
+
 /**
  * JavaScript-visible bounded cache for deterministic score analysis.
  */

@@ -13,10 +13,12 @@
   },
   "files": [
     "acorde_wasm_bg.wasm",
-    "acorde_wasm.js"
+    "acorde_wasm.js",
+    "acorde_wasm.d.ts"
   ],
   "main": "acorde_wasm.js",
   "homepage": "https://github.com/kent-tokyo/acorde",
+  "types": "acorde_wasm.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]
