@@ -260,9 +260,17 @@ async function main() {
       const mobileLayout = await playground.locator('body').evaluate((body) => ({
         overflow: body.scrollWidth - window.innerWidth,
         viewport: window.innerWidth,
+        transportPosition: getComputedStyle(body.querySelector('.playback-toolbar')).position,
+        transportBottom: Math.round(body.querySelector('.playback-toolbar').getBoundingClientRect().bottom),
+        viewportHeight: window.innerHeight,
+        transportHeight: Math.round(body.querySelector('.playback-toolbar').getBoundingClientRect().height),
+        bottomPadding: Number.parseFloat(getComputedStyle(body).paddingBottom),
         offenders: [...body.querySelectorAll('*')].map((element) => ({ tag: element.tagName.toLowerCase(), id: element.id, className: typeof element.className === 'string' ? element.className : '', right: Math.round(element.getBoundingClientRect().right), scrollWidth: element.scrollWidth })).filter((item) => item.right > window.innerWidth + 1).slice(0, 12),
       }));
       assert.ok(mobileLayout.overflow <= 1, `Playground mobile overflow at ${width}px: ${JSON.stringify(mobileLayout)}`);
+      assert.equal(mobileLayout.transportPosition, 'fixed', `Mobile transport was not fixed at ${width}px`);
+      assert.equal(mobileLayout.transportBottom, mobileLayout.viewportHeight, `Mobile transport was not at the bottom at ${width}px`);
+      assert.ok(mobileLayout.bottomPadding >= mobileLayout.transportHeight, `Mobile transport obscured content at ${width}px`);
     }
     await page.goto(`http://127.0.0.1:${port}/playground/?lang=ja&sample=waltz&preset=held-chord&voice=third-below`, { waitUntil: 'networkidle' });
     await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'URL-selected Playground did not start');

@@ -94,7 +94,11 @@
   .workspace > .score-card,.workspace > .arrangement-bar,.workspace > .controls { grid-column:1; grid-row:auto; }
   .score-card { padding:15px; }
   .score-view { min-height:180px; padding:16px 2px; }
-  .playback-toolbar { top:0; }
+  body { padding-bottom:160px; }
+  .playback-toolbar { position:fixed; top:auto; bottom:0; left:0; right:0; z-index:10; gap:5px; padding:8px 12px calc(8px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); border-bottom:0; box-shadow:0 -8px 24px #20283b24; }
+  .playback-toolbar button { flex:1 1 30%; min-height:36px; padding:6px; font-size:12px; }
+  .playback-toolbar #compare-button { flex-basis:100%; }
+  .playback-toolbar .loop-control { margin-left:0; }
   .playback-mixer { gap:9px; }
   .playback-mixer label { flex:1 1 140px; }
 }
