@@ -20,6 +20,7 @@ let localKeysData = [];
 let variantSeed = 0;
 let audioBackend = null;
 let playbackTimer = null;
+let playbackFrame = null;
 let playbackGeneration = 0;
 let activePlayback = null;
 let importedScoreJson = '';
@@ -473,6 +474,11 @@ function stopPlayback() {
   playbackGeneration += 1;
   if (playbackTimer) clearTimeout(playbackTimer);
   playbackTimer = null;
+  if (playbackFrame !== null) cancelAnimationFrame(playbackFrame);
+  playbackFrame = null;
+  $('playback-progress').value = 0;
+  $('playback-time').textContent = '0:00';
+  $('playback-position-label').textContent = { en: 'Ready to play', ja: '再生待ち', zh: '等待播放' }[language];
   audioBackend?.stopAll();
   $('stop-button').disabled = true;
   ['play-source-button', 'play-arranged-button', 'play-accompaniment-button'].forEach((id) => $(id).removeAttribute('aria-current'));
@@ -499,6 +505,17 @@ async function playScore(which) {
     $('stop-button').disabled = false;
     $(`play-${which === 'source' ? 'source' : which === 'arranged' ? 'arranged' : 'accompaniment'}-button`).setAttribute('aria-current', 'true');
     const duration = Math.max(...events.map((event) => event.time_secs + event.duration_secs)) + 0.15;
+    const startedAt = performance.now();
+    const label = { en: { source: 'Original', arranged: 'Arrangement', accompaniment: 'Accompaniment' }, ja: { source: '原曲', arranged: '編曲', accompaniment: '伴奏' }, zh: { source: '原曲', arranged: '编曲', accompaniment: '伴奏' } }[language][which];
+    $('playback-position-label').textContent = label;
+    const updatePosition = () => {
+      if (generation !== playbackGeneration) return;
+      const elapsed = Math.min(duration, (performance.now() - startedAt) / 1000);
+      $('playback-progress').value = Math.round(100 * elapsed / duration);
+      $('playback-time').textContent = `${Math.floor(elapsed / 60)}:${String(Math.floor(elapsed % 60)).padStart(2, '0')}`;
+      if (elapsed < duration) playbackFrame = requestAnimationFrame(updatePosition);
+    };
+    playbackFrame = requestAnimationFrame(updatePosition);
     setStatus(ARRANGE_COPY[language].playing.replace('{which}', which === 'source' ? ARRANGE_COPY[language].original : which === 'arranged' ? ARRANGE_COPY[language].arranged : ARRANGE_COPY[language].accompaniment));
     playbackTimer = setTimeout(() => { if (generation !== playbackGeneration) return; recordCompleted(which); if ($('loop-toggle').checked) playScore(which); else stopPlayback(); }, duration * 1000);
     return duration;

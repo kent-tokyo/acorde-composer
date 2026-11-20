@@ -33,6 +33,7 @@
             <div class="actions"><button id="save-project-button" disabled>Save project</button><button id="download-button" class="primary" disabled>Download MusicXML</button></div>
           </div>
           <div class="playback-toolbar" role="group" aria-label="Playback comparison"><button id="compare-button" class="primary" disabled>Hear original, then arrangement</button><button id="play-source-button" disabled>Play original</button><button id="play-arranged-button" disabled>Play arrangement</button><button id="play-accompaniment-button" disabled>Accompaniment only</button><button id="stop-button" disabled>Stop</button><label class="loop-control"><input id="loop-toggle" type="checkbox" /><span id="loop-label">Loop</span></label></div>
+          <div class="playback-position"><span id="playback-position-label">Ready to play</span><progress id="playback-progress" max="100" value="0"></progress><span id="playback-time">0:00</span></div>
           <p class="score-legend" id="score-legend"><span class="legend-source"></span><span id="legend-source-label">Original notes</span><span class="legend-added"></span><span id="legend-added-label">Notes added by Acorde</span></p>
           <div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div>
           <details class="editing-details"><summary id="editing-summary">Edit the score</summary>

@@ -110,7 +110,9 @@ async function main() {
       lastArrangedXml = arrangedXml;
       await playground.locator('#play-source-button').click();
       await waitForText(playground.locator('#status'), /^Playing Play original\.$/, 'Original playback did not start');
+      assert.equal(await playground.locator('#playback-position-label').textContent(), 'Original');
       await playground.locator('#stop-button').click();
+      assert.equal(await playground.locator('#playback-position-label').textContent(), 'Ready to play');
       await playground.locator('#play-accompaniment-button').click();
       await waitForText(playground.locator('#status'), /^Playing Accompaniment only\.$/, 'Accompaniment playback did not start');
       await playground.locator('#stop-button').click();

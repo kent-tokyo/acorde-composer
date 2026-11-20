@@ -25,6 +25,8 @@
 .saved-candidates button { padding:6px 9px; font-size:12px; }
 .playback-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding:14px 0; border-bottom:1px solid var(--line); }
 .playback-toolbar button { min-height:38px; }
+.playback-position { display:grid; grid-template-columns:auto minmax(80px,1fr) auto; align-items:center; gap:12px; padding:10px 0; color:var(--muted); font-size:12px; }
+.playback-position progress { width:100%; height:9px; accent-color:var(--accent); }
 .loop-control { display:inline-flex; align-items:center; gap:5px; margin-left:auto; color:var(--muted); font-size:13px; }
 .editing-details { border-bottom:1px solid var(--line); }
 .editing-details summary { padding:12px 0; cursor:pointer; color:var(--muted); font-size:13px; }
