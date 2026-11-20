@@ -214,7 +214,13 @@ async function main() {
       }));
       assert.ok(mobileLayout.overflow <= 1, `Playground mobile overflow at ${width}px: ${JSON.stringify(mobileLayout)}`);
     }
-    console.log('Playground E2E passed: WASM arrangement, A/B playback, added voices, MusicXML round trip, editing, localization, and mobile layout.');
+    await page.goto(`http://127.0.0.1:${port}/playground/?lang=ja&sample=waltz&preset=held-chord&voice=third-below`, { waitUntil: 'networkidle' });
+    await waitForText(playground.locator('#engine-status'), /^acorde engine ready$/, 'URL-selected Playground did not start');
+    assert.equal(await playground.locator('html').getAttribute('lang'), 'ja');
+    assert.equal(await playground.locator('#sample-select').inputValue(), 'waltz');
+    assert.equal(await playground.locator('#preset-options button[aria-pressed="true"]').getAttribute('data-preset'), 'held-chord');
+    assert.equal(await playground.locator('#voice-select').inputValue(), 'third-below');
+    console.log('Playground E2E passed: WASM arrangement, A/B playback, added voices, MusicXML round trip, editing, URL settings, and mobile layout.');
   } finally {
     await browser?.close();
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

@@ -60,6 +60,8 @@ const IMPORT_COPY = {
 };
 let language = 'en';
 try { language = COPY[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : 'en'; } catch { language = 'en'; }
+const requestedLanguage = new URLSearchParams(location.search).get('lang');
+if (COPY[requestedLanguage]) language = requestedLanguage;
 function applyLanguage(next = language) {
   language = COPY[next] ? next : 'en'; const copy = COPY[language]; document.documentElement.lang = language;
   const text = (id, value) => { const element = $(id); if (element) element.textContent = value; };
@@ -927,9 +929,15 @@ async function boot() {
     await init();
     await initAnalysis();
     engine = new acorde.ScoreEngine();
-    const sample = new URLSearchParams(location.search).get('sample');
+    const query = new URLSearchParams(location.search);
+    const sample = query.get('sample');
     if (ARRANGEMENT_SAMPLES.some((item) => item.id === sample)) $('sample-select').value = sample;
     loadSample();
+    const preset = query.get('preset');
+    if (preset && availablePresets().includes(preset)) { selectedPreset = preset; renderPresets(); }
+    const voice = query.get('voice');
+    if ([...$('voice-select').options].some((option) => option.value === voice)) $('voice-select').value = voice;
+    renderDeveloperExample();
     $('load-abc-button').disabled = false;
     $('engine-status').textContent = 'acorde engine ready';
     setStatus(COPY[language].ready);
