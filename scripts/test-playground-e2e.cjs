@@ -123,6 +123,16 @@ async function main() {
         const beforeSwitch = Number(await playground.locator('#playback-progress').evaluate((element) => element.value));
         assert.ok(beforeSwitch > 0, 'Original playback did not advance');
         await playground.locator('#play-arranged-button').click();
+        await waitForText(playground.locator('#status'), /^Playing Play arrangement\./, 'Arrangement playback did not start after switching');
+        await playground.locator('#playback-progress').evaluate((element, before) => new Promise((resolve, reject) => {
+          const deadline = performance.now() + 2000;
+          const check = () => {
+            if (Number(element.value) >= before - 1) resolve();
+            else if (performance.now() >= deadline) reject(new Error(`Playback progress restarted at ${element.value}`));
+            else requestAnimationFrame(check);
+          };
+          check();
+        }), beforeSwitch);
         const afterSwitch = Number(await playground.locator('#playback-progress').evaluate((element) => element.value));
         assert.ok(afterSwitch >= beforeSwitch - 1, `Playback switch restarted at the beginning: ${beforeSwitch} -> ${afterSwitch}`);
         await playground.locator('#melody-volume').fill('35');
