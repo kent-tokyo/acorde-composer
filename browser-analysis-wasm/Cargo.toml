@@ -1,0 +1,23 @@
+[package]
+name = "acorde-composer-analysis-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+acorde-core = { version = "1.3.13", path = "../acorde/crates/core" }
+acorde-analysis = { version = "1.3.13", path = "../acorde/crates/analysis" }
+serde_json = "1"
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

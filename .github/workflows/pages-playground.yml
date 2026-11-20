@@ -7,7 +7,9 @@ on:
       - 'playground/**'
       - 'src/playground/**'
       - 'src/audio-backend.js'
+      - 'browser-analysis-wasm/**'
       - 'scripts/assemble-playground-site.cjs'
+      - 'scripts/build-playground-wasm.cjs'
       - 'scripts/test-playground-e2e.cjs'
       - 'package.json'
       - 'package-lock.json'
@@ -46,7 +48,7 @@ jobs:
         with:
           repository: kent-tokyo/acorde
           path: acorde
-          ref: v1.3.12
+          ref: v1.3.13
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -57,8 +59,7 @@ jobs:
           version: latest
       - name: Build Acorde WASM and assemble site
         run: |
-          wasm-pack build acorde/crates/wasm --target web --out-dir "$GITHUB_WORKSPACE/src/playground/acorde-wasm" --release --no-typescript
-          rm -f src/playground/acorde-wasm/.gitignore
+          npm run build:playground
           npm run assemble:playground
       - name: Run Playground browser E2E
         run: npm run test:playground

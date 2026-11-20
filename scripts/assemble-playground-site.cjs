@@ -11,6 +11,8 @@ const required = [
   'src/audio-backend.js',
   'src/playground/acorde-wasm/acorde_wasm.js',
   'src/playground/acorde-wasm/acorde_wasm_bg.wasm',
+  'src/playground/acorde-analysis-wasm/acorde_analysis_wasm.js',
+  'src/playground/acorde-analysis-wasm/acorde_analysis_wasm_bg.wasm',
 ];
 
 for (const relativePath of required) {

@@ -3,11 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Hear Acorde Composer arrange a melody, compare it with the original, and export MusicXML in your browser." />
-    <title>Acorde Composer Playground</title>
-    <style>html,body,iframe{margin:0;width:100%;height:100%;border:0}body{background:#f5f7fb}iframe{display:block;min-height:100vh}</style>
+    <meta name="description" content="Arrange a melody with Acorde, compare it with the original, and inspect the score in your browser." />
+    <title>Acorde Playground</title>
+    <style>html,body{margin:0;width:100%;min-height:100%;border:0;background:#f5f7fb}iframe{display:block;width:100%;min-height:100vh;border:0}</style>
   </head>
   <body>
-    <iframe src="../src/playground/index.html" title="Acorde Composer browser playground"></iframe>
+    <iframe id="playground-frame" title="Acorde Composer browser playground"></iframe>
+    <script>
+      const query = new URLSearchParams(location.search);
+      const lang = ['en', 'ja', 'zh'].includes(query.get('lang')) ? query.get('lang') : 'en';
+      document.documentElement.lang = lang;
+      document.title = { en: 'Acorde Playground', ja: 'Acorde Playground 編曲デモ', zh: 'Acorde Playground 编曲演示' }[lang];
+      const frameQuery = new URLSearchParams({ lang });
+      if (['four-four', 'waltz', 'swing', 'harmony'].includes(query.get('sample'))) frameQuery.set('sample', query.get('sample'));
+      for (const name of ['preset', 'voice']) if (query.has(name)) frameQuery.set(name, query.get(name));
+      document.getElementById('playground-frame').src = `../src/playground/index.html?${frameQuery}`;
+    </script>
   </body>
 </html>

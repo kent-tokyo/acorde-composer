@@ -83,6 +83,15 @@ async function main() {
     assert.equal(await playground.locator('#add-measure-button').isEnabled(), true);
     assert.equal(await playground.locator('#apply-tempo-button').isEnabled(), true);
     assert.equal(await playground.locator('#download-button').isEnabled(), true);
+    assert.equal(await page.locator('main > h1').count(), 0, 'The outer page repeated the Playground introduction');
+    assert.equal(await playground.locator('#download-source-button').isEnabled(), true);
+    await playground.locator('#developer-example-title').click();
+    const sourceDownload = page.waitForEvent('download');
+    await playground.locator('#download-source-button').click();
+    const original = await sourceDownload;
+    assert.equal(original.suggestedFilename(), 'original.musicxml');
+    assert.match(await readStream(await original.createReadStream()), /<score-partwise/);
+    assert.match(await playground.locator('#developer-code').textContent(), /arrange_accordion_preset/);
 
     let lastArrangedXml = '';
     for (const sample of ['four-four', 'waltz', 'swing']) {

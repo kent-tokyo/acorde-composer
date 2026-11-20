@@ -1,0 +1,13 @@
+{
+  "name": "acorde-composer-analysis-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "acorde_analysis_wasm_bg.wasm",
+    "acorde_analysis_wasm.js"
+  ],
+  "main": "acorde_analysis_wasm.js",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

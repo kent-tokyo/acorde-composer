@@ -32,5 +32,57 @@
 .control-section input[type=file] { margin-top:5px; }
 .control-section select { margin-bottom:2px; }
 .score-view .generated-note { filter:drop-shadow(0 0 4px #f59e0b); }
+.showcase { margin:0 0 20px; }
+.showcase h2 { margin:0 0 12px; font-size:20px; }
+.showcase-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.showcase-card { display:flex; flex-direction:column; align-items:flex-start; gap:7px; min-height:100px; padding:18px; text-align:left; border-color:#cbd4ef; background:#fff; }
+.showcase-card:hover,.showcase-card:focus-visible { border-color:var(--accent); box-shadow:0 0 0 2px #6557d833; }
+.showcase-card strong { font-size:16px; }
+.showcase-card span,.showcase p { color:var(--muted); font-size:13px; line-height:1.45; }
+.showcase p { margin:10px 0 0; }
+.score-legend { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:14px 0 0; color:var(--muted); font-size:12px; }
+.score-legend span:nth-child(3) { margin-left:12px; }
+.legend-source,.legend-added { width:12px; height:12px; border-radius:50%; border:1px solid currentColor; }
+.legend-source { background:#fff; }.legend-added { background:#f59e0b; border-color:#d97706; }
+@media (max-width:800px) { .showcase-grid { grid-template-columns:1fr; } .showcase-card { min-height:0; } .playback-toolbar #compare-button { width:100%; } }
 @media (max-width:800px) { .arrangement-bar { grid-template-columns:1fr; padding:15px; } .arrangement-actions { width:100%; } .arrangement-actions button { flex:1; } .loop-control { margin-left:0; } }
 @media (max-width:800px) { .workspace,.arrangement-bar { grid-template-columns:minmax(0,1fr); } .workspace > *,.arrangement-bar > * { min-width:0; } .toolbar-history { flex-wrap:wrap; } .arrangement-actions { flex-direction:column; } .arrangement-actions button { width:100%; } }
+
+/* Keep the score and transport in view while the arrangement settings sit alongside it. */
+.hero { padding-bottom:18px; }
+.hero h1 { margin-top:18px; font-size:clamp(27px,3.5vw,40px); }
+.workspace { grid-template-rows:auto auto; }
+.workspace > .score-card { grid-row:1 / span 2; }
+.workspace > .arrangement-bar { grid-column:2; grid-row:1; grid-template-columns:minmax(0,1fr); gap:12px; margin:0; padding:18px; }
+.workspace > .controls { grid-column:2; grid-row:2; }
+.score-view { min-height:220px; place-items:start center; padding:20px 4px; }
+.playback-toolbar { position:sticky; top:0; z-index:2; background:#fff; }
+.showcase { margin:20px 0 0; }
+.section-plan { border-top:1px solid var(--line); padding-top:12px; }
+.section-plan summary { cursor:pointer; color:var(--accent); font-weight:600; }
+.section-plan label { margin-top:12px; }
+.section-plan .section-lock { flex-direction:row; align-items:center; gap:8px; margin-top:8px; }
+.section-plan input[type=number] { width:100%; min-height:38px; border:1px solid var(--line); border-radius:8px; padding:7px 9px; font:inherit; }
+.section-plan .arrangement-actions { margin-top:12px; }
+.extra-section { display:grid; gap:7px; padding:12px 0; border-top:1px solid var(--line); }
+.extra-section strong { color:var(--ink); }
+.extra-section .section-lock { margin-top:0; }
+.score-card > .toolbar-history { justify-content:flex-end; padding:10px 0; border-bottom:1px solid var(--line); }
+.analysis-section #analysis-results { display:grid; gap:7px; margin-top:12px; }
+.analysis-section #analysis-results button { width:100%; text-align:left; }
+.score-view .analysis-evidence { filter:drop-shadow(0 0 5px #0b93aa); }
+.score-view .analysis-measure { outline:2px solid #0b93aa; }
+.analysis-section .analysis-issue { padding:8px; border:1px solid #e4bd75; border-radius:6px; color:#805624; }
+.developer-example { margin:22px 0; padding:18px 20px; background:#fff; border:1px solid var(--line); border-radius:14px; }
+.developer-example summary { color:var(--accent); cursor:pointer; font-size:18px; font-weight:700; }
+.developer-example p { color:var(--muted); line-height:1.5; }
+.developer-example pre { overflow:auto; margin:14px 0 0; padding:18px; border-radius:8px; background:#17233d; color:#f4f6ff; font-size:13px; line-height:1.55; }
+.developer-example code { color:inherit; }
+@media (max-width:800px) {
+  .hero h1 { margin-top:14px; }
+  .workspace { grid-template-columns:minmax(0,1fr); grid-template-rows:none; }
+  .workspace > .score-card,.workspace > .arrangement-bar,.workspace > .controls { grid-column:1; grid-row:auto; }
+  .score-card { padding:15px; }
+  .score-view { min-height:180px; padding:16px 2px; }
+  .playback-toolbar { top:0; }
+}
