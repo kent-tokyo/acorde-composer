@@ -25,18 +25,6 @@ let playbackFrame = null;
 let playbackGeneration = 0;
 let activePlayback = null;
 let importedScoreJson = '';
-let firstPlayTracked = false;
-const completedPlayback = new Set();
-const openedAt = performance.now();
-function trackUsage(event, seconds = 0) {
-  const sample = importedScoreJson ? 'custom' : currentSample().id;
-  fetch('https://acorde.dev/api/event', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ event, sample, locale: language, surface: 'playground', seconds: Math.min(120, Math.max(0, Math.round(seconds * 10) / 10)) }), keepalive: true }).catch(() => {});
-}
-function recordCompleted(which) {
-  if (which !== 'source' && which !== 'arranged') return;
-  completedPlayback.add(which);
-  if (completedPlayback.size === 2) { trackUsage('both_completed'); completedPlayback.clear(); }
-}
 const LANGUAGE_KEY = 'acorde-composer.language.v1';
 const COPY = {
   en: { label: 'Language', hero: 'Edit a score in your browser', description: 'Try the same Acorde score engine used by Composer. Import ABC, make a small edit, undo it, and export MusicXML locally.', live: 'LIVE SCORE', undo: 'Undo', redo: 'Redo', download: 'Download MusicXML', import: 'Import ABC', abc: 'ABC notation', load: 'Load ABC into Acorde', local: 'Local-first demo', localDescription: 'No score data is uploaded. The browser calls the bundled acorde-wasm module directly.', ready: 'Ready. Try an edit or load your own ABC notation.', loaded: 'ABC parsed by acorde and loaded into the editor.', exported: 'MusicXML exported locally.', selected: 'Selected {address}. Use the note-input toolbar to edit the score.' },
@@ -71,6 +59,9 @@ function applyLanguage(next = language) {
   text('showcase-title', { en: 'Hear three ways to arrange a melody', ja: '3つの編曲を聴き比べる', zh: '试听三种编曲方式' }[language]);
   text('showcase-hint', { en: 'Choose an example to hear the original followed by the arrangement.', ja: '譜例を選ぶと、原曲に続けて編曲を再生します。', zh: '选择示例，先听原曲，再听编曲。' }[language]);
   text('compare-button', { en: 'Hear original, then arrangement', ja: '原曲と編曲を続けて聴く', zh: '先听原曲，再听编曲' }[language]);
+  text('melody-volume-label', { en: 'Melody volume', ja: '旋律の音量', zh: '旋律音量' }[language]);
+  text('accompaniment-volume-label', { en: 'Accompaniment volume', ja: '伴奏の音量', zh: '伴奏音量' }[language]);
+  text('switch-hint', { en: 'Switch playback buttons to compare the same moment.', ja: '再生中に切り替えると、同じ位置から聴き比べられます。', zh: '播放时切换按钮，可从同一位置比较。' }[language]);
   const sectionCopy = {
     en: ['Arrange by section', 'Second section begins at measure', 'Second section accompaniment', 'Try section plan', 'Another variation', 'Keep first section', 'Keep second section'],
     ja: ['区間ごとに編曲', '第2区間を始める小節', '第2区間の伴奏', '区間別の編曲を試す', '別案を作る', '第1区間を固定', '第2区間を固定'],
@@ -78,6 +69,7 @@ function applyLanguage(next = language) {
   }[language];
   ['section-plan-summary', 'section-start-label', 'section-preset-label', 'section-arrange-button', 'section-variant-button', 'section-lock-first-label', 'section-lock-second-label'].forEach((id, index) => text(id, sectionCopy[index]));
   text('add-section-button', { en: 'Add section', ja: '区間を追加', zh: '添加段落' }[language]);
+  $('section-strip').setAttribute('aria-label', { en: 'Measure sections', ja: '小節の区間', zh: '小节段落' }[language]);
   updateExtraSectionLabels();
   text('adopt-button', { en: 'Adopt arrangement', ja: 'この編曲を採用', zh: '采用此编曲' }[language]);
   text('save-project-button', { en: 'Save project', ja: 'プロジェクトを保存', zh: '保存项目' }[language]);
@@ -139,6 +131,7 @@ function refreshScore({ clearCandidates = false, keepRedo = false } = {}) {
   const measureCount = JSON.parse(scoreJson).parts?.[0]?.staves?.[0]?.measures?.length || 0;
   $('section-start').max = String(measureCount);
   $('section-start').value = String(Math.max(2, Math.floor(measureCount / 2) + 1));
+  renderSectionStrip();
   $('section-arrange-button').disabled = measureCount < 2;
   $('section-variant-button').disabled = measureCount < 2;
   $('add-section-button').disabled = measureCount < 3;
@@ -263,7 +256,7 @@ async function downloadMusicxml() {
     const xml = acorde.serialize_musicxml(candidateScoreJson || sourceScoreJson);
     const url = URL.createObjectURL(new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' }));
     const link = document.createElement('a'); link.href = url; link.download = candidateScoreJson ? 'acorde-arrangement.musicxml' : 'acorde-playground.musicxml'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0); setStatus(COPY[language].exported); trackUsage('musicxml_download');
+    setTimeout(() => URL.revokeObjectURL(url), 0); setStatus(COPY[language].exported);
   } catch (error) { setStatus(`Could not export MusicXML: ${error}`, true); }
 }
 
@@ -409,9 +402,9 @@ function addExtraSection(saved = null) {
   const voiceLabel = document.createElement('label'); const voiceText = document.createElement('span'); voiceText.className = 'extra-voice-label';
   const voice = document.createElement('select'); voice.className = 'extra-voice'; voice.replaceChildren(...[...$('voice-select').options].map((option) => new Option(option.textContent, option.value))); voice.value = saved?.voice || $('voice-select').value; voiceLabel.append(voiceText, voice);
   const lockLabel = document.createElement('label'); lockLabel.className = 'section-lock'; const lock = document.createElement('input'); lock.className = 'extra-lock'; lock.type = 'checkbox'; lock.checked = Boolean(saved?.locked); const lockText = document.createElement('span'); lockText.className = 'extra-lock-label'; lockLabel.append(lock, lockText);
-  const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'extra-remove'; remove.addEventListener('click', () => { row.remove(); updateExtraSectionLabels(); });
+  const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'extra-remove'; remove.addEventListener('click', () => { row.remove(); updateExtraSectionLabels(); renderSectionStrip(); });
   row.append(heading, startLabel, presetLabel, voiceLabel, lockLabel, remove);
-  $('extra-sections').append(row); updateExtraSectionLabels();
+  $('extra-sections').append(row); updateExtraSectionLabels(); renderSectionStrip();
 }
 
 function renderPresets() {
@@ -434,6 +427,23 @@ function renderPresets() {
     return button;
   }));
   renderDeveloperExample();
+  renderSectionStrip();
+}
+
+function renderSectionStrip() {
+  const strip = $('section-strip');
+  const measureCount = sourceScoreJson ? JSON.parse(sourceScoreJson).parts?.[0]?.staves?.[0]?.measures?.length || 0 : 0;
+  strip.replaceChildren();
+  const starts = [1, Number($('section-start').value), ...extraSectionValues().map((section) => section.start)];
+  const presets = [selectedPreset, $('section-preset').value, ...extraSectionValues().map((section) => section.preset)];
+  if (!measureCount || starts.some((value, index) => !Number.isInteger(value) || value < 1 || value > measureCount || (index && value <= starts[index - 1]))) return;
+  starts.forEach((start, index) => {
+    const end = index + 1 < starts.length ? starts[index + 1] - 1 : measureCount;
+    const segment = document.createElement('span');
+    segment.style.flex = String(end - start + 1);
+    segment.textContent = `${start}–${end} · ${localizedPreset(presets[index], language)}`;
+    strip.append(segment);
+  });
 }
 
 function renderCandidates() {
@@ -479,6 +489,7 @@ function stopPlayback() {
   playbackTimer = null;
   if (playbackFrame !== null) cancelAnimationFrame(playbackFrame);
   playbackFrame = null;
+  activePlayback = null;
   $('playback-progress').value = 0;
   $('playback-time').textContent = '0:00';
   $('playback-position-label').textContent = { en: 'Ready to play', ja: '再生待ち', zh: '等待播放' }[language];
@@ -487,7 +498,7 @@ function stopPlayback() {
   ['play-source-button', 'play-arranged-button', 'play-accompaniment-button'].forEach((id) => $(id).removeAttribute('aria-current'));
 }
 
-async function playScore(which) {
+async function playScore(which, requestedOffset = 0) {
   try {
     stopPlayback();
     const generation = playbackGeneration;
@@ -500,21 +511,31 @@ async function playScore(which) {
       events = events.filter((event) => generated.has(event.address));
     }
     if (!events.length) throw new Error('No playable notes in this selection.');
+    const duration = Math.max(...events.map((event) => event.time_secs + event.duration_secs)) + 0.15;
+    const offset = Math.min(Math.max(0, requestedOffset), Math.max(0, duration - 0.15));
+    events = events.filter((event) => event.time_secs + event.duration_secs > offset).map((event) => ({
+      ...event,
+      time_secs: Math.max(0, event.time_secs - offset),
+      duration_secs: event.duration_secs - Math.max(0, offset - event.time_secs),
+    }));
     audioBackend ||= new window.AcordeAudioBackend();
     const context = await audioBackend.resume();
     if (generation !== playbackGeneration) return;
     let simplifiedAudio = false;
-    try { audioBackend.schedule(withReedVoice(events), context.currentTime + 0.05, { volume: 0.8 }); }
+    const scheduleParts = (prepared, timbre) => {
+      const groups = [prepared.filter((event) => event.address?.split(':')[1] === '0'), prepared.filter((event) => event.address?.split(':')[1] !== '0')];
+      groups.forEach((group, index) => { if (group.length) audioBackend.schedule(group, context.currentTime + 0.05, { timbre, volume: Number($(index === 0 ? 'melody-volume' : 'accompaniment-volume').value) / 100 }, index === 0 ? 'melody' : 'accompaniment'); });
+    };
+    try { scheduleParts(withReedVoice(events)); }
     catch {
       audioBackend.stopAll();
-      audioBackend.schedule(events, context.currentTime + 0.05, { timbre: 'triangle', volume: 0.8 });
+      scheduleParts(events, 'triangle');
       simplifiedAudio = true;
     }
-    if (!firstPlayTracked) { firstPlayTracked = true; trackUsage('first_play', (performance.now() - openedAt) / 1000); }
     $('stop-button').disabled = false;
     $(`play-${which === 'source' ? 'source' : which === 'arranged' ? 'arranged' : 'accompaniment'}-button`).setAttribute('aria-current', 'true');
-    const duration = Math.max(...events.map((event) => event.time_secs + event.duration_secs)) + 0.15;
-    const startedAt = performance.now();
+    const startedAt = performance.now() - offset * 1000;
+    activePlayback = { which, startedAt, duration };
     const label = { en: { source: 'Original', arranged: 'Arrangement', accompaniment: 'Accompaniment' }, ja: { source: '原曲', arranged: '編曲', accompaniment: '伴奏' }, zh: { source: '原曲', arranged: '编曲', accompaniment: '伴奏' } }[language][which];
     $('playback-position-label').textContent = label;
     const updatePosition = () => {
@@ -527,9 +548,18 @@ async function playScore(which) {
     playbackFrame = requestAnimationFrame(updatePosition);
     const playingCopy = ARRANGE_COPY[language].playing.replace('{which}', which === 'source' ? ARRANGE_COPY[language].original : which === 'arranged' ? ARRANGE_COPY[language].arranged : ARRANGE_COPY[language].accompaniment);
     setStatus(simplifiedAudio ? `${playingCopy} ${{ en: 'Using the simple sound.', ja: '簡易音源で再生しています。', zh: '正在使用简易音源。' }[language]}` : playingCopy);
-    playbackTimer = setTimeout(() => { if (generation !== playbackGeneration) return; recordCompleted(which); if ($('loop-toggle').checked) playScore(which); else stopPlayback(); }, duration * 1000);
-    return duration;
+    playbackTimer = setTimeout(() => { if (generation !== playbackGeneration) return; if ($('loop-toggle').checked) playScore(which); else stopPlayback(); }, (duration - offset) * 1000);
+    return duration - offset;
   } catch (error) { stopPlayback(); setStatus(String(error), true); }
+}
+
+function switchPlayback(which) {
+  const offset = activePlayback && activePlayback.which !== which ? Math.max(0, (performance.now() - activePlayback.startedAt) / 1000) : 0;
+  playScore(which, offset);
+}
+
+function updatePlaybackVolume(channel) {
+  audioBackend?.setChannelControls(channel, { volume: Number($(channel === 'melody' ? 'melody-volume' : 'accompaniment-volume').value) / 100 });
 }
 
 async function compareScore() {
@@ -539,7 +569,7 @@ async function compareScore() {
   if (!duration) return;
   const generation = playbackGeneration;
   clearTimeout(playbackTimer);
-  playbackTimer = setTimeout(() => { if (generation === playbackGeneration) { recordCompleted('source'); playScore('arranged'); } }, duration * 1000);
+  playbackTimer = setTimeout(() => { if (generation === playbackGeneration) playScore('arranged'); }, duration * 1000);
 }
 
 function arrangementChords() {
@@ -559,7 +589,15 @@ function renderDeveloperExample() {
   $('developer-example-description').textContent = copy[1];
   $('download-source-button').textContent = copy[2];
   $('download-source-button').disabled = !sourceScoreJson;
+  $('download-source-json-button').textContent = { en: 'Download exact Acorde JSON', ja: '元譜の Acorde JSON を保存', zh: '下载原谱 Acorde JSON' }[language];
+  $('download-source-json-button').disabled = !sourceScoreJson;
   if (!sourceScoreJson || !selectedPreset) { $('developer-code').textContent = ''; return; }
+  const selectedCandidate = savedCandidates.find((candidate) => candidate.scoreJson === candidateScoreJson);
+  if (selectedCandidate?.sectionStart && selectedCandidate.config) {
+    $('developer-example-description').textContent = { en: 'Save the exact source Acorde JSON to replay this section plan. MusicXML import creates a different score identity.', ja: '区間プランの再現には元譜の Acorde JSON を保存してください。MusicXML を読み直すと譜面の識別子が変わります。', zh: '重放此分段方案须保存原谱的 Acorde JSON。重新导入 MusicXML 会改变乐谱标识。' }[language];
+    $('developer-code').textContent = `import init, * as acorde from './acorde-wasm/acorde_wasm.js';\nawait init();\nconst sourceScoreJson = await (await fetch('./original.acorde.json')).text();\nconst resolvedPlan = ${JSON.stringify(selectedCandidate.config, null, 2)};\nconst result = JSON.parse(acorde.arrange_from_resolved_plan(sourceScoreJson, JSON.stringify(resolvedPlan)));\nif (!result.score) throw new Error(JSON.stringify(result.diagnostics));\nconst arrangedMusicXML = acorde.serialize_musicxml(JSON.stringify(result.score));`;
+    return;
+  }
   let chords;
   try { chords = arrangementChords(); }
   catch { $('developer-code').textContent = copy[3]; return; }
@@ -578,6 +616,14 @@ function downloadOriginalMusicxml() {
   const url = URL.createObjectURL(new Blob([acorde.serialize_musicxml(sourceScoreJson)], { type: 'application/vnd.recordare.musicxml+xml' }));
   const link = document.createElement('a');
   link.href = url; link.download = 'original.musicxml'; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadOriginalJson() {
+  if (!sourceScoreJson) return;
+  const url = URL.createObjectURL(new Blob([sourceScoreJson], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url; link.download = 'original.acorde.json'; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
@@ -603,7 +649,6 @@ function arrangeScore() {
   try {
     if (!sourceScoreJson) return;
     stopPlayback();
-    completedPlayback.clear();
     const selection = makeSelection(arrangementChords());
     const voice = $('voice-select').value;
     const capabilities = JSON.parse(acorde.accordion_preset_capabilities());
@@ -618,13 +663,13 @@ function arrangeScore() {
     const candidate = { scoreJson: candidateScoreJson, sourceScoreJson, generated: result.generated_notes || [], preset: selectedPreset, voice, chords: arrangementChords(), config: result.resolved_config };
     savedCandidates.unshift(candidate);
     savedCandidates = savedCandidates.slice(0, 3);
-    renderVisibleScore(); renderCandidates();
+    renderVisibleScore(); renderCandidates(); renderDeveloperExample();
     $('restore-button').disabled = false;
     $('adopt-button').disabled = false;
     $('play-arranged-button').disabled = false;
     $('play-accompaniment-button').disabled = !accompanimentNotes(candidate).length;
     const message = ARRANGE_COPY[language].generated.replace('{count}', String(candidate.generated.length));
-    $('arrangement-summary').textContent = `${message} ${{ en: 'Amber notes were added by Acorde.', ja: '琥珀色の音符が Acorde による追加分です。', zh: '琥珀色音符由 Acorde 添加。' }[language]}`; setStatus(message); trackUsage('arrangement_generated');
+    $('arrangement-summary').textContent = `${message} ${{ en: 'Amber notes were added by Acorde.', ja: '琥珀色の音符が Acorde による追加分です。', zh: '琥珀色音符由 Acorde 添加。' }[language]}`; setStatus(message);
   } catch (error) { const message = error.message || String(error); setStatus(message, true); $('arrangement-summary').textContent = message; }
 }
 
@@ -688,7 +733,7 @@ function arrangeSections(shuffle = false) {
     savedCandidates = savedCandidates.filter((saved) => saved.scoreJson !== nextScore);
     savedCandidates.unshift(candidate);
     savedCandidates = savedCandidates.slice(0, 3);
-    renderVisibleScore(); renderCandidates();
+    renderVisibleScore(); renderCandidates(); renderDeveloperExample();
     $('restore-button').disabled = false;
     $('adopt-button').disabled = false;
     $('play-arranged-button').disabled = false;
@@ -955,6 +1000,7 @@ $('reset-score-button').addEventListener('click', resetScore);
 $('load-abc-button').addEventListener('click', loadAbc);
 $('download-button').addEventListener('click', downloadMusicxml);
 $('download-source-button').addEventListener('click', downloadOriginalMusicxml);
+$('download-source-json-button').addEventListener('click', downloadOriginalJson);
 $('chord-input').addEventListener('input', renderDeveloperExample);
 $('voice-select').addEventListener('change', renderDeveloperExample);
 $('save-project-button').addEventListener('click', saveProject);
@@ -967,8 +1013,12 @@ $('analysis-category').addEventListener('change', renderAnalysisResults);
 $('section-arrange-button').addEventListener('click', () => arrangeSections(false));
 $('section-variant-button').addEventListener('click', () => arrangeSections(true));
 $('add-section-button').addEventListener('click', () => addExtraSection());
+$('section-start').addEventListener('input', renderSectionStrip);
+$('section-preset').addEventListener('change', renderSectionStrip);
+$('extra-sections').addEventListener('input', renderSectionStrip);
+$('extra-sections').addEventListener('change', renderSectionStrip);
 $('restore-button').addEventListener('click', restoreOriginal);
-$('play-source-button').addEventListener('click', () => playScore('source'));
+$('play-source-button').addEventListener('click', () => switchPlayback('source'));
 $('compare-button').addEventListener('click', compareScore);
 document.querySelectorAll('.showcase-card').forEach((card) => card.addEventListener('click', async () => {
   $('sample-select').value = card.dataset.showcase;
@@ -977,8 +1027,10 @@ document.querySelectorAll('.showcase-card').forEach((card) => card.addEventListe
   arrangeScore();
   if (candidateScoreJson) await compareScore();
 }));
-$('play-arranged-button').addEventListener('click', () => playScore('arranged'));
-$('play-accompaniment-button').addEventListener('click', () => playScore('accompaniment'));
+$('play-arranged-button').addEventListener('click', () => switchPlayback('arranged'));
+$('play-accompaniment-button').addEventListener('click', () => switchPlayback('accompaniment'));
+$('melody-volume').addEventListener('input', () => updatePlaybackVolume('melody'));
+$('accompaniment-volume').addEventListener('input', () => updatePlaybackVolume('accompaniment'));
 $('stop-button').addEventListener('click', stopPlayback);
 $('score-file').addEventListener('change', loadFile);
 $('melody-select').addEventListener('change', selectMelody);

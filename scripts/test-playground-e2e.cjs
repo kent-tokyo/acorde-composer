@@ -118,6 +118,16 @@ async function main() {
         }, { code, originalXml });
         const notes = (xml) => [...xml.matchAll(/<note>[\s\S]*?<\/note>/g)].map(([note]) => note.replace(/<notations>[\s\S]*?<\/notations>/g, '').match(/<pitch>[\s\S]*?<\/pitch>/)?.[0] || 'rest');
         assert.deepEqual(notes(replayXml), notes(arrangedXml), 'Displayed code did not reproduce the arranged notes');
+        await playground.locator('#play-source-button').click();
+        await page.waitForTimeout(700);
+        const beforeSwitch = Number(await playground.locator('#playback-progress').evaluate((element) => element.value));
+        assert.ok(beforeSwitch > 0, 'Original playback did not advance');
+        await playground.locator('#play-arranged-button').click();
+        const afterSwitch = Number(await playground.locator('#playback-progress').evaluate((element) => element.value));
+        assert.ok(afterSwitch >= beforeSwitch - 1, `Playback switch restarted at the beginning: ${beforeSwitch} -> ${afterSwitch}`);
+        await playground.locator('#melody-volume').fill('35');
+        assert.equal(await playground.locator('#melody-volume').inputValue(), '35');
+        await playground.locator('#stop-button').click();
       }
       lastArrangedXml = arrangedXml;
       await playground.locator('#play-source-button').click();
@@ -131,6 +141,36 @@ async function main() {
       await playground.locator('#restore-button').click();
       assert.equal(await playground.locator('#play-arranged-button').isEnabled(), false);
     }
+    await playground.locator('#sample-select').selectOption('four-four');
+    await playground.locator('.section-plan summary').click();
+    await playground.locator('#section-start').fill('5');
+    await playground.locator('#section-preset').selectOption('alternating-bass');
+    assert.equal(await playground.locator('#section-strip span').count(), 2);
+    assert.match(await playground.locator('#section-strip').textContent(), /1–4.*5–8/);
+    await playground.locator('#section-arrange-button').click();
+    await waitForText(playground.locator('#arrangement-summary'), /^Arrangement ready: \d+ added notes\./, 'Section arrangement failed');
+    assert.equal(await playground.locator('#play-arranged-button').isEnabled(), true);
+    const sectionCode = await playground.locator('#developer-code').textContent();
+    assert.match(sectionCode, /arrange_from_resolved_plan/);
+    const sourceJsonDownload = page.waitForEvent('download');
+    await playground.locator('#download-source-json-button').click();
+    const sourceJsonFile = await sourceJsonDownload;
+    assert.equal(sourceJsonFile.suggestedFilename(), 'original.acorde.json');
+    const exactSourceJson = await readStream(await sourceJsonFile.createReadStream());
+    const sectionDownload = page.waitForEvent('download');
+    await playground.locator('#download-button').click();
+    const sectionXml = await readStream(await (await sectionDownload).createReadStream());
+    const sectionReplay = await playground.locator('body').evaluate(async (_body, { code, exactSourceJson }) => {
+      const acorde = await import('./acorde-wasm/acorde_wasm.js');
+      const body = code.replace(/^import init, \* as acorde from '[^']+';\nawait init\(\);\n/, '').replace("const sourceScoreJson = await (await fetch('./original.acorde.json')).text();", 'const sourceScoreJson = exactSourceJson;');
+      const run = new (Object.getPrototypeOf(async function () {}).constructor)('acorde', 'exactSourceJson', `${body}\nreturn arrangedMusicXML;`);
+      return run(acorde, exactSourceJson);
+    }, { code: sectionCode, exactSourceJson });
+    const pitches = (xml) => [...xml.matchAll(/<note>[\s\S]*?<\/note>/g)].map(([note]) => note.match(/<pitch>[\s\S]*?<\/pitch>/)?.[0] || 'rest');
+    assert.deepEqual(pitches(sectionReplay), pitches(sectionXml), 'Section code did not reproduce the arranged notes');
+    await playground.locator('#section-lock-first').check();
+    await playground.locator('#section-variant-button').click();
+    assert.match(await playground.locator('#arrangement-summary').textContent(), /Arrangement ready|No different variation/, 'Section variation gave no usable result');
     await playground.locator('#sample-select').selectOption('harmony');
     await playground.locator('#voice-select').selectOption('third-below');
     await playground.locator('#arrange-button').click();

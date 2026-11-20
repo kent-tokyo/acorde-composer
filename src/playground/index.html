@@ -34,6 +34,7 @@
           </div>
           <div class="playback-toolbar" role="group" aria-label="Playback comparison"><button id="compare-button" class="primary" disabled>Hear original, then arrangement</button><button id="play-source-button" disabled>Play original</button><button id="play-arranged-button" disabled>Play arrangement</button><button id="play-accompaniment-button" disabled>Accompaniment only</button><button id="stop-button" disabled>Stop</button><label class="loop-control"><input id="loop-toggle" type="checkbox" /><span id="loop-label">Loop</span></label></div>
           <div class="playback-position"><span id="playback-position-label">Ready to play</span><progress id="playback-progress" max="100" value="0"></progress><span id="playback-time">0:00</span></div>
+          <div class="playback-mixer"><label for="melody-volume"><span id="melody-volume-label">Melody volume</span><input id="melody-volume" type="range" min="0" max="100" value="80" /></label><label for="accompaniment-volume"><span id="accompaniment-volume-label">Accompaniment volume</span><input id="accompaniment-volume" type="range" min="0" max="100" value="70" /></label><span id="switch-hint">Switch playback buttons to compare the same moment.</span></div>
           <p class="score-legend" id="score-legend"><span class="legend-source"></span><span id="legend-source-label">Original notes</span><span class="legend-added"></span><span id="legend-added-label">Notes added by Acorde</span></p>
           <div id="score-view" class="score-view" aria-live="polite"><p>Loading the score renderer…</p></div>
           <details class="editing-details"><summary id="editing-summary">Edit the score</summary>
@@ -66,6 +67,7 @@
           <div class="arrangement-actions"><button id="arrange-button" class="primary" disabled>Try this arrangement</button><button id="adopt-button" disabled>Adopt arrangement</button><button id="restore-button" disabled>Return to original</button></div>
           <details class="section-plan">
             <summary id="section-plan-summary">Arrange by section</summary>
+            <div id="section-strip" class="section-strip" aria-label="Measure sections"></div>
             <label for="section-start"><span id="section-start-label">Second section begins at measure</span><input id="section-start" type="number" min="2" step="1" value="3" /></label>
             <label for="section-preset"><span id="section-preset-label">Second section accompaniment</span><select id="section-preset"></select></label>
             <label class="section-lock"><input id="section-lock-first" type="checkbox" /><span id="section-lock-first-label">Keep first section</span></label>
@@ -111,6 +113,7 @@
         <summary id="developer-example-title">Use this arrangement in your app</summary>
         <p id="developer-example-description">Download the original score and run the same Acorde WASM arrangement with the selected settings.</p>
         <button type="button" id="download-source-button" disabled>Download original MusicXML</button>
+        <button type="button" id="download-source-json-button" disabled>Download exact Acorde JSON</button>
         <pre><code id="developer-code"></code></pre>
       </details>
       <section class="showcase" aria-label="Arrangement examples">
