@@ -36,7 +36,9 @@ native VST、生产级 OMR／AI provider、MuseSounds 类内置音源、受信�
 ## 开发与验证
 
 ```sh
-npm install
+git clone --branch v2.0.0 --depth 1 https://github.com/kent-tokyo/acorde.git acorde
+npm ci
+npm run build:playground
 npm test
 npm run check
 npm run test:workspace

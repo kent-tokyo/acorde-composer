@@ -36,7 +36,9 @@ Keep the original unchanged. See [Choosing and migrating](docs/choosing-and-migr
 ## Development and verification
 
 ```sh
-npm install
+git clone --branch v2.0.0 --depth 1 https://github.com/kent-tokyo/acorde.git acorde
+npm ci
+npm run build:playground
 npm test
 npm run check
 npm run test:workspace

@@ -480,7 +480,7 @@ function renderCandidates() {
 }
 
 function accompanimentNotes(candidate) {
-  return candidate.generated.filter((address) => address.staff === 1);
+  return candidate.generated.filter((address) => address.part === 0 && address.staff > 0);
 }
 
 function stopPlayback() {

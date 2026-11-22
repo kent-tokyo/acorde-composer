@@ -36,7 +36,9 @@ native VST、実運用OMR／AIプロバイダー、MuseSounds相当の同梱音�
 ## 開発と検証
 
 ```sh
-npm install
+git clone --branch v2.0.0 --depth 1 https://github.com/kent-tokyo/acorde.git acorde
+npm ci
+npm run build:playground
 npm test
 npm run check
 npm run test:workspace

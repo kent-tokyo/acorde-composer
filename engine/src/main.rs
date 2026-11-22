@@ -1107,7 +1107,7 @@ mod tests {
         let value = handle(
             Request::DecodeSoundfontSample {
                 format: "sf3".into(),
-                data: include_bytes!("../../../acorde/tests/fixtures/synthetic.sf3").to_vec(),
+                data: include_bytes!("../../acorde/tests/fixtures/synthetic.sf3").to_vec(),
                 start_frame: None,
                 end_frame: None,
                 sample_rate: 8_000,
@@ -1155,7 +1155,7 @@ mod tests {
     fn materialized_sf2_prepares_real_pcm_for_the_web_audio_boundary() {
         let data = std::fs::read(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../acorde/tests/fixtures/UprightPianoKW-small-20190703.sf2"
+            "/../acorde/tests/fixtures/UprightPianoKW-small-20190703.sf2"
         ))
         .expect("real CC0 SF2 fixture");
         let materialized =
@@ -1206,7 +1206,7 @@ mod tests {
     fn materialized_sf3_prepares_real_pcm_with_explicit_host_channel_layout() {
         let data = std::fs::read(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../acorde/tests/fixtures/FluidR3Mono_GM.sf3"
+            "/../acorde/tests/fixtures/FluidR3Mono_GM.sf3"
         ))
         .expect("real SF3 fixture");
         let materialized =

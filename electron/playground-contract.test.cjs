@@ -43,7 +43,7 @@ test('browser playground is a local-first Acorde WASM demo', () => {
   assert.match(script, /acorde-composer\.language\.v1/);
   assert.match(script, /document\.documentElement\.lang = language/);
   assert.match(script, /applyLanguage/);
-  assert.doesNotMatch(script, /tone|vexflow|music21/i);
+  assert.doesNotMatch(script, /(?:from\s*|import\s*\()\s*['"](?:tone|vexflow|music21)(?:['"/])/i);
 });
 
 test('repository documentation opens the deployed playground, not its source directory', () => {

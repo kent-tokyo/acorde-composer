@@ -78,11 +78,11 @@ function currentCommit({ root = process.cwd() } = {}) {
 
 function inspectAcordeDependency({ root = process.cwd() } = {}) {
   const cargoPath = path.join(root, 'engine', 'Cargo.toml');
-  const acordeRoot = path.resolve(root, '..', 'acorde');
+  const acordeRoot = path.join(root, 'acorde');
   const result = { declaredVersion: null, declaredCrates: [], lockVersions: {}, checkoutVersion: null, exactTag: null, clean: null, ready: false, diagnostics: [] };
   try {
     const cargo = fs.readFileSync(cargoPath, 'utf8');
-    const declarations = [...cargo.matchAll(/(acorde-[a-z-]+)\s*=\s*\{\s*version\s*=\s*"([^"]+)"/g)];
+    const declarations = [...cargo.matchAll(/(acorde-[a-z-]+)\s*=\s*\{\s*version\s*=\s*"=?([^"]+)"/g)];
     result.declaredCrates = declarations.map((match) => match[1]);
     const versions = declarations.map((match) => match[2]);
     result.declaredVersion = versions.length && versions.every((version) => version === versions[0]) ? versions[0] : null;
@@ -103,7 +103,7 @@ function inspectAcordeDependency({ root = process.cwd() } = {}) {
   }
   try {
     const workspace = fs.readFileSync(path.join(acordeRoot, 'Cargo.toml'), 'utf8');
-    result.checkoutVersion = workspace.match(/^version\s*=\s*"([^"]+)"/m)?.[1] || null;
+    result.checkoutVersion = workspace.match(/^version\s*=\s*"=?([^"]+)"/m)?.[1] || null;
     const tag = spawnSync('git', ['-C', acordeRoot, 'describe', '--tags', '--exact-match'], { encoding: 'utf8', shell: false });
     result.exactTag = tag.status === 0 ? tag.stdout.trim() : null;
     const status = spawnSync('git', ['-C', acordeRoot, 'status', '--porcelain'], { encoding: 'utf8', shell: false });

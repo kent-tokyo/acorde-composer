@@ -198,7 +198,7 @@ async function main() {
     });
     await playground.locator('#play-accompaniment-button').click();
     const accompanimentStaffs = await playground.locator('body').evaluate(() => [...new Set(window.accompanimentTestEvents.map((event) => event.address?.split(':')[1]))]);
-    assert.deepEqual(accompanimentStaffs, ['1'], 'Accompaniment-only playback included the added melodic voice');
+    assert.deepEqual(accompanimentStaffs, ['1', '2'], 'Accompaniment playback must include both accompaniment staves and exclude melodic voices');
     assert.equal(await playground.locator('body').evaluate(() => window.accompanimentTestEvents.every((event) => event.decoded_sample?.pcm?.length > 0)), true, 'The reed loop was not used for accompaniment playback');
     await playground.locator('#stop-button').click();
     await playground.locator('#score-file').setInputFiles({ name: 'arrangement.musicxml', mimeType: 'application/vnd.recordare.musicxml+xml', buffer: Buffer.from(lastArrangedXml) });

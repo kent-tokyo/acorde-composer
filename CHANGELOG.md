@@ -4,6 +4,8 @@ This file records user-visible releases and the current development delta. Detai
 
 ## Unreleased
 
+- Updated Acorde dependencies and Playground WASM to v2.0.0, including three-staff accompaniment playback.
+
 - Updated the five Acorde engine crates from v1.2.17 to v1.3.8 and synchronized the development UI engine label, SoundFont provider version, and dependency evidence.
 - Rebuilt the bundled Playground WASM with Acorde v1.3.8 and updated its GitHub Pages build to the same release.
 
