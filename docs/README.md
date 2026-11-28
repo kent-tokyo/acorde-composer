@@ -14,6 +14,7 @@ Choose the shortest document that answers the question. Public claims must match
 
 - [Feature matrix](feature-matrix.md): implemented behavior and open validation boundaries
 - [Evidence index](evidence-index.md): code, tests, fixtures, and artifact links
+- [Competitor comparison](competitor-comparison.md): MusicXML round-trip and speed against music21, Verovio, MuseScore 3, and OSMD
 - [Release QA](../qa/README.md): 20-scenario result and evidence rules
 - [AI proposal safety](ai-proposal-safety.md): provider and command-review boundary
 - [Demo score](demo-score.md): reproducible multi-voice walkthrough
