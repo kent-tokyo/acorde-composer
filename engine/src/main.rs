@@ -107,7 +107,12 @@ enum Request {
         data: Vec<u8>,
     },
     InspectSoundfont {
-        data: Vec<u8>,
+        #[serde(default)]
+        data: Option<Vec<u8>>,
+        #[serde(default)]
+        path: Option<String>,
+        #[serde(default)]
+        max_bytes: Option<u64>,
         provider_version: String,
         bank: Option<u16>,
         program: Option<u16>,
@@ -121,7 +126,12 @@ enum Request {
         channels: u8,
     },
     PrepareSoundfontPlayback {
-        data: Vec<u8>,
+        #[serde(default)]
+        data: Option<Vec<u8>>,
+        #[serde(default)]
+        path: Option<String>,
+        #[serde(default)]
+        max_bytes: Option<u64>,
         provider_version: String,
         bank: u16,
         program: u16,
@@ -362,10 +372,13 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
         }
         Request::InspectSoundfont {
             data,
+            path,
+            max_bytes,
             provider_version,
             bank,
             program,
         } => {
+            let data = soundfont_source_bytes(data, path, max_bytes)?;
             let asset =
                 load_soundfont(&data, provider_version).map_err(|error| error.to_string())?;
             let (selected, diagnostics) = match (bank, program) {
@@ -416,6 +429,8 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
         }
         Request::PrepareSoundfontPlayback {
             data,
+            path,
+            max_bytes,
             provider_version,
             bank,
             program,
@@ -425,6 +440,7 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
             if !(1..=2).contains(&channels) {
                 return Err("SoundFont channel count must be 1 or 2".into());
             }
+            let data = soundfont_source_bytes(data, path, max_bytes)?;
             let materialized =
                 load_materialized(&data, provider_version).map_err(|error| error.to_string())?;
             let snapshot = materialized
@@ -529,6 +545,63 @@ fn handle(request: Request, engine: &mut Option<ScoreEngine>) -> Result<serde_js
             }))
         }
     }
+}
+
+/// Resolve SoundFont bytes from exactly one of inline `data` or a host-validated
+/// local `path`.  Reading the file here keeps large assets out of the JSONL
+/// request, which would otherwise expand every byte into a JSON number.
+fn soundfont_source_bytes(
+    data: Option<Vec<u8>>,
+    path: Option<String>,
+    max_bytes: Option<u64>,
+) -> Result<Vec<u8>, String> {
+    match (data, path) {
+        (Some(data), None) => Ok(data),
+        (None, Some(path)) => read_soundfont_file(&path, max_bytes),
+        _ => Err("soundfont-source-invalid: provide exactly one of data or path".into()),
+    }
+}
+
+fn read_soundfont_file(path: &str, max_bytes: Option<u64>) -> Result<Vec<u8>, String> {
+    use std::io::Read;
+    let limit = max_bytes
+        .ok_or_else(|| "soundfont-file-limit-missing".to_string())?
+        .min(acorde_soundfont::MAX_ASSET_BYTES as u64);
+    let file_path = std::path::Path::new(path);
+    let extension = file_path
+        .extension()
+        .and_then(|value| value.to_str())
+        .map(str::to_ascii_lowercase);
+    if !matches!(extension.as_deref(), Some("sf2") | Some("sf3")) {
+        return Err("soundfont-file-unsupported-extension".into());
+    }
+    let metadata =
+        std::fs::metadata(file_path).map_err(|_| "soundfont-file-missing".to_string())?;
+    if !metadata.is_file() {
+        return Err("soundfont-file-not-file".into());
+    }
+    if metadata.len() > limit {
+        return Err(format!(
+            "soundfont-file-too-large:{}:{}",
+            metadata.len(),
+            limit
+        ));
+    }
+    let file =
+        std::fs::File::open(file_path).map_err(|_| "soundfont-file-unreadable".to_string())?;
+    let mut bytes = Vec::with_capacity(metadata.len() as usize);
+    // Re-check while reading in case the file grows after the metadata check.
+    file.take(limit + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| "soundfont-file-unreadable".to_string())?;
+    if bytes.len() as u64 > limit {
+        return Err(format!(
+            "soundfont-file-too-large:{}:{}",
+            bytes.len(),
+            limit
+        ));
+    }
+    Ok(bytes)
 }
 
 fn main() {
@@ -815,12 +888,152 @@ mod tests {
         );
     }
 
+    fn temp_soundfont_path(name: &str, bytes: &[u8]) -> std::path::PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("acorde-composer-sf-{}-{name}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("temp dir");
+        let path = dir.join(name);
+        std::fs::write(&path, bytes).expect("write SoundFont fixture");
+        path
+    }
+
+    fn inspect_path(
+        path: &std::path::Path,
+        max_bytes: Option<u64>,
+    ) -> Result<serde_json::Value, String> {
+        let mut engine = None;
+        handle(
+            Request::InspectSoundfont {
+                data: None,
+                path: Some(path.to_string_lossy().into_owned()),
+                max_bytes,
+                provider_version: "test-provider".into(),
+                bank: Some(0),
+                program: Some(0),
+            },
+            &mut engine,
+        )
+    }
+
+    #[test]
+    fn soundfont_file_path_matches_inline_metadata() {
+        let bytes = soundfont_fixture(false);
+        let path = temp_soundfont_path("piano.sf2", &bytes);
+        let value = inspect_path(&path, Some(1024 * 1024)).expect("path inspect succeeds");
+        assert_eq!(value["format"], "sf2");
+        assert_eq!(value["preset"]["name"], "Piano");
+        let mut engine = None;
+        let inline = handle(
+            Request::InspectSoundfont {
+                data: Some(bytes),
+                path: None,
+                max_bytes: None,
+                provider_version: "test-provider".into(),
+                bank: Some(0),
+                program: Some(0),
+            },
+            &mut engine,
+        )
+        .expect("inline inspect succeeds");
+        assert_eq!(value["checksum"], inline["checksum"]);
+    }
+
+    #[test]
+    fn soundfont_file_path_reports_structured_errors() {
+        let bytes = soundfont_fixture(false);
+        let path = temp_soundfont_path("limit.sf2", &bytes);
+        let too_large = inspect_path(&path, Some(8)).expect_err("limit enforced");
+        assert_eq!(
+            too_large,
+            format!("soundfont-file-too-large:{}:8", bytes.len())
+        );
+        assert_eq!(
+            inspect_path(&path, None).expect_err("limit required"),
+            "soundfont-file-limit-missing"
+        );
+        let missing = path.with_file_name("missing.sf2");
+        assert_eq!(
+            inspect_path(&missing, Some(1024)).expect_err("missing"),
+            "soundfont-file-missing"
+        );
+        let wav = temp_soundfont_path("piano.wav", &bytes);
+        assert_eq!(
+            inspect_path(&wav, Some(1024 * 1024)).expect_err("extension"),
+            "soundfont-file-unsupported-extension"
+        );
+        let dir = temp_soundfont_path("dir.sf2.keep", b"").with_file_name("folder.sf2");
+        std::fs::create_dir_all(&dir).expect("dir");
+        assert_eq!(
+            inspect_path(&dir, Some(1024)).expect_err("not file"),
+            "soundfont-file-not-file"
+        );
+        let malformed = temp_soundfont_path("bad.sf3", b"not a soundfont");
+        assert!(inspect_path(&malformed, Some(1024)).is_err());
+    }
+
+    #[test]
+    fn soundfont_source_requires_exactly_one_input() {
+        let mut engine = None;
+        let error = handle(
+            Request::InspectSoundfont {
+                data: Some(soundfont_fixture(false)),
+                path: Some("/tmp/piano.sf2".into()),
+                max_bytes: Some(1024),
+                provider_version: "test-provider".into(),
+                bank: None,
+                program: None,
+            },
+            &mut engine,
+        )
+        .expect_err("ambiguous source rejected");
+        assert!(error.starts_with("soundfont-source-invalid"));
+    }
+
+    #[test]
+    fn soundfont_file_path_loads_asset_too_large_for_inline_json() {
+        // 10 MiB padding chunk: as an inline JSON byte array this request would
+        // be ~20+ MiB of zeros and commas, and far larger for real sample data.
+        let mut bytes = soundfont_fixture(false);
+        let padding = 10 * 1024 * 1024;
+        bytes.extend(b"JUNK");
+        bytes.extend((padding as u32).to_le_bytes());
+        bytes.extend(std::iter::repeat_n(0xA5u8, padding));
+        let path = temp_soundfont_path("large.sf2", &bytes);
+        let value =
+            inspect_path(&path, Some(64 * 1024 * 1024)).expect("large path inspect succeeds");
+        assert_eq!(value["preset"]["name"], "Piano");
+        let inline_json = serde_json::to_string(&bytes).expect("json");
+        assert!(inline_json.len() > 25 * 1024 * 1024);
+    }
+
+    #[test]
+    fn soundfont_path_request_is_small_on_the_json_wire() {
+        // A 9.5 MiB asset as an inline byte array exceeds 25 MiB of JSON; the
+        // path form stays a few hundred bytes regardless of asset size.
+        let request = serde_json::json!({ "op": "inspect_soundfont", "path": "/assets/UprightPianoKW.sf2", "max_bytes": 67108864u64, "provider_version": "acorde-soundfont/2.0.0" });
+        let wire = serde_json::to_string(&request).expect("json");
+        assert!(wire.len() < 256);
+        let inline = serde_json::to_string(&vec![255u8; 9_500_000]).expect("json");
+        assert!(inline.len() > 25 * 1024 * 1024);
+        let parsed: Request = serde_json::from_str(&wire).expect("path request parses");
+        assert!(matches!(
+            parsed,
+            Request::InspectSoundfont {
+                data: None,
+                path: Some(_),
+                ..
+            }
+        ));
+    }
+
     #[test]
     fn soundfont_metadata_crosses_json_ipc_boundary() {
         let mut engine = None;
         let value = handle(
             Request::InspectSoundfont {
-                data: soundfont_fixture(false),
+                data: Some(soundfont_fixture(false)),
+                path: None,
+                max_bytes: None,
                 provider_version: "test-provider".into(),
                 bank: Some(0),
                 program: Some(0),
@@ -845,7 +1058,9 @@ mod tests {
         let mut engine = None;
         let value = handle(
             Request::InspectSoundfont {
-                data: soundfont_fixture(false),
+                data: Some(soundfont_fixture(false)),
+                path: None,
+                max_bytes: None,
                 provider_version: "test-provider".into(),
                 bank: Some(0),
                 program: Some(99),
@@ -1170,7 +1385,9 @@ mod tests {
         let velocity = zone.region.velocity_min.max(1);
         let value = handle(
             Request::PrepareSoundfontPlayback {
-                data,
+                data: Some(data),
+                path: None,
+                max_bytes: None,
                 provider_version: "fixture-provider".into(),
                 bank: preset.bank,
                 program: preset.program,
@@ -1214,7 +1431,9 @@ mod tests {
         let zone = materialized.zones().first().expect("SF3 zone");
         let value = handle(
             Request::PrepareSoundfontPlayback {
-                data,
+                data: Some(data),
+                path: None,
+                max_bytes: None,
                 provider_version: "fixture-provider".into(),
                 bank: zone.bank,
                 program: zone.program,

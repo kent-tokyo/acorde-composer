@@ -1,6 +1,6 @@
 # Release QA evidence
 
-The published app is Acorde Composer v0.2.4 with `acorde` v1.2.17. Evidence from older releases must not be reused for this version.
+The release candidate is Acorde Composer v0.2.5 with `acorde` v2.0.0. Evidence from older releases must not be reused for this version.
 
 ## Manual release QA
 
@@ -24,6 +24,8 @@ npm run release:qa:validate -- --input dist/release-qa-report.json
 The report binds the version, commit, artifact digest, matrix, results, and optional candidate gate. The checked-in result set still has 20 `not-run` scenarios.
 
 ## Local checks
+
+On 2026-11-28, the v0.2.5 source candidate with `acorde` v2.0.0 passed 332 Node tests, 30 Rust tests, `npm run check`, desktop workspace E2E (Linux, Xvfb), and an Electron IPC check that loaded a 12 MiB SF2 by path and rejected a 70 MiB file as `too-large`. These are source-candidate checks only; all 20 manual release scenarios remain `not-run`.
 
 On 2026-10-07, the v0.2.4 source candidate with `acorde` v1.2.17 passed 331 Node tests, 25 Rust tests, `npm run check`, Clippy with warnings denied, desktop workspace E2E, Playground E2E, and a production-dependency audit with zero known vulnerabilities. Artifact and release-evidence results are generated from the published commit. These checks are not Developer ID, Windows, or clean-machine evidence, and all 20 manual release scenarios remain `not-run`.
 

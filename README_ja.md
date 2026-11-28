@@ -6,7 +6,7 @@ MusicXML、MIDI、ABCに対応する、ローカル処理中心の楽譜編集�
 
 ## 試す・インストールする
 
-最新の公開版は **v0.2.4**（`acorde` v1.2.17）です。再生ツールバー、新規作成／エクスポート画面、小節操作、voice交換、音符入力ツールバー、Navigator、ショートカットをMuseScoreの操作に近づけました。Apple Silicon向けmacOS DMGは実験版です。アプリ全体をad-hoc署名して厳密に検証していますが、Developer ID署名も公証もないため、Gatekeeperに止められる場合があります。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
+最新の公開版は **v0.2.5**（`acorde` v2.0.0）です。64 MiBまでのSoundFontをディスクから直接読み込めます。v0.2.4でMuseScoreの操作に近づけた再生ツールバー、新規作成／エクスポート画面、小節操作、voice交換、音符入力ツールバー、Navigator、ショートカットはそのまま使えます。Apple Silicon向けmacOS DMGは実験版です。アプリ全体をad-hoc署名して厳密に検証していますが、Developer ID署名も公証もないため、Gatekeeperに止められる場合があります。[GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)以外から取得しないでください。止められた場合は、FinderでアプリをControlクリックして**開く**を選びます。
 
 [ブラウザ版Playground](https://kent-tokyo.github.io/acorde-composer/playground/)では編曲を短く試せます。同梱の旋律を選ぶかMusicXML・ABCを読み込み、ベースと和音、または別の旋律声部を加えて、原曲と編曲を聴き比べられます。結果はMusicXMLで書き出せます。より広い楽譜編集にはデスクトップ版を使います。
 

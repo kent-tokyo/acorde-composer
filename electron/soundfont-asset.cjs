@@ -1,6 +1,9 @@
 const path = require('node:path');
 
-const MAX_SOUNDFONT_BYTES = 512 * 1024 * 1024;
+// Matches acorde_soundfont::MAX_ASSET_BYTES (Acorde 2.0.0). The engine reads the
+// file itself by path, so this is the real asset ceiling rather than a JSON
+// transport limit; larger files are reported as `too-large` before any read.
+const MAX_SOUNDFONT_BYTES = 64 * 1024 * 1024;
 const SOUND_FONT_EXTENSIONS = new Set(['.sf2', '.sf3']);
 
 function inspectSoundfontAsset(filePath, stat) {

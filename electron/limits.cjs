@@ -1,8 +1,8 @@
 const MAX_SCORE_BYTES = 20 * 1024 * 1024;
-// SoundFont bytes are currently represented as an inline JSON byte array at the
-// engine boundary.  A 9.5 MiB SF2 expands beyond 25 MiB when encoded this way,
-// so retain a bounded limit that admits the checked-in real-asset fixture while
-// the path/stream protocol tracked in Acorde #82 is implemented.
+// Desktop SoundFont playback passes a validated file path to the engine, so
+// asset bytes no longer cross this JSONL boundary.  The limit stays at 64 MiB
+// for the remaining inline byte-array operations (MIDI/MXL import and small
+// SoundFont fixtures).
 const MAX_ENGINE_REQUEST_BYTES = 64 * 1024 * 1024;
 
 function assertByteLimit(byteLength, limit, label) {
