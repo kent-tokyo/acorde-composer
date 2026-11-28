@@ -6,7 +6,7 @@
 
 ## 体验或安装
 
-最新公开版是 **v0.2.4**（`acorde` v1.2.17）。播放工具栏、新建／导出窗口、小节操作、voice 交换、音符输入工具栏、Navigator 和快捷键更接近 MuseScore。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
+最新公开版是 **v0.2.5**（`acorde` v2.0.0）。可直接从磁盘加载最大 64 MiB 的 SoundFont；v0.2.4 中接近 MuseScore 的播放工具栏、新建／导出窗口、小节操作、voice 交换、音符输入工具栏、Navigator 和快捷键保持不变。Apple Silicon macOS DMG 是实验性版本：完整应用 bundle 已进行 ad-hoc 签名并通过严格验证，但没有 Developer ID 签名或公证，因此仍可能被 Gatekeeper 拦截。请只从 [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases)下载；如被拦截，请在 Finder 中按住 Control 点按应用并选择“打开”。
 
 [浏览器 Playground](https://kent-tokyo.github.io/acorde-composer/playground/)提供简短的编曲演示。可以选择内置旋律或导入 MusicXML、ABC，加入低音与和弦或另一条旋律声部，比较编曲前后的乐谱和声音，再导出 MusicXML。更完整的乐谱编辑流程请使用桌面版。
 

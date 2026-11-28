@@ -2,12 +2,11 @@
 
 This file records user-visible releases and the current development delta. Detailed commit-by-commit history is available in Git.
 
-## Unreleased
+## 0.2.5 — Unreleased (release candidate)
 
-- Updated Acorde dependencies and Playground WASM to v2.0.0, including three-staff accompaniment playback.
-
-- Updated the five Acorde engine crates from v1.2.17 to v1.3.8 and synchronized the development UI engine label, SoundFont provider version, and dependency evidence.
-- Rebuilt the bundled Playground WASM with Acorde v1.3.8 and updated its GitHub Pages build to the same release.
+- Updated all five Acorde engine crates from v1.2.17 to v2.0.0, and synchronized the engine label, SoundFont provider version, and dependency evidence.
+- Desktop SoundFont loading now passes a validated `.sf2`/`.sf3` file path to the engine instead of sending every byte through the JSON request. SoundFonts up to 64 MiB (the Acorde 2.0.0 asset limit) now load; before, files above roughly 16 MiB exceeded the engine request limit. Larger files are reported as `too-large` and fall back to the oscillator. Raising the Acorde limit is tracked in kent-tokyo/acorde#507.
+- Playground: rebuilt on Acorde v2.0.0 WASM with three-staff accompaniment playback, accordion arrangement showcases and longer demos, one-click arrangement comparisons at the same position, section-plan replay, a visible playback position, a phone-friendly transport, and links that keep language and arrangement settings.
 
 ## 0.2.4 — 2026-10-07
 

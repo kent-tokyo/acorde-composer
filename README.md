@@ -6,7 +6,7 @@ A local-first desktop score editor for MusicXML, MIDI, and ABC. [`acorde`](https
 
 ## Try or install
 
-The latest desktop release is **v0.2.4**, built with `acorde` v1.2.17. Its playback toolbar, New score and Export dialogs, measure tools, voice exchange, note-input toolbar, Navigator behavior, and shortcuts are closer to the MuseScore workflow. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
+The latest desktop release is **v0.2.5**, built with `acorde` v2.0.0. It loads SoundFonts up to 64 MiB directly from disk, and keeps the MuseScore-style playback toolbar, New score and Export dialogs, measure tools, voice exchange, note-input toolbar, Navigator behavior, and shortcuts from v0.2.4. The Apple-silicon macOS DMG is experimental: its complete app bundle is ad-hoc-signed and strictly verified, but it is not Developer ID-signed or notarized. Download it only from [GitHub Releases](https://github.com/kent-tokyo/acorde-composer/releases); if Gatekeeper blocks it, Control-click the app in Finder and choose **Open**.
 
 The [browser Playground](https://kent-tokyo.github.io/acorde-composer/playground/) is a short arrangement demo. Start with a bundled melody or import MusicXML or ABC, add bass and chords or another melodic voice, compare the original and arrangement, and export MusicXML. The desktop app provides the broader score-editing workflow.
 
