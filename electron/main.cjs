@@ -332,6 +332,15 @@ ipcMain.handle('engine:playbackEvents', async (event, { score, bpm, loopRegion }
 ipcMain.handle('engine:playbackPosition', async (event, { elapsedSecs, bpm }) => callEventEngine(event, { op: 'playback_position', elapsed_secs: elapsedSecs, bpm }));
 ipcMain.handle('engine:inspectSoundfont', async (event, { data, provider_version: providerVersion, bank, program }) => callEventEngine(event, { op: 'inspect_soundfont', data, provider_version: providerVersion, bank, program }));
 ipcMain.handle('engine:decodeSoundfontSample', async (event, { format, data, startFrame, endFrame, sampleRate, channels }) => callEventEngine(event, { op: 'decode_soundfont_sample', format, data, start_frame: startFrame, end_frame: endFrame, sample_rate: sampleRate, channels }));
+async function validatedSoundfontPath(filePath) {
+  let stat = null;
+  try { stat = await fs.stat(filePath); } catch {}
+  const asset = inspectSoundfontAsset(filePath, stat);
+  if (!asset.exists) throw new Error(`SoundFont asset is not loadable: ${asset.reason}`);
+  return asset;
+}
+ipcMain.handle('engine:inspectSoundfontFile', async (event, { filePath, providerVersion, bank, program }) => { const asset = await validatedSoundfontPath(filePath); return callEventEngine(event, { op: 'inspect_soundfont', path: asset.path, max_bytes: asset.maxBytes, provider_version: providerVersion, bank, program }); });
+ipcMain.handle('engine:prepareSoundfontPlaybackFile', async (event, { filePath, providerVersion, bank, program, channels, events }) => { const asset = await validatedSoundfontPath(filePath); return callEventEngine(event, { op: 'prepare_soundfont_playback', path: asset.path, max_bytes: asset.maxBytes, provider_version: providerVersion, bank, program, channels, events }); });
 ipcMain.handle('engine:prepareSoundfontPlayback', async (event, { data, providerVersion, bank, program, channels, events }) => callEventEngine(event, { op: 'prepare_soundfont_playback', data, provider_version: providerVersion, bank, program, channels, events }));
 ipcMain.handle('soundfont:normalizeDecodedSample', async (_event, sample) => normalizeDecodedSample(sample));
 ipcMain.handle('soundfont:attachResolvedSample', async (_event, { events, zones, samplesById, bank, program } = {}) => attachResolvedSample(events, zones, samplesById, { bank, program }));

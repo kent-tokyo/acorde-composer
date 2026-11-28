@@ -85,6 +85,19 @@ test('SoundFont playback stays behind an explicit resolved-zone IPC boundary', (
   assert.match(preload, /prepareSoundfontPlayback/);
 });
 
+test('desktop SoundFont playback passes a validated path instead of inline bytes', () => {
+  const main = fs.readFileSync(path.join(root, 'electron/main.cjs'), 'utf8');
+  const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
+  const app = fs.readFileSync(path.join(root, 'src/app.js'), 'utf8');
+  assert.match(main, /engine:inspectSoundfontFile[\s\S]*validatedSoundfontPath[\s\S]*op: 'inspect_soundfont', path: asset\.path, max_bytes: asset\.maxBytes/);
+  assert.match(main, /engine:prepareSoundfontPlaybackFile[\s\S]*op: 'prepare_soundfont_playback', path: asset\.path, max_bytes: asset\.maxBytes/);
+  assert.match(preload, /inspectSoundfontFile/);
+  assert.match(preload, /prepareSoundfontPlaybackFile/);
+  assert.match(app, /prepareSoundfontPlaybackFile\(\{ filePath: soundfont\.path/);
+  assert.match(app, /inspectSoundfontFile\(mixerState\.soundfont\.path/);
+  assert.doesNotMatch(app, /readSoundfont\(/);
+});
+
 test('external provider configuration stays behind a normalized IPC boundary', () => {
   const main = fs.readFileSync(path.join(root, 'electron/main.cjs'), 'utf8');
   const preload = fs.readFileSync(path.join(root, 'electron/preload.cjs'), 'utf8');
